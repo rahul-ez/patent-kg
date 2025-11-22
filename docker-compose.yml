@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  # --- Service 1: The Knowledge Graph (Neo4j) ---
+  neo4j:
+    image: neo4j:community
+    container_name: patent_neo4j
+    ports:
+      - "7474:7474" # HTTP port for the browser UI
+      - "7687:7687" # Bolt port for your Python code
+    environment:
+      - NEO4J_AUTH=neo4j/password123  # <--- Your username/password
+    volumes:
+      - ./neo4j_data:/data            # Saves data to your local folder
+
+  # --- Service 2: The Vector Database (ChromaDB) ---
+  chroma:
+    image: chromadb/chroma:0.5.20
+    container_name: patent_chroma
+    ports:
+      - "8000:8000" # Port for the API
+    volumes:
+      - ./chroma_data:/chroma/chroma  # Saves vectors to your local folder

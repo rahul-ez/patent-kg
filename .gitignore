@@ -1,0 +1,23 @@
+# --- Python Basics ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.ipynb_checkpoints/
+venv/
+.venv/
+
+# --- Environment Variables (Security Risk!) ---
+.env
+
+# --- Data & Databases (Too big for GitHub) ---
+data/
+neo4j_data/
+chroma_data/
+
+# --- OS Files ---
+.DS_Store
+Thumbs.db
+
+# --- IDE Settings ---
+.vscode/
+.idea/
