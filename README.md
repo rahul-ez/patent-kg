@@ -6,7 +6,7 @@ This project is a full-stack AI system that takes a **user-inputted idea or pate
 
 ## End-to-End Pipeline
 
-1. **NLP Layer**: Cleans raw user idea text, extracts keywords, and performs entity recognition (technology, domain, components) to output a structured JSON representation.
+1. **NLP Layer**: A Hybrid LLM Pipeline (Google Gemini `gemini-2.5-flash` with robust rule-based `spaCy` fallback) cleans raw user idea text, extracts structured technical keywords, and performs entity recognition to output a standardized JSON payload.
 2. **Embedding + Semantic Retrieval**: Converts text into embeddings (Sentence Transformers), stores/queries in a vector database (FAISS/Chroma), returning Top-K similar patents.
 3. **Knowledge Graph (KG)**: Uses nodes (Patent, Keyword, Technology Area, Company) and edges (SIMILAR_TO, BELONGS_TO, CITES) to expand retrieved patents into a local subgraph.
 4. **Graph Neural Network (GNN)**: Learns structural relationships from the KG subgraph to improve similarity and recommendation quality, outputting graph-based similarity scores/embeddings.
@@ -19,7 +19,7 @@ This project is a full-stack AI system that takes a **user-inputted idea or pate
 
 ## Tech Stack
 
-*   **NLP**: spaCy / SciBERT
+*   **NLP**: Google Gemini (`google-genai`) + spaCy (Fallback)
 *   **Embeddings**: Sentence Transformers
 *   **Vector DB**: FAISS or Chroma
 *   **Graph DB**: Neo4j
@@ -33,3 +33,33 @@ This project is a full-stack AI system that takes a **user-inputted idea or pate
 *   GNN is used to enhance results, not replace retrieval.
 *   Improvement Agent is a key differentiator — logic here is prioritized.
 *   Outputs are interpretable, not just numerical.
+
+## Installation & Setup (For Teammates)
+
+1. **Clone the repository and set up a virtual environment**:
+   ```bash
+   git clone https://github.com/rahul-ez/patent-kg.git
+   cd patent-kg
+   python -m venv venv
+   
+   # On Windows:
+   .\venv\Scripts\Activate.ps1
+   # On Mac/Linux:
+   source venv/bin/activate
+   ```
+
+2. **Install the dependencies**:
+   ```bash
+   pip install -r backend/requirements.txt
+   ```
+
+3. **Configure Environment Variables**:
+   Copy `.env.example` to a new `.env` file and fill in your API keys (specifically `GOOGLE_API_KEY` for the LLM NLP pipeline).
+   ```bash
+   cp .env.example .env
+   ```
+
+4. **Run the Streamlit Demo**:
+   ```bash
+   streamlit run backend/streamlit_app.py
+   ```
