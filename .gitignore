@@ -21,3 +21,7 @@ Thumbs.db
 # --- IDE Settings ---
 .vscode/
 .idea/
+
+# --- Exclusions ---
+*.csv
+PROJECT_CONTEXT.md
