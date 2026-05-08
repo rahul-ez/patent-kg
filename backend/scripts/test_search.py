@@ -14,6 +14,14 @@ import sys
 import os
 import logging
 
+# ── Suppress TensorFlow/Keras import in `transformers` ────────────────────────
+# sentence_transformers → transformers tries to import TF/Keras when both are
+# installed, which crashes on Keras 3 (incompatible with transformers TF layer).
+# We only use the PyTorch backend, so disable TF entirely before any ST import.
+os.environ.setdefault("USE_TF", "0")
+os.environ.setdefault("USE_TORCH", "1")
+os.environ.setdefault("TRANSFORMERS_NO_TF", "1")
+
 # -- Setup import path so `retrieval` is importable ----------------
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 

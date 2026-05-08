@@ -6,7 +6,14 @@ into dense vector embeddings suitable for cosine-similarity search.
 """
 
 import logging
+import os
 from typing import List
+
+# Suppress TF/Keras import in transformers (Keras 3 is incompatible).
+# Must be set before sentence_transformers is imported.
+os.environ.setdefault("USE_TF", "0")
+os.environ.setdefault("USE_TORCH", "1")
+os.environ.setdefault("TRANSFORMERS_NO_TF", "1")
 
 import numpy as np
 from sentence_transformers import SentenceTransformer
