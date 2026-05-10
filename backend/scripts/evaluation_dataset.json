@@ -1,0 +1,162 @@
+[
+  {
+    "domain": "Medical",
+    "query": "AI-powered medical diagnosis system using patient sensor data and machine learning",
+    "relevant_patents": [
+      "038-249-200-851-030",
+      "029-898-451-482-819",
+      "068-576-153-607-743",
+      "195-359-859-548-419"
+    ]
+  },
+  {
+    "domain": "Medical",
+    "query": "Deep learning system for automated disease diagnosis from medical images",
+    "relevant_patents": [
+      "038-249-200-851-030",
+      "029-898-451-482-819",
+      "068-576-153-607-743",
+      "195-359-859-548-419"
+    ]
+  },
+  {
+    "domain": "Medical",
+    "query": "Artificial intelligence platform for real-time health monitoring and predictive medical analysis",
+    "relevant_patents": [
+      "038-249-200-851-030",
+      "029-898-451-482-819",
+      "068-576-153-607-743",
+      "195-359-859-548-419"
+    ]
+  },
+  {
+    "domain": "Medical",
+    "query": "Machine learning system for generating diagnostic reports from radiology images",
+    "relevant_patents": [
+      "038-249-200-851-030",
+      "029-898-451-482-819",
+      "068-576-153-607-743",
+      "195-359-859-548-419"
+    ]
+  },
+  {
+    "domain": "Automotive",
+    "query": "Autonomous vehicle traffic management using connected vehicle communication",
+    "relevant_patents": [
+      "015-704-938-300-830",
+      "021-102-273-399-862",
+      "001-329-720-527-055",
+      "152-603-916-917-594"
+    ]
+  },
+  {
+    "domain": "Automotive",
+    "query": "Sensor fusion and localization system for autonomous driving",
+    "relevant_patents": [
+      "015-704-938-300-830",
+      "021-102-273-399-862",
+      "001-329-720-527-055",
+      "152-603-916-917-594"
+    ]
+  },
+  {
+    "domain": "Automotive",
+    "query": "Intelligent traffic congestion prediction and autonomous navigation",
+    "relevant_patents": [
+      "015-704-938-300-830",
+      "021-102-273-399-862",
+      "001-329-720-527-055",
+      "152-603-916-917-594"
+    ]
+  },
+  {
+    "domain": "Automotive",
+    "query": "Autonomous vehicle stopping and route planning system",
+    "relevant_patents": [
+      "015-704-938-300-830",
+      "021-102-273-399-862",
+      "001-329-720-527-055",
+      "152-603-916-917-594"
+    ]
+  },
+  {
+    "domain": "Drug Delivery",
+    "query": "Controlled drug release system using nanoporous delivery devices",
+    "relevant_patents": [
+      "165-965-092-369-512",
+      "172-319-514-362-79X",
+      "090-565-567-486-80X",
+      "179-784-963-089-66X"
+    ]
+  },
+  {
+    "domain": "Drug Delivery",
+    "query": "Implantable bioerodible drug delivery platform",
+    "relevant_patents": [
+      "165-965-092-369-512",
+      "172-319-514-362-79X",
+      "090-565-567-486-80X",
+      "179-784-963-089-66X"
+    ]
+  },
+  {
+    "domain": "Drug Delivery",
+    "query": "Nanocarrier-based therapeutic delivery system",
+    "relevant_patents": [
+      "165-965-092-369-512",
+      "172-319-514-362-79X",
+      "090-565-567-486-80X",
+      "179-784-963-089-66X"
+    ]
+  },
+  {
+    "domain": "Drug Delivery",
+    "query": "Refillable medical drug delivery device for chronic treatment",
+    "relevant_patents": [
+      "165-965-092-369-512",
+      "172-319-514-362-79X",
+      "090-565-567-486-80X",
+      "179-784-963-089-66X"
+    ]
+  },
+  {
+    "domain": "Energy Storage",
+    "query": "Lithium battery protection and internal safety system",
+    "relevant_patents": [
+      "087-176-133-173-067",
+      "015-133-675-262-177",
+      "027-381-528-395-664",
+      "055-233-319-929-050"
+    ]
+  },
+  {
+    "domain": "Energy Storage",
+    "query": "Flexible energy storage device using conductive materials",
+    "relevant_patents": [
+      "087-176-133-173-067",
+      "015-133-675-262-177",
+      "027-381-528-395-664",
+      "055-233-319-929-050"
+    ]
+  },
+  {
+    "domain": "Energy Storage",
+    "query": "Hybrid lithium-ion energy storage architecture",
+    "relevant_patents": [
+      "087-176-133-173-067",
+      "015-133-675-262-177",
+      "027-381-528-395-664",
+      "055-233-319-929-050"
+    ]
+  },
+  {
+    "domain": "Energy Storage",
+    "query": "Energy storage management system with internal fault protection",
+    "relevant_patents": [
+      "087-176-133-173-067",
+      "015-133-675-262-177",
+      "027-381-528-395-664",
+      "055-233-319-929-050"
+    ]
+  }
+]
