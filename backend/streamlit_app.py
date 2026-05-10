@@ -133,6 +133,51 @@ html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
 
 /* ── Sidebar ──────────────────────────────────────────────────────────────── */
 [data-testid="stSidebar"] { background: #080d18; }
+
+/* ── Expansion type badge ─────────────────────────────────────────────────── */
+.exp-badge-family {
+    display: inline-block; padding: 2px 10px; margin-bottom: 6px;
+    background: #1a1040; color: #a78bfa;
+    border: 1px solid #7c3aed; border-radius: 6px;
+    font-size: 0.7rem; font-weight: 600; letter-spacing: 0.04em;
+}
+.exp-badge-cpc {
+    display: inline-block; padding: 2px 10px; margin-bottom: 6px;
+    background: #0c2030; color: #38bdf8;
+    border: 1px solid #0369a1; border-radius: 6px;
+    font-size: 0.7rem; font-weight: 600; letter-spacing: 0.04em;
+}
+.expansion-header {
+    font-size: 0.85rem; color: #64748b;
+    margin: 0.8rem 0 0.5rem 0;
+}
+
+/* ── KG status card ───────────────────────────────────────────────────────── */
+.kg-card {
+    border-radius: 12px; padding: 1.1rem 1.4rem;
+    margin: 0.6rem 0; border: 1px solid;
+}
+.kg-card.building {
+    background: #0f1f2e; border-color: #0e7490;
+}
+.kg-card.done {
+    background: #0a1f14; border-color: #16a34a;
+}
+.kg-status-title {
+    font-size: 0.95rem; font-weight: 600; margin-bottom: 0.5rem;
+}
+.kg-card.building .kg-status-title { color: #22d3ee; }
+.kg-card.done     .kg-status-title { color: #4ade80; }
+.kg-stat-row {
+    display: flex; gap: 1.2rem; flex-wrap: wrap; margin-top: 0.6rem;
+}
+.kg-stat {
+    background: #0f172a; border-radius: 8px;
+    padding: 0.4rem 0.85rem; text-align: center;
+    border: 1px solid #1e293b;
+}
+.kg-stat-val { font-size: 1.1rem; font-weight: 700; color: #6366f1; }
+.kg-stat-lbl { font-size: 0.68rem; color: #64748b; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -146,6 +191,58 @@ def load_pipeline():
     """Import and warm-up the integration pipeline once."""
     from integration.pipeline import run_end_to_end
     return run_end_to_end
+
+
+@st.cache_resource(show_spinner=False)
+def load_kg_builder():
+    """Import the KG builder once per session."""
+    from kg.builder import KGBuilder
+    return KGBuilder
+
+
+def _expand_kg(patent_ids: list, cpc_cap: int = 10) -> dict:
+    """Run KG expansion and return family + CPC sibling patent dicts."""
+    from kg.expander import expand_via_kg
+    return expand_via_kg(patent_ids, cpc_cap=cpc_cap)
+
+
+def _build_kg(patent_ids: list) -> dict:
+    """
+    Run the KG builder for the given IDs and return a stats dict.
+    Counts are queried back from Neo4j after writing so the UI shows
+    real numbers rather than estimates.
+    """
+    from neo4j import GraphDatabase
+    import os
+    from dotenv import load_dotenv
+    load_dotenv()
+
+    KGBuilderCls = load_kg_builder()
+    with KGBuilderCls() as builder:
+        builder.build_subgraph(patent_ids)
+
+    driver = GraphDatabase.driver(
+        os.getenv("NEO4J_URI", "bolt://localhost:7687"),
+        auth=(os.getenv("NEO4J_USER", "neo4j"), os.getenv("NEO4J_PASSWORD", "")),
+    )
+    with driver.session() as session:
+        counts = session.run(
+            """
+            MATCH (n) WITH labels(n)[0] AS lbl, count(n) AS cnt
+            RETURN lbl, cnt ORDER BY lbl
+            """
+        ).data()
+        edge_counts = session.run(
+            """
+            MATCH ()-[r]->() WITH type(r) AS t, count(r) AS cnt
+            RETURN t, cnt ORDER BY t
+            """
+        ).data()
+    driver.close()
+
+    nodes = {row["lbl"]: row["cnt"] for row in counts}
+    edges = {row["t"]:   row["cnt"] for row in edge_counts}
+    return {"nodes": nodes, "edges": edges}
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -171,6 +268,36 @@ def render_score_bar(score: float):
         unsafe_allow_html=True,
     )
     st.progress(pct)
+
+
+def render_expanded_card(patent: dict):
+    title    = patent.get("title", "Untitled").title()[:120]
+    pid      = patent.get("patent_id", "—")
+    abstract = patent.get("abstract", "—")
+    domain   = patent.get("domain", "—")
+    url      = patent.get("url", "#")
+    exp_type = patent.get("expansion_type", "")
+    cited    = patent.get("cited_by_patent_count", "0")
+    year     = patent.get("publication_year", "")
+
+    badge_class = "exp-badge-family" if exp_type == "family" else "exp-badge-cpc"
+    badge_label = "FAMILY MEMBER" if exp_type == "family" else "CPC SIBLING"
+
+    st.markdown(f"""
+    <div class="patent-card">
+        <span class="{badge_class}">{badge_label}</span>
+        <div class="patent-title">{title}</div>
+        <div class="patent-id">ID: {pid} &nbsp;·&nbsp; {year}</div>
+        <div class="patent-abstract">{abstract[:280]}…</div>
+        <span class="domain-chip">{domain}</span>
+        &nbsp;
+        <span style="font-size:0.72rem;color:#475569;">
+            Cited by {cited} patents
+        </span>
+    </div>
+    """, unsafe_allow_html=True)
+    st.markdown(f"[View on Lens.org]({url})", unsafe_allow_html=True)
+    st.markdown("<div style='margin-bottom:0.4rem'></div>", unsafe_allow_html=True)
 
 
 def render_patent_card(hit: dict):
@@ -223,7 +350,7 @@ with st.sidebar:
         "[DONE] Embedding Generation (MiniLM)",
         "[DONE] FAISS Vector Index",
         "[DONE] Semantic Patent Retrieval",
-        "[WIP]  Knowledge Graph (Neo4j)",
+        "[DONE] Knowledge Graph (Neo4j)",
         "[WIP]  GNN Re-ranking",
         "[WIP]  Novelty Scoring",
     ]
@@ -288,7 +415,7 @@ col_btn, col_k, col_spacer = st.columns([1, 1, 4])
 with col_btn:
     run_btn = st.button("Analyze Idea", type="primary", use_container_width=True)
 with col_k:
-    top_k = st.selectbox("Top-K results", [3, 5, 10], index=1, label_visibility="collapsed")
+    top_k = st.selectbox("Top-K results", [5, 10, 25, 50, 100], index=0, label_visibility="collapsed")
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Run pipeline on button click
@@ -361,8 +488,130 @@ if "result" in st.session_state:
 
     st.divider()
 
-    # ── Section 4: Retrieval Insights ─────────────────────────────────────────
-    st.markdown('<div class="section-header">Step 4 — Retrieval Insights</div>', unsafe_allow_html=True)
+    # ── Section 4: Knowledge Graph Construction ───────────────────────────────
+    st.markdown('<div class="section-header">Step 4 — Knowledge Graph Construction (Neo4j)</div>', unsafe_allow_html=True)
+
+    kg_placeholder = st.empty()
+
+    if "kg_stats" not in st.session_state:
+        # Show "under construction" card immediately
+        kg_placeholder.markdown("""
+        <div class="kg-card building">
+            <div class="kg-status-title">⏳ KG Under Construction</div>
+            <div style="font-size:0.82rem;color:#94a3b8;">
+                Writing patent nodes, company nodes, inventor nodes, CPC codes,
+                family edges and citation links into Neo4j…
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+        patent_ids = [h["patent_id"] for h in hits]
+        with st.spinner("Building knowledge graph in Neo4j…"):
+            try:
+                stats = _build_kg(patent_ids)
+                st.session_state["kg_stats"] = stats
+            except Exception as e:
+                st.session_state["kg_stats"] = {"error": str(e)}
+
+        st.rerun()
+
+    kg_stats = st.session_state.get("kg_stats", {})
+
+    if "error" in kg_stats:
+        kg_placeholder.error(f"KG build failed: {kg_stats['error']}")
+    else:
+        nodes = kg_stats.get("nodes", {})
+        edges = kg_stats.get("edges", {})
+        total_nodes = sum(nodes.values())
+        total_edges = sum(edges.values())
+
+        stat_html = "".join(
+            f'<div class="kg-stat"><div class="kg-stat-val">{v}</div>'
+            f'<div class="kg-stat-lbl">{k}</div></div>'
+            for k, v in nodes.items()
+        ) + "".join(
+            f'<div class="kg-stat"><div class="kg-stat-val">{v}</div>'
+            f'<div class="kg-stat-lbl">{k}</div></div>'
+            for k, v in edges.items()
+        )
+
+        kg_placeholder.markdown(f"""
+        <div class="kg-card done">
+            <div class="kg-status-title">
+                ✅ KG Constructed — {total_nodes} nodes · {total_edges} edges
+            </div>
+            <div style="font-size:0.8rem;color:#86efac;margin-bottom:0.5rem;">
+                Subgraph built for {len(hits)} retrieved patents.
+                Open <a href="http://localhost:7474" target="_blank"
+                style="color:#4ade80;">Neo4j Browser</a> to explore.
+            </div>
+            <div class="kg-stat-row">{stat_html}</div>
+        </div>
+        """, unsafe_allow_html=True)
+
+    st.divider()
+
+    # ── Section 5: KG Expansion ───────────────────────────────────────────────
+    st.markdown('<div class="section-header">Step 5 — KG Expanded Patent Set</div>', unsafe_allow_html=True)
+
+    if "kg_expansion" not in st.session_state and "kg_stats" in st.session_state and "error" not in st.session_state.get("kg_stats", {}):
+        with st.spinner("Expanding via knowledge graph — finding family members and CPC siblings…"):
+            try:
+                expansion = _expand_kg([h["patent_id"] for h in hits])
+                st.session_state["kg_expansion"] = expansion
+            except Exception as e:
+                st.session_state["kg_expansion"] = {"error": str(e)}
+        st.rerun()
+
+    expansion = st.session_state.get("kg_expansion", {})
+
+    if "error" in expansion:
+        st.error(f"KG expansion failed: {expansion['error']}")
+    elif not expansion:
+        st.info("KG expansion will run after the knowledge graph is built.")
+    else:
+        family       = expansion.get("family", [])
+        cpc_siblings = expansion.get("cpc_siblings", [])
+        total_added  = expansion.get("total_added", 0)
+
+        st.markdown(
+            f"<div style='font-size:0.88rem;color:#94a3b8;margin-bottom:1rem;'>"
+            f"Found <b style='color:#a78bfa'>{len(family)} family members</b> and "
+            f"<b style='color:#38bdf8'>{len(cpc_siblings)} CPC siblings</b> "
+            f"not in the original FAISS top-{top_k}. "
+            f"<b style='color:#e2e8f0'>{total_added} patents added.</b>"
+            f"</div>",
+            unsafe_allow_html=True,
+        )
+
+        if family:
+            with st.expander(f"Family Members ({len(family)})", expanded=True):
+                st.markdown(
+                    "<div class='expansion-header'>"
+                    "Same invention filed in other jurisdictions — "
+                    "strongest form of prior art."
+                    "</div>",
+                    unsafe_allow_html=True,
+                )
+                for p in family:
+                    render_expanded_card(p)
+
+        if cpc_siblings:
+            with st.expander(f"CPC Technology Siblings ({len(cpc_siblings)})", expanded=True):
+                st.markdown(
+                    "<div class='expansion-header'>"
+                    "Patents sharing a CPC classification code with your top results — "
+                    "structurally related prior art FAISS may have missed."
+                    "</div>",
+                    unsafe_allow_html=True,
+                )
+                for p in cpc_siblings:
+                    render_expanded_card(p)
+
+    st.divider()
+
+    # ── Section 6: Retrieval Insights ─────────────────────────────────────────
+    st.markdown('<div class="section-header">Step 6 — Retrieval Insights</div>', unsafe_allow_html=True)
 
     top_score = hits[0]["score"] if hits else 0.0
     m1, m2, m3, m4 = st.columns(4)
@@ -392,8 +641,8 @@ if "result" in st.session_state:
 
     st.divider()
 
-    # ── Section 5: Architecture Flow ──────────────────────────────────────────
-    st.markdown('<div class="section-header">Step 5 — System Architecture</div>', unsafe_allow_html=True)
+    # ── Section 6: Architecture Flow ──────────────────────────────────────────
+    st.markdown('<div class="section-header">Step 6 — System Architecture</div>', unsafe_allow_html=True)
 
     steps = [
         ("User Idea",        "Free-text input"),

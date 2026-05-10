@@ -12,7 +12,7 @@ _SCRIPTS_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(_SCRIPTS_DIR)))
 
 # Input: canonical processed patents from the project root data layer
-DATA_FILE = os.path.join(PROJECT_ROOT, "data", "processed", "patents.csv")
+DATA_FILE = os.path.join(PROJECT_ROOT, "patents.csv")
 
 # Output: FAISS index stored inside patent-kg/ (co-located with the backend)
 BASE_DIR = os.path.dirname(os.path.dirname(_SCRIPTS_DIR))  # → patent-kg/
@@ -68,7 +68,7 @@ def build_faiss_index():
     with open(METADATA_FILE, 'w') as f:
         json.dump(metadata_mapping, f)
         
-    print(f"\n✅ Successfully built and saved the FAISS Index!")
+    print(f"\n[DONE] Successfully built and saved the FAISS Index!")
     print(f"Index Location: {FAISS_INDEX_FILE}")
     print(f"Metadata Map Location: {METADATA_FILE}")
 
