@@ -24,4 +24,10 @@ Thumbs.db
 
 # --- Exclusions ---
 *.csv
-PROJECT_CONTEXT.md
+PROJECT_CONTEXT.md*.npy
+*.csv
+venv/
+*.npy
+*.csv
+.DS_Store
+.env
