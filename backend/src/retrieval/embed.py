@@ -1,7 +1,7 @@
 """
 Embedding module for the Semantic Retrieval pipeline.
 
-Uses SentenceTransformers (all-MiniLM-L6-v2) to convert patent texts
+Uses SentenceTransformers (AI-Growth-Lab/PatentSBERTa) to convert patent texts
 into dense vector embeddings suitable for cosine-similarity search.
 """
 
@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 # Module-level model cache – avoids reloading on every call
 # ---------------------------------------------------------------------------
-_MODEL_NAME: str = "all-MiniLM-L6-v2"
+_MODEL_NAME: str = "AI-Growth-Lab/PatentSBERTa"
 _model: SentenceTransformer | None = None
 
 
@@ -51,7 +51,7 @@ def get_embeddings(texts: List[str]) -> np.ndarray:
     np.ndarray
         2-D array of shape ``(len(texts), embedding_dim)`` with
         float32 embeddings.  Returns an empty array of shape
-        ``(0, 384)`` when *texts* is empty.
+        ``(0, 768)`` when *texts* is empty.
 
     Raises
     ------
@@ -63,7 +63,7 @@ def get_embeddings(texts: List[str]) -> np.ndarray:
 
     if len(texts) == 0:
         logger.warning("Empty text list received – returning empty embeddings.")
-        return np.empty((0, 384), dtype=np.float32)
+        return np.empty((0, 768), dtype=np.float32)
 
     # Filter out blank / whitespace-only entries while keeping indices
     cleaned: List[str] = [t if t.strip() else "" for t in texts]

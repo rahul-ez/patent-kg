@@ -29,6 +29,7 @@ import sys
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
+# pyrefly: ignore [missing-import]
 import faiss
 import numpy as np
 import pandas as pd
@@ -53,11 +54,11 @@ _BACKEND_DIR   = Path(__file__).resolve().parents[2]          # → patent-kg/ba
 _PATENT_KG_DIR = _BACKEND_DIR.parent                          # → patent-kg/
 _PROJECT_ROOT  = _PATENT_KG_DIR.parent                        # → project root
 _VECTOR_DIR    = _PATENT_KG_DIR / "data" / "vector_store"     # → patent-kg/data/vector_store/
-_PATENTS_CSV   = _PROJECT_ROOT / "patents.csv"
+_PATENTS_CSV   = _PROJECT_ROOT / "data" / "processed" / "patents.csv"
 _FAISS_INDEX   = _VECTOR_DIR / "patents.index"
 _METADATA_FILE = _VECTOR_DIR / "metadata_mapping.json"
 
-_MODEL_NAME    = "all-MiniLM-L6-v2"   # Must match build_faiss_index.py
+_MODEL_NAME    = "AI-Growth-Lab/PatentSBERTa"   # Must match build_faiss_index.py
 
 # ── Shared Types ──────────────────────────────────────────────────────────────
 NLPResult = Dict[str, Any]
