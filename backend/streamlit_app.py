@@ -178,6 +178,36 @@ html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
 }
 .kg-stat-val { font-size: 1.1rem; font-weight: 700; color: #6366f1; }
 .kg-stat-lbl { font-size: 0.68rem; color: #64748b; }
+/* ── GNN Analysis section ───────────────────────────────────────────────── */
+.gnn-controls {
+    background: #0a0f1e; border: 1px solid #1e293b;
+    border-radius: 12px; padding: 1.1rem 1.4rem;
+    margin-bottom: 1.2rem;
+}
+.gnn-mode-badge {
+    display: inline-block; padding: 3px 14px; margin-bottom: 0.5rem;
+    border-radius: 20px; font-size: 0.75rem; font-weight: 700;
+    letter-spacing: 0.05em; text-transform: uppercase;
+}
+.gnn-mode-badge.novelty  { background: #1a1040; color: #a78bfa; border: 1px solid #7c3aed; }
+.gnn-mode-badge.graph_sim { background: #0c2030; color: #38bdf8; border: 1px solid #0369a1; }
+.gnn-insight {
+    background: linear-gradient(135deg, #0f172a, #1a1040);
+    border: 1px solid #4338ca; border-radius: 12px;
+    padding: 1.1rem 1.4rem; margin: 1rem 0;
+}
+.gnn-insight-title { font-size: 0.9rem; font-weight: 700; color: #a5b4fc; margin-bottom: 0.4rem; }
+.gnn-insight-body  { font-size: 0.82rem; color: #cbd5e1; line-height: 1.5; }
+.rank-up   { color: #4ade80; font-weight: 700; }
+.rank-down { color: #f87171; font-weight: 700; }
+.rank-same { color: #475569; font-weight: 500; }
+.score-chip {
+    display: inline-block; padding: 1px 8px; border-radius: 6px;
+    font-size: 0.72rem; font-weight: 600; font-family: monospace;
+}
+.score-chip.semantic { background: #0f2027; color: #22d3ee; border: 1px solid #0e7490; }
+.score-chip.novelty  { background: #1a1040; color: #a78bfa; border: 1px solid #7c3aed; }
+.score-chip.combined { background: #0a1f14; color: #4ade80; border: 1px solid #16a34a; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -411,11 +441,20 @@ with col_input:
         label_visibility="collapsed",
     )
 
-col_btn, col_k, col_spacer = st.columns([1, 1, 4])
+col_btn, col_k, col_gnn, col_spacer = st.columns([1, 1, 2, 2])
 with col_btn:
     run_btn = st.button("Analyze Idea", type="primary", use_container_width=True)
 with col_k:
     top_k = st.selectbox("Top-K results", [5, 10, 25, 50, 100], index=0, label_visibility="collapsed")
+with col_gnn:
+    gnn_mode_choice = st.selectbox(
+        "GNN Mode",
+        ["novelty", "graph_sim"],
+        format_func=lambda m: "GNN: Novelty Score" if m == "novelty" else "GNN: Graph Similarity",
+        label_visibility="collapsed",
+        help="'Novelty Score' uses pre-computed lookup from the Colab notebook. "
+             "'Graph Similarity' computes structural uniqueness live from node_embeddings.npy.",
+    )
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Run pipeline on button click
@@ -430,7 +469,7 @@ if run_btn:
     with st.spinner("Running AI pipeline — NLP → Embedding → FAISS retrieval…"):
         try:
             pipeline_fn = load_pipeline()
-            result = pipeline_fn(user_idea.strip(), top_k=top_k)
+            result = pipeline_fn(user_idea.strip(), top_k=top_k, gnn_mode=gnn_mode_choice)
         except Exception as e:
             st.error(f"**Pipeline error:** {e}")
             st.stop()
@@ -485,6 +524,168 @@ if "result" in st.session_state:
     else:
         for hit in hits:
             render_patent_card(hit)
+
+    st.divider()
+
+    # ── Section 3.5: GNN Intelligence Layer ────────────────────────────────────
+    st.markdown('<div class="section-header">🧠 GNN Intelligence Layer — Re-ranking & Novelty Analysis</div>',
+                unsafe_allow_html=True)
+
+    if not hits or not any("novelty_score" in h for h in hits):
+        st.info("💡 GNN scorer is unavailable — missing `novelty_scores.json` or `node_embeddings.npy` in `backend/data/vector_store/`. Run the Colab training notebook to generate these files.")
+    else:
+        # ── Controls ──────────────────────────────────────────────────────────
+        active_mode = hits[0].get("gnn_mode", "novelty")
+        mode_label  = "Novelty Score" if active_mode == "novelty" else "Graph Similarity"
+        badge_cls   = active_mode
+
+        st.markdown(
+            f'<div class="gnn-controls">'
+            f'<span class="gnn-mode-badge {badge_cls}">{mode_label}</span> '
+            f'<span style="font-size:0.8rem;color:#64748b;">— Adjust weights below to re-rank results '
+            f'without re-running the pipeline</span>'
+            f'</div>',
+            unsafe_allow_html=True,
+        )
+
+        ctrl1, ctrl2, ctrl3 = st.columns([2, 2, 2])
+        with ctrl1:
+            sem_w = st.slider(
+                "🔵 Semantic weight (FAISS)",
+                min_value=0.0, max_value=1.0, value=0.6, step=0.05,
+                key="gnn_sem_w",
+                help="Weight given to FAISS cosine-similarity score.",
+            )
+        with ctrl2:
+            nov_w = st.slider(
+                "🟣 GNN weight",
+                min_value=0.0, max_value=1.0, value=0.4, step=0.05,
+                key="gnn_nov_w",
+                help="Weight given to the GNN score (novelty or graph similarity).",
+            )
+        with ctrl3:
+            st.markdown("<br>", unsafe_allow_html=True)
+            total_w = sem_w + nov_w
+            if abs(total_w - 1.0) > 0.01:
+                st.warning(f"⚠️ Weights sum to {total_w:.2f} (not 1.0). Scores are relative.")
+            else:
+                st.success(f"✅ Weights: {sem_w:.0%} semantic + {nov_w:.0%} GNN")
+
+        # ── Live re-rank with slider weights ──────────────────────────────────
+        import copy
+        reranked = copy.deepcopy(hits)
+        for h in reranked:
+            h["combined_score"] = round(
+                sem_w * h["score"] + nov_w * h.get("novelty_score", 0.5), 4
+            )
+        reranked.sort(key=lambda h: h["combined_score"], reverse=True)
+        for i, h in enumerate(reranked):
+            h["rank"] = i + 1
+
+        # ── Score distribution chart ──────────────────────────────────────────
+        st.markdown("**Score Distribution across Retrieved Patents**")
+        import pandas as pd
+        chart_data = pd.DataFrame([
+            {
+                "Patent": f"#{h.get('faiss_rank', h['rank'])} " + h.get("patent_id", "")[:20],
+                "Semantic (FAISS)": round(h["score"], 4),
+                "GNN Score":        round(h.get("novelty_score", 0.0), 4),
+                "Combined":         round(h["combined_score"], 4),
+            }
+            for h in reranked
+        ]).set_index("Patent")
+        st.bar_chart(chart_data, height=220, color=["#22d3ee", "#a78bfa", "#4ade80"])
+
+        # ── Re-ranked results table ───────────────────────────────────────────
+        st.markdown("**Re-ranked Results**")
+
+        gnn_label = "Novelty" if active_mode == "novelty" else "Graph Uniq."
+        header_html = (
+            f"<div style='display:grid;grid-template-columns:50px 1fr 90px 90px 90px 70px;"
+            f"gap:0.5rem;padding:0.4rem 0.8rem;background:#0a0f1e;"
+            f"border-radius:8px 8px 0 0;font-size:0.75rem;font-weight:700;color:#475569;'>"
+            f"<span>Rank</span><span>Patent</span>"
+            f"<span>Semantic</span><span>{gnn_label}</span><span>Combined</span><span>Δ Rank</span>"
+            f"</div>"
+        )
+        st.markdown(header_html, unsafe_allow_html=True)
+
+        for h in reranked:
+            new_rank   = h["rank"]
+            old_rank   = h.get("faiss_rank", new_rank)
+            delta      = old_rank - new_rank   # positive = moved up
+            if delta > 0:
+                delta_html = f'<span class="rank-up">▲+{delta}</span>'
+            elif delta < 0:
+                delta_html = f'<span class="rank-down">▼{delta}</span>'
+            else:
+                delta_html = f'<span class="rank-same">—</span>'
+
+            sem_score = h["score"]
+            nov_score = h.get("novelty_score", 0.0)
+            comb      = h["combined_score"]
+
+            sem_color  = "#22c55e" if sem_score >= 0.6 else ("#f59e0b" if sem_score >= 0.4 else "#64748b")
+            nov_color  = "#22c55e" if nov_score >= 0.7 else ("#f59e0b" if nov_score >= 0.4 else "#64748b")
+            comb_color = "#22c55e" if comb >= 0.65    else ("#f59e0b" if comb >= 0.45    else "#64748b")
+
+            pid    = h.get("patent_id", "—")
+            title  = h.get("title", "Untitled")[:55] or pid
+            url    = h.get("url", "#")
+
+            row_html = (
+                f"<div style='display:grid;grid-template-columns:50px 1fr 90px 90px 90px 70px;"
+                f"gap:0.5rem;padding:0.45rem 0.8rem;border-bottom:1px solid #1e293b;"
+                f"font-size:0.8rem;align-items:center;'>"
+                f"<span style='color:#6366f1;font-weight:700;'>#{new_rank}</span>"
+                f"<span><a href='{url}' target='_blank' style='color:#e2e8f0;text-decoration:none;'>{title}</a>"
+                f"<br><span style='font-size:0.68rem;color:#475569;font-family:monospace;'>{pid}</span></span>"
+                f"<span style='color:{sem_color};font-weight:600;'>{sem_score:.4f}</span>"
+                f"<span style='color:{nov_color};font-weight:600;'>{nov_score:.4f}</span>"
+                f"<span style='color:{comb_color};font-weight:600;'>{comb:.4f}</span>"
+                f"<span>{delta_html}</span>"
+                f"</div>"
+            )
+            st.markdown(row_html, unsafe_allow_html=True)
+
+        st.markdown("<div style='height:0.5rem'></div>", unsafe_allow_html=True)
+
+        # ── Insight callout — biggest GNN boost ──────────────────────────────
+        biggest_boost = max(reranked, key=lambda h: (h.get("faiss_rank", h["rank"]) - h["rank"]))
+        boost_delta   = biggest_boost.get("faiss_rank", biggest_boost["rank"]) - biggest_boost["rank"]
+
+        if boost_delta > 0:
+            boost_title = biggest_boost.get("title", "Untitled")[:80] or biggest_boost.get("patent_id","")
+            boost_sem   = biggest_boost["score"]
+            boost_nov   = biggest_boost.get("novelty_score", 0.0)
+            if active_mode == "novelty":
+                insight_body = (
+                    f"<b style='color:#e2e8f0'>\"{boost_title}\"</b> jumped from FAISS rank "
+                    f"<b>#{biggest_boost.get('faiss_rank', '?')}</b> → GNN rank "
+                    f"<b style='color:#4ade80'>#{biggest_boost['rank']}</b>. "
+                    f"Semantic score <b style='color:#22d3ee'>{boost_sem:.4f}</b> is modest, "
+                    f"but its novelty score <b style='color:#a78bfa'>{boost_nov:.4f}</b> is high — "
+                    f"this patent sits in an <em>underexplored region</em> of the space, "
+                    f"making it a strong candidate for a novel angle on your idea."
+                )
+            else:
+                insight_body = (
+                    f"<b style='color:#e2e8f0'>\"{boost_title}\"</b> jumped from FAISS rank "
+                    f"<b>#{biggest_boost.get('faiss_rank', '?')}</b> → GNN rank "
+                    f"<b style='color:#4ade80'>#{biggest_boost['rank']}</b>. "
+                    f"Semantic score <b style='color:#22d3ee'>{boost_sem:.4f}</b> is modest, "
+                    f"but its graph uniqueness <b style='color:#38bdf8'>{boost_nov:.4f}</b> is high — "
+                    f"this patent is <em>structurally isolated</em> from the other retrieved patents "
+                    f"in GNN embedding space, indicating a niche technology cluster."
+                )
+
+            st.markdown(
+                f'<div class="gnn-insight">'
+                f'<div class="gnn-insight-title">🎯 Biggest GNN Boost</div>'
+                f'<div class="gnn-insight-body">{insight_body}</div>'
+                f'</div>',
+                unsafe_allow_html=True,
+            )
 
     st.divider()
 

@@ -40,18 +40,26 @@ logging.basicConfig(
 
 # ── Paths ──────────────────────────────────────────────────────────────────────
 # builder.py lives at: patent-kg/backend/src/kg/builder.py
-# parents[4]        →  C:\PantentsAI  (project root where CSVs live)
-_DATA_DIR = Path(__file__).resolve().parents[4]
+# parents[0] → kg/
+# parents[1] → src/
+# parents[2] → backend/
+# parents[3] → patent-kg/   ← CSVs live here
+_DATA_DIR = Path(__file__).resolve().parents[3]   # → patent-kg/
 
+# Required: patents_deduped.csv  (canonical deduplicated corpus)
+# Optional: all others — KG build skips gracefully if they are absent
 _CSV = {
-    "patents":     _DATA_DIR / "patents.csv",
-    "assignees":   _DATA_DIR / "assignees.csv",
-    "inventors":   _DATA_DIR / "inventors.csv",
+    "patents":         _DATA_DIR / "patents_deduped.csv",
+    "assignees":       _DATA_DIR / "assignees.csv",
+    "inventors":       _DATA_DIR / "inventors.csv",
     "classifications": _DATA_DIR / "classifications.csv",
-    "families":    _DATA_DIR / "patent_families.csv",
-    "citations":   _DATA_DIR / "citations_metadata.csv",
-    "npl":         _DATA_DIR / "npl_metadata.csv",
+    "families":        _DATA_DIR / "patent_families.csv",
+    "citations":       _DATA_DIR / "citations_metadata.csv",
+    "npl":             _DATA_DIR / "npl_metadata.csv",
 }
+
+# CSVs that are truly optional — missing files produce a warning, not a crash.
+_OPTIONAL_CSVS = {"assignees", "inventors", "classifications", "citations", "npl"}
 
 # ── Neo4j connection ───────────────────────────────────────────────────────────
 _NEO4J_URI      = os.getenv("NEO4J_URI",      "bolt://localhost:7687")
@@ -101,25 +109,35 @@ class KGBuilder:
         citations       = self._load("citations",       ids)
         npl             = self._load("npl",             ids)
 
-        # Enrich Patent nodes with npl citation counts from citations_metadata
-        # (patents.csv already carries cites_patent_count / cited_by_patent_count)
-        npl_counts = citations[["patent_id", "npl_citation_count", "npl_resolved_citation_count"]]
-        patents = patents.merge(npl_counts, on="patent_id", how="left").fillna("")
+        # Enrich Patent nodes with npl citation counts only when citations loaded.
+        if not citations.empty and "npl_citation_count" in citations.columns:
+            npl_counts = citations[["patent_id", "npl_citation_count", "npl_resolved_citation_count"]]
+            patents = patents.merge(npl_counts, on="patent_id", how="left").fillna("")
 
         # ── Write nodes then edges ─────────────────────────────────────────────
         with self.driver.session() as session:
             self._write_patent_nodes(session, patents)
-            self._write_stub_nodes(session, families, ids)
-            self._write_company_nodes(session, assignees)
-            self._write_inventor_nodes(session, inventors)
-            self._write_cpc_nodes(session, classifications)
-            self._write_paper_nodes(session, npl)
+            if not families.empty:
+                self._write_stub_nodes(session, families, ids)
+            if not assignees.empty:
+                self._write_company_nodes(session, assignees)
+            if not inventors.empty:
+                self._write_inventor_nodes(session, inventors)
+            if not classifications.empty:
+                self._write_cpc_nodes(session, classifications)
+            if not npl.empty:
+                self._write_paper_nodes(session, npl)
 
-            self._write_owns_edges(session, assignees)
-            self._write_invented_edges(session, inventors)
-            self._write_hascpc_edges(session, classifications)
-            self._write_family_edges(session, families)
-            self._write_cites_paper_edges(session, npl)
+            if not assignees.empty:
+                self._write_owns_edges(session, assignees)
+            if not inventors.empty:
+                self._write_invented_edges(session, inventors)
+            if not classifications.empty:
+                self._write_hascpc_edges(session, classifications)
+            if not families.empty:
+                self._write_family_edges(session, families)
+            if not npl.empty:
+                self._write_cites_paper_edges(session, npl)
 
         logger.info("KG subgraph complete.")
 
@@ -144,9 +162,19 @@ class KGBuilder:
     def _load(self, name: str, ids: Set[str]) -> pd.DataFrame:
         path = _CSV[name]
         if not path.exists():
+            if name in _OPTIONAL_CSVS:
+                logger.warning(
+                    "Optional CSV '%s' not found at '%s' — skipping.",
+                    name, path,
+                )
+                return pd.DataFrame()   # empty — callers must handle this
             raise FileNotFoundError(f"Required CSV not found: {path}")
         df = pd.read_csv(path, dtype=str).fillna("")
-        filtered = df[df["patent_id"].isin(ids)]
+        # Some CSVs may not have a patent_id column (they'll be handled separately)
+        if "patent_id" in df.columns:
+            filtered = df[df["patent_id"].isin(ids)]
+        else:
+            filtered = df
         logger.info("%-16s → %d rows (filtered from %d)", name, len(filtered), len(df))
         return filtered
 
@@ -385,7 +413,7 @@ class KGBuilder:
         self._create_constraints()
 
         # ── Load core tables fully (all fit comfortably in memory) ─────────────
-        logger.info("Loading patents.csv ...")
+        logger.info("Loading patents_deduped.csv ...")
         patents = pd.read_csv(_CSV["patents"], dtype=str).fillna("")
         patent_ids: Set[str] = set(patents["patent_id"].tolist())
         logger.info("  %d patents loaded.", len(patents))
