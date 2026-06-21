@@ -22,7 +22,7 @@ class SearchResult(TypedDict):
 
     rank: int
     text: str
-    score: float        # normalised cosine similarity ∈ [0, 1]
+    semantic_score: float  # normalised cosine similarity ∈ [0, 1]
     explanation: str    # human-readable reason for the match
 
 
@@ -100,7 +100,7 @@ def search(
             SearchResult(
                 rank=rank,
                 text=texts[idx],
-                score=round(float(normalised[idx]), 4),
+                semantic_score=round(float(normalised[idx]), 4),
                 explanation=explanation,
             )
         )

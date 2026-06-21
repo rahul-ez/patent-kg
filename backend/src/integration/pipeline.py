@@ -53,19 +53,14 @@ logging.basicConfig(
 logger = logging.getLogger("integration.pipeline")
 
 # ── Configuration ─────────────────────────────────────────────────────────────
-_BACKEND_DIR   = Path(__file__).resolve().parents[2]          # → patent-kg/backend/
-_PATENT_KG_DIR = _BACKEND_DIR.parent                          # → patent-kg/
-_PROJECT_ROOT  = _PATENT_KG_DIR.parent                        # → project root
-# Files are stored in backend/data/vector_store/ (co-located with backend code).
-# build_faiss_index.py also writes to patent-kg/data/vector_store/, but the
-# actual runtime files (patents.index, novelty_scores.json, etc.) are placed
-# in backend/data/vector_store/ by the GNN training workflow.
-_VECTOR_DIR    = _BACKEND_DIR / "data" / "vector_store"        # → patent-kg/backend/data/vector_store/
-# patents_deduped.csv lives at the patent-kg/ root (produced by build_faiss_index.py).
-_PATENTS_CSV   = _PATENT_KG_DIR / "patents_deduped.csv"
+from config.paths import VECTOR_STORE, PROCESSED_DATA
+
+# All runtime artefacts (index, metadata, csv) live in patent-kg/data/vector_store/
+# — this is where build_faiss_index.py writes them.
+_VECTOR_DIR    = VECTOR_STORE
+_PATENTS_CSV   = _VECTOR_DIR / "patents_deduped.csv"
 _FAISS_INDEX   = _VECTOR_DIR / "patents.index"
 _METADATA_FILE = _VECTOR_DIR / "metadata_mapping.json"
-
 _MODEL_NAME    = "AI-Growth-Lab/PatentSBERTa"   # Must match build_faiss_index.py
 _gnn_scorer = None   # lazy-loaded on first query
 # ── Shared Types ──────────────────────────────────────────────────────────────
@@ -241,13 +236,13 @@ def faiss_search(query_text: str, top_k: int = 10) -> List[RetrievalHit]:
             title = abstract = domain = url = ""
 
         hits.append({
-            "rank":       rank,
-            "patent_id":  patent_id,
-            "score":      round(float(score), 6),   # raw cosine sim (L2-normed)
-            "title":      title,
-            "abstract":   abstract[:300] + "..." if len(abstract) > 300 else abstract,
-            "domain":     domain,
-            "url":        url,
+            "rank":           rank,
+            "patent_id":      patent_id,
+            "semantic_score": round(float(score), 6),   # raw cosine sim (L2-normed)
+            "title":          title,
+            "abstract":       abstract[:300] + "..." if len(abstract) > 300 else abstract,
+            "domain":         domain,
+            "url":            url,
         })
 
     logger.info(
@@ -267,33 +262,21 @@ def run_end_to_end(
     gnn_mode: str = "novelty",
 ) -> RetrievalResponse:
     """
-    Full pipeline: raw user idea → NLP → retrieval → structured response.
+    Full pipeline: raw user idea → NLP → retrieval → KG expansion → GNN scoring → structured response.
 
     Args:
         user_idea: Free-text innovation idea from the user.
         top_k:     Number of patents to retrieve.
 
     Returns:
-        RetrievalResponse dict conforming to the RetrievalResult/v1 schema:
-        {
-            "query_id":     str,
-            "query_text":   str,
-            "nlp_result":   NLPResult,
-            "model":        str,
-            "top_k":        int,
-            "results":      List[RetrievalHit],
-        }
-
-    Valid gnn_mode values:
-        "novelty"   — pre-computed novelty score lookup (default).
-        "graph_sim" — structural neighbourhood uniqueness from node_embeddings.
+        RetrievalResponse dict conforming to the RetrievalResult/v1 schema.
     """
     logger.info("=== End-to-End Pipeline START ===")
     logger.info("User idea: '%s'", user_idea[:80])
     logger.info("GNN mode: '%s'", gnn_mode)
 
     # ── Step 1: NLP Preprocessing ──────────────────────────────────────────
-    logger.info("Step 1/3 — Running NLP pipeline ...")
+    logger.info("Step 1 — Running NLP pipeline ...")
     nlp_result: NLPResult = process_user_query(user_idea)
     logger.info(
         "NLP result: %d keywords, %d entities, clean_text_len=%d",
@@ -303,24 +286,81 @@ def run_end_to_end(
     )
 
     # ── Step 2: Prepare symmetric embedding query ──────────────────────────
-    logger.info("Step 2/3 — Preparing retrieval query ...")
+    logger.info("Step 2 — Preparing retrieval query ...")
     query_text = prepare_retrieval_query(nlp_result)
     logger.info("Query text: '%s...'", query_text[:80])
 
     # ── Step 3: FAISS Retrieval ────────────────────────────────────────────
-    logger.info("Step 3/3 — Running FAISS search (top_k=%d) ...", top_k)
+    logger.info("Step 3 — Running FAISS search (top_k=%d) ...", top_k)
     hits = faiss_search(query_text, top_k=top_k)
 
-    # Stamp each hit with its pre-GNN FAISS rank so the dashboard can show
-    # how much each patent moves after GNN re-ranking.
+    # Stamp each hit with its pre-GNN FAISS rank, expansion type, source, and score fields
     for hit in hits:
         hit["faiss_rank"] = hit["rank"]
+        hit["expansion_type"] = None
+        hit["source"] = "faiss"
+        hit["graph_score"] = None
+        hit["combined_score"] = None
 
+    # ── Step 4: Knowledge Graph Expansion ──────────────────────────────────
+    logger.info("Step 4 — Running Knowledge Graph Expansion ...")
+    patent_ids = [hit["patent_id"] for hit in hits]
+    
+    kg_status = "success"
+    expanded_hits = []
+    try:
+        from kg.expander import expand_via_kg
+        expansion_result = expand_via_kg(patent_ids)
+        
+        # Add family members
+        for p in expansion_result.get("family", []):
+            expanded_hits.append({
+                "rank": -1,
+                "patent_id": p["patent_id"],
+                "source": "kg_family",
+                "expansion_type": "family",
+                "semantic_score": None,
+                "graph_score": None,
+                "combined_score": None,
+                "title": p["title"],
+                "abstract": p["abstract"],
+                "domain": p["domain"],
+                "url": p["url"],
+                "faiss_rank": -1
+            })
+            
+        # Add CPC siblings
+        for p in expansion_result.get("cpc_siblings", []):
+            expanded_hits.append({
+                "rank": -1,
+                "patent_id": p["patent_id"],
+                "source": "kg_cpc",
+                "expansion_type": "cpc_sibling",
+                "semantic_score": None,
+                "graph_score": None,
+                "combined_score": None,
+                "title": p["title"],
+                "abstract": p["abstract"],
+                "domain": p["domain"],
+                "url": p["url"],
+                "faiss_rank": -1
+            })
+            
+        logger.info("KG Expansion added %d patents.", len(expanded_hits))
+    except Exception as exc:
+        logger.warning("KG Expansion skipped due to database connection issue: %s", exc)
+        kg_status = "skipped_database_offline"
+
+    all_hits = hits + expanded_hits
+
+    # ── Step 5: GNN Scoring ───────────────────────────────────────────────
+    logger.info("Step 5 — Running GNN Scoring ...")
     global _gnn_scorer
     # Reset cached scorer if a different mode is requested
     if _gnn_scorer and getattr(_gnn_scorer, "_mode", None) != gnn_mode:
         _gnn_scorer = None
 
+    gnn_status = "success"
     if _gnn_scorer is None:
         try:
             scorer = get_scorer(mode=gnn_mode)
@@ -330,11 +370,21 @@ def run_end_to_end(
         except FileNotFoundError as exc:
             logger.warning("GNN scorer unavailable (%s) — skipping.", exc)
             _gnn_scorer = False   # sentinel: scorer unavailable
-    if _gnn_scorer:
-        hits = _gnn_scorer(hits)
+            gnn_status = "skipped_missing_embeddings"
+        except Exception as exc:
+            logger.warning("GNN scorer failed: %s", exc)
+            _gnn_scorer = False
+            gnn_status = "failed"
 
-#The return dict is unchanged — 'results' now just has two extra keys
-#  per hit: 'novelty_score' and 'combined_score'
+    if _gnn_scorer:
+        all_hits = _gnn_scorer(all_hits)
+    else:
+        # Fill fallback fields if GNN was skipped so the response conforms to expectations
+        for i, hit in enumerate(all_hits):
+            hit["rank"] = i + 1
+            hit["novelty_score"] = None
+            hit["combined_score"] = None
+            hit["gnn_mode"] = gnn_mode
 
     response: RetrievalResponse = {
         "query_id":   nlp_result.get("patent_id", "user_query"),
@@ -342,10 +392,12 @@ def run_end_to_end(
         "nlp_result": nlp_result,
         "model":      _MODEL_NAME,
         "top_k":      top_k,
-        "results":    hits,
+        "results":    all_hits,
+        "gnn_status": gnn_status,
+        "kg_status":  kg_status,
     }
 
-    logger.info("=== End-to-End Pipeline COMPLETE: %d results ===", len(hits))
+    logger.info("=== End-to-End Pipeline COMPLETE: %d results ===", len(all_hits))
     return response
 
 
@@ -368,7 +420,7 @@ if __name__ == "__main__":
     print(f"\n  Input idea:\n  {demo_idea}\n")
 
     try:
-        result = run_end_to_end(demo_idea, top_k=5)
+        result = run_end_to_end(demo_idea, top_k=10)
     except FileNotFoundError as e:
         print(f"\n[ERROR] {e}")
         print("\nSetup steps required:")
@@ -386,8 +438,10 @@ if __name__ == "__main__":
     print("-" * 70)
 
     for hit in result["results"]:
+        score_val = hit.get("semantic_score")
+        score_str = f"{score_val:.4f}" if score_val is not None else "N/A"
         print(
-            f"  [{hit['rank']}] Score: {hit['score']:.4f}  |  {hit['domain']}\n"
+            f"  [{hit['rank']}] Semantic Score: {score_str}  |  {hit['domain']}\n"
             f"      ID: {hit['patent_id']}\n"
             f"      {hit['title'][:80]}\n"
         )

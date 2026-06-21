@@ -36,11 +36,8 @@ import numpy as np
 logger = logging.getLogger(__name__)
 
 # ── Default paths ──────────────────────────────────────────────────────────────
-# scorer.py lives at: backend/src/gnn/scorer.py
-# parents[0] → gnn/
-# parents[1] → src/
-# parents[2] → backend/
-_VECTOR_DIR = Path(__file__).resolve().parents[2] / "data" / "vector_store"
+from config.paths import VECTOR_STORE
+_VECTOR_DIR = VECTOR_STORE
 
 # Module-level singletons — initialised on first call, reused thereafter
 _novelty_scorer: Optional[Callable] = None
@@ -101,7 +98,7 @@ def load_novelty_scorer(novelty_scores_path: str | Path) -> Callable:
             novelty = novelty_map.get(pid, 0.5)
             if pid not in novelty_map:
                 unseen += 1
-            combined = semantic_weight * hit["score"] + novelty_weight * novelty
+            combined = semantic_weight * (hit.get("semantic_score") or 0.0) + novelty_weight * novelty
             hit["novelty_score"]  = round(novelty,  4)
             hit["combined_score"] = round(combined, 4)
             hit["gnn_mode"]       = "novelty"
@@ -214,7 +211,7 @@ def load_graph_sim_scorer(
             for hit in hits:
                 hit["novelty_score"]  = 0.5
                 hit["combined_score"] = round(
-                    semantic_weight * hit["score"] + novelty_weight * 0.5, 4
+                    semantic_weight * (hit.get("semantic_score") or 0.0) + novelty_weight * 0.5, 4
                 )
                 hit["gnn_mode"] = "graph_sim"
             hits.sort(key=lambda h: h["combined_score"], reverse=True)
@@ -243,7 +240,7 @@ def load_graph_sim_scorer(
         # Apply scores to all hits
         for i, hit in enumerate(hits):
             u = uniqueness_by_hit_idx.get(i, 0.5)   # 0.5 neutral for unseen
-            combined = semantic_weight * hit["score"] + novelty_weight * u
+            combined = semantic_weight * (hit.get("semantic_score") or 0.0) + novelty_weight * u
             hit["novelty_score"]  = round(u,        4)
             hit["combined_score"] = round(combined, 4)
             hit["gnn_mode"]       = "graph_sim"

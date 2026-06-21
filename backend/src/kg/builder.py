@@ -39,23 +39,18 @@ logging.basicConfig(
 )
 
 # ── Paths ──────────────────────────────────────────────────────────────────────
-# builder.py lives at: patent-kg/backend/src/kg/builder.py
-# parents[0] → kg/
-# parents[1] → src/
-# parents[2] → backend/
-# parents[3] → patent-kg/   ← CSVs live here
-_DATA_DIR = Path(__file__).resolve().parents[3]   # → patent-kg/
+from config.paths import VECTOR_STORE, PROCESSED_DATA
 
 # Required: patents_deduped.csv  (canonical deduplicated corpus)
 # Optional: all others — KG build skips gracefully if they are absent
 _CSV = {
-    "patents":         _DATA_DIR / "patents_deduped.csv",
-    "assignees":       _DATA_DIR / "assignees.csv",
-    "inventors":       _DATA_DIR / "inventors.csv",
-    "classifications": _DATA_DIR / "classifications.csv",
-    "families":        _DATA_DIR / "patent_families.csv",
-    "citations":       _DATA_DIR / "citations_metadata.csv",
-    "npl":             _DATA_DIR / "npl_metadata.csv",
+    "patents":         VECTOR_STORE / "patents_deduped.csv",
+    "assignees":       PROCESSED_DATA / "assignees.csv",
+    "inventors":       PROCESSED_DATA / "inventors.csv",
+    "classifications": PROCESSED_DATA / "classifications.csv",
+    "families":        PROCESSED_DATA / "patent_families.csv",
+    "citations":       PROCESSED_DATA / "citations_metadata.csv",
+    "npl":             PROCESSED_DATA / "npl_metadata.csv",
 }
 
 # CSVs that are truly optional — missing files produce a warning, not a crash.

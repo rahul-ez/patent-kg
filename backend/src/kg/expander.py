@@ -58,15 +58,17 @@ RETURN DISTINCT
     fam.url                  AS url
 """
 
-# Cypher — CPC siblings: patents sharing a classification code with any
-# retrieved patent, excluding stubs and already-retrieved patents.
-# Ordering and cap are applied in Python for flexibility.
 _CPC_SIBLING_QUERY = """
-MATCH (p:Patent)-[:HAS_CPC]->(code:CPCCode)<-[:HAS_CPC]-(sibling:Patent)
+MATCH (p:Patent)-[:HAS_CPC]->(code:CPCCode)
 WHERE p.patent_id IN $ids
-  AND NOT sibling.patent_id IN $ids
+MATCH (code)<-[:HAS_CPC]-(sibling:Patent)
+WHERE NOT sibling.patent_id IN $ids
   AND coalesce(sibling.is_stub, false) = false
-RETURN
+WITH code, sibling
+ORDER BY code.code, toInteger(coalesce(sibling.cited_by_patent_count, 0)) DESC
+WITH code, collect(sibling)[..$cpc_cap] AS siblings
+UNWIND siblings AS sibling
+RETURN DISTINCT
     code.code                        AS cpc_code,
     sibling.patent_id                AS patent_id,
     sibling.title                    AS title,
@@ -139,25 +141,34 @@ def expand_via_kg(
 
             # ── CPC sibling expansion ──────────────────────────────────────────
             logger.info("Querying CPC siblings (cap=%d per code) ...", cpc_cap)
-            sibling_rows = session.run(_CPC_SIBLING_QUERY, ids=patent_ids).data()
+            sibling_rows = session.run(_CPC_SIBLING_QUERY, ids=patent_ids, cpc_cap=cpc_cap).data()
 
-            # Group by CPC code, keep top-N per code, then deduplicate by patent_id
+            # Group by CPC code, keep top-N per code
             from collections import defaultdict
             by_code: Dict[str, list] = defaultdict(list)
             for row in sibling_rows:
                 by_code[row["cpc_code"]].append(row)
 
-            seen_ids = retrieved_set | {p["patent_id"] for p in family}
-            cpc_siblings: List[Dict] = []
-
+            # Keep existing logic: up to cpc_cap patents per CPC code
+            all_cpc_candidates = []
             for code, rows in by_code.items():
-                # Sort by cited_by_patent_count descending within this code
                 rows.sort(key=lambda r: _safe_int(r["cited_by_patent_count"]), reverse=True)
                 for row in rows[:cpc_cap]:
-                    pid = row["patent_id"]
-                    if pid not in seen_ids:
-                        cpc_siblings.append(_row_to_dict(row, "cpc_sibling"))
-                        seen_ids.add(pid)
+                    all_cpc_candidates.append(row)
+
+            # Sort globally by cited_by_patent_count descending
+            all_cpc_candidates.sort(key=lambda r: _safe_int(r["cited_by_patent_count"]), reverse=True)
+
+            # Deduplicate and apply global cap of 100 patents max
+            seen_ids = retrieved_set | {p["patent_id"] for p in family}
+            cpc_siblings: List[Dict] = []
+            for row in all_cpc_candidates:
+                pid = row["patent_id"]
+                if pid not in seen_ids:
+                    cpc_siblings.append(_row_to_dict(row, "cpc_sibling"))
+                    seen_ids.add(pid)
+                    if len(cpc_siblings) >= 100:
+                        break
 
             logger.info("  CPC siblings after dedup: %d", len(cpc_siblings))
 

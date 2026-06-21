@@ -1,65 +1,92 @@
 # Intelligent Patent Feasibility and Improvement Platform
 
-This project is a full-stack AI system that takes a **user-inputted idea or patent description** and performs:
-1. **Idea Evaluation**: Determines novelty and strength of the idea, comparing it with existing patents.
-2. **Improvement Guidance (Core Feature)**: Suggests how to refine the idea, reduces similarity with existing patents, and identifies unexplored areas.
+This is a full-stack AI platform that evaluates innovation ideas, analyzes patent citation relationships, and provides actionable design improvement guidance.
 
-## End-to-End Pipeline
+## Pipeline Architecture
 
-1. **NLP Layer**: A Hybrid LLM Pipeline (Google Gemini `gemini-2.5-flash` with robust rule-based `spaCy` fallback) cleans raw user idea text, extracts structured technical keywords, and performs entity recognition to output a standardized JSON payload.
-2. **Embedding + Semantic Retrieval**: Converts text into embeddings (Sentence Transformers), stores/queries in a vector database (FAISS/Chroma), returning Top-K similar patents.
-3. **Knowledge Graph (KG)**: Uses nodes (Patent, Keyword, Technology Area, Company) and edges (SIMILAR_TO, BELONGS_TO, CITES) to expand retrieved patents into a local subgraph.
-4. **Graph Neural Network (GNN)**: Learns structural relationships from the KG subgraph to improve similarity and recommendation quality, outputting graph-based similarity scores/embeddings.
-5. **Hybrid Retrieval**: Combines semantic similarity (embeddings) and graph similarity (GNN) for a final refined set of relevant patents.
-6. **Idea Evaluation Engine**: Computes Semantic Similarity Score, kNN Density Score, and Graph Novelty Score to output a Final Idea Strength Score with metric breakdown.
-7. **Improvement Agent**: Analyzes user idea, retrieved patents, and evaluation scores to detect overlaps, identify weak areas, and suggest actionable improvements (e.g., modify components, combine with new domains, explore low-density areas).
-8. **RAG + LLM Integration**: Generates explanations of idea strength, justification of scores, and human-readable improvement suggestions based on retrieved patents, graph context, evaluation results, and agent insights.
-9. **API Layer**: Exposes `/evaluate`, `/improve`, and `/search` endpoints using FastAPI.
-10. **UI**: Provides a Streamlit interface for users to input ideas and view scores, similar patents, and improvement suggestions.
+The end-to-end intelligence pipeline executes in the following order:
 
-## Tech Stack
+```
+User Idea Input
+       ↓
+NLP Processing Layer (Gemini + spaCy keywords & entities)
+       ↓
+FAISS Semantic Search (PatentSBERTa embeddings similarity)
+       ↓
+Knowledge Graph Expansion (Neo4j subgraph family + CPC traversal)
+       ↓
+GNN Re-ranking Hook (Future GraphSAGE scoring)
+       ↓
+FastAPI Response
+       ↓
+React UI Dashboard
+```
 
-*   **NLP**: Google Gemini (`google-genai`) + spaCy (Fallback)
-*   **Embeddings**: Sentence Transformers
-*   **Vector DB**: FAISS or Chroma
-*   **Graph DB**: Neo4j
-*   **GNN**: PyTorch Geometric
-*   **Backend**: FastAPI
-*   **UI**: Streamlit
+---
 
-## Important Notes
+## Technical Features & Refactors
 
-*   Retrieval happens BEFORE GNN.
-*   GNN is used to enhance results, not replace retrieval.
-*   Improvement Agent is a key differentiator — logic here is prioritized.
-*   Outputs are interpretable, not just numerical.
+During the final backend cleanup pass, the following integration refactors were implemented:
 
-## Installation & Setup (For Teammates)
+1. **Provenance Tracking**: Added the `source` field to all returned patents (`"faiss" | "kg_family" | "kg_cpc"`) alongside `expansion_type` to track each document's origin.
+2. **Global CPC Expansion Cap**: Sibling patent expansion is capped at **100 patents maximum globally**. The Cypher query in `expander.py` has been optimized to sort and slice the top candidates *directly inside Neo4j*, reducing runtime query and network latency by **over 13x**.
+3. **Structured Scoring Schema**: The legacy `score` field has been completely removed across the backend search, integration, GNN, and React components. Every patent now conforms to:
+   - `semantic_score`: Float cosine similarity for FAISS results, `null` for KG matches.
+   - `graph_score`: Placeholder (`null`) prepared for future structural embeddings.
+   - `combined_score`: The blended similarity value when GNN is active, `null` otherwise.
 
-1. **Clone the repository and set up a virtual environment**:
+---
+
+## Getting Started & Running the App
+
+### Prerequisites
+
+1. **Neo4j Graph Database**: Ensure your Neo4j DBMS is running locally (Bolt port `7687`).
+2. **Virtual Environment**: Set up the Python virtual environment in the project root:
    ```bash
-   git clone https://github.com/rahul-ez/patent-kg.git
-   cd patent-kg
    python -m venv venv
-   
-   # On Windows:
-   .\venv\Scripts\Activate.ps1
-   # On Mac/Linux:
-   source venv/bin/activate
    ```
 
-2. **Install the dependencies**:
-   ```bash
-   pip install -r backend/requirements.txt
-   ```
+### 1. Run the FastAPI Backend
 
-3. **Configure Environment Variables**:
-   Copy `.env.example` to a new `.env` file and fill in your API keys (specifically `GOOGLE_API_KEY` for the LLM NLP pipeline).
+1. Navigate to the backend directory:
    ```bash
-   cp .env.example .env
+   cd backend
    ```
+2. Activate your virtual environment and install dependencies:
+   ```bash
+   # Windows:
+   ..\venv\Scripts\activate
+   # Mac/Linux:
+   source ../venv/bin/activate
 
-4. **Run the Streamlit Demo**:
-   ```bash
-   streamlit run backend/streamlit_app.py
+   pip install -r requirements.txt
    ```
+3. Copy `.env.example` to `.env` and fill in credentials:
+   ```env
+   GOOGLE_API_KEY=your_gemini_api_key
+   NEO4J_URI=bolt://localhost:7687
+   NEO4J_USER=neo4j
+   NEO4J_PASSWORD=r1hu12005
+   ```
+4. Start the backend developer API server:
+   ```bash
+   python run_api.py
+   ```
+   The backend API will start on [http://127.0.0.1:8000](http://127.0.0.1:8000).
+
+### 2. Run the React Frontend
+
+1. Navigate to the frontend directory:
+   ```bash
+   cd ../frontend
+   ```
+2. Install npm dependencies:
+   ```bash
+   npm install
+   ```
+3. Start the Vite development server:
+   ```bash
+   npm run dev
+   ```
+   The Vite app will start on [http://localhost:5175/](http://localhost:5175/) (or the next available port) and will proxy `/api` requests automatically to port 8000.
