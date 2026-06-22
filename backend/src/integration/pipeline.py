@@ -182,25 +182,33 @@ def _load_resources() -> tuple:
         ]
         csv_path = next((p for p in _CSV_CANDIDATES if p.exists()), None)
 
+        expected_cols = [
+            "patent_id", "title", "abstract", "domain", "url", 
+            "jurisdiction", "cites_patent_count", "cited_by_patent_count", "family_size"
+        ]
+
         if csv_path is None:
             logger.warning(
                 "No patents CSV found (tried %s). "
                 "Title/abstract/domain/url will be empty in results.",
                 ", ".join(str(p) for p in _CSV_CANDIDATES),
             )
-            _cached_patents_df = pd.DataFrame(
-                columns=["patent_id", "title", "abstract", "domain", "url"]
-            )
+            _cached_patents_df = pd.DataFrame(columns=expected_cols)
         else:
             logger.info("Loading patents metadata from '%s' ...", csv_path)
             # Load only the columns we need — tolerate CSVs that lack domain/url
             available = pd.read_csv(csv_path, nrows=0).columns.tolist()
-            usecols = [c for c in ["patent_id", "title", "abstract", "domain", "url"] if c in available]
+            usecols = [c for c in expected_cols if c in available]
             _cached_patents_df = pd.read_csv(csv_path, usecols=usecols, dtype=str).fillna("")
             # Ensure all expected columns exist even if not in CSV
-            for col in ["patent_id", "title", "abstract", "domain", "url"]:
+            for col in expected_cols:
                 if col not in _cached_patents_df.columns:
-                    _cached_patents_df[col] = ""
+                    if col in ["cites_patent_count", "cited_by_patent_count"]:
+                        _cached_patents_df[col] = "0"
+                    elif col == "family_size":
+                        _cached_patents_df[col] = "1"
+                    else:
+                        _cached_patents_df[col] = ""
             logger.info("Loaded %d patent records from '%s'.", len(_cached_patents_df), csv_path)
 
     return _cached_index, _cached_metadata, _cached_patents_df
@@ -285,6 +293,31 @@ def faiss_search(query_text: str, top_k: int = 10) -> List[RetrievalHit]:
 # 4. Main Integration Entrypoint
 # ══════════════════════════════════════════════════════════════════════════════
 
+def build_subgraph(expanded_hits: list) -> tuple:
+    """Helper to convert candidate patents into a PyG Data object."""
+    from gnn.graph_builder import build_subgraph_data
+    index, metadata, patents_df = _load_resources()
+    model = _get_model()
+    return build_subgraph_data(expanded_hits, patents_df, metadata, index, model)
+
+def run_gnn(graph_data) -> tuple:
+    """Helper to run live GraphSAGE forward pass."""
+    from gnn.inference import run_gnn_inference
+    return run_gnn_inference(graph_data)
+
+def hybrid_rerank(hits: list, semantic_scores, graph_embeddings, preds, pid_to_idx, gnn_mode) -> list:
+    """Helper to blend semantic scores and GNN scores."""
+    from gnn.reranker import rerank_hits
+    return rerank_hits(
+        hits=hits,
+        embeddings=graph_embeddings,
+        preds=preds,
+        pid_to_idx=pid_to_idx,
+        mode=gnn_mode,
+        semantic_weight=0.7,
+        novelty_weight=0.3
+    )
+
 def run_end_to_end(
     user_idea: str,
     top_k: int = 10,
@@ -341,14 +374,39 @@ def run_end_to_end(
         from kg.expander import expand_via_kg
         expansion_result = expand_via_kg(patent_ids)
         
+        # Get query embedding for semantic scoring of expanded hits
+        model = _get_model()
+        query_vec = model.encode([query_text], convert_to_numpy=True)
+        faiss.normalize_L2(query_vec)
+        query_vec = query_vec[0]
+        
+        def get_patent_emb(pid, p_title, p_abstract):
+            emb = None
+            row_idx_str = None
+            for k, v in _cached_metadata.items():
+                if v == pid:
+                    row_idx_str = k
+                    break
+            if row_idx_str is not None:
+                try:
+                    emb = _cached_index.reconstruct(int(row_idx_str))
+                except Exception:
+                    pass
+            if emb is None:
+                text = f"{p_title}. {p_abstract}".strip()
+                emb = model.encode(text) if text and text != "." else np.zeros(768, dtype=np.float32)
+            return emb
+        
         # Add family members
         for p in expansion_result.get("family", []):
+            p_emb = get_patent_emb(p["patent_id"], p["title"], p["abstract"])
+            sem_score = float(np.dot(query_vec, p_emb))
             expanded_hits.append({
                 "rank": -1,
                 "patent_id": p["patent_id"],
                 "source": "kg_family",
                 "expansion_type": "family",
-                "semantic_score": None,
+                "semantic_score": round(sem_score, 6),
                 "graph_score": None,
                 "combined_score": None,
                 "title": p["title"],
@@ -360,12 +418,14 @@ def run_end_to_end(
             
         # Add CPC siblings
         for p in expansion_result.get("cpc_siblings", []):
+            p_emb = get_patent_emb(p["patent_id"], p["title"], p["abstract"])
+            sem_score = float(np.dot(query_vec, p_emb))
             expanded_hits.append({
                 "rank": -1,
                 "patent_id": p["patent_id"],
                 "source": "kg_cpc",
                 "expansion_type": "cpc_sibling",
-                "semantic_score": None,
+                "semantic_score": round(sem_score, 6),
                 "graph_score": None,
                 "combined_score": None,
                 "title": p["title"],
@@ -384,36 +444,31 @@ def run_end_to_end(
 
     # ── Step 5: GNN Scoring ───────────────────────────────────────────────
     logger.info("Step 5 — Running GNN Scoring ...")
-    global _gnn_scorer
-    # Reset cached scorer if a different mode is requested
-    if _gnn_scorer and getattr(_gnn_scorer, "_mode", None) != gnn_mode:
-        _gnn_scorer = None
-
     gnn_status = "success"
-    if _gnn_scorer is None:
-        try:
-            scorer = get_scorer(mode=gnn_mode)
-            # Tag the scorer with its mode so we can detect mode changes above
-            scorer._mode = gnn_mode          # type: ignore[attr-defined]
-            _gnn_scorer = scorer
-        except FileNotFoundError as exc:
-            logger.warning("GNN scorer unavailable (%s) — skipping.", exc)
-            _gnn_scorer = False   # sentinel: scorer unavailable
-            gnn_status = "skipped_missing_embeddings"
-        except Exception as exc:
-            logger.warning("GNN scorer failed: %s", exc)
-            _gnn_scorer = False
-            gnn_status = "failed"
-
-    if _gnn_scorer:
-        all_hits = _gnn_scorer(all_hits)
-    else:
-        # Fill fallback fields if GNN was skipped so the response conforms to expectations
-        for i, hit in enumerate(all_hits):
-            hit["rank"] = i + 1
-            hit["novelty_score"] = None
-            hit["combined_score"] = None
-            hit["gnn_mode"] = gnn_mode
+    try:
+        # Build query-time graph object from retrieved + expanded patents
+        graph_data, pid_to_idx = build_subgraph(all_hits)
+        
+        # Run live forward pass
+        graph_embeddings, preds = run_gnn(graph_data)
+        
+        # Perform hybrid re-ranking
+        all_hits = hybrid_rerank(
+            hits=all_hits,
+            semantic_scores=None,
+            graph_embeddings=graph_embeddings,
+            preds=preds,
+            pid_to_idx=pid_to_idx,
+            gnn_mode=gnn_mode
+        )
+    except FileNotFoundError as exc:
+        logger.warning("GNN scorer unavailable (%s) — skipping.", exc)
+        gnn_status = "skipped_missing_embeddings"
+        _apply_fallback_scores(all_hits, gnn_mode)
+    except Exception as exc:
+        logger.warning("GNN scorer failed: %s", exc)
+        gnn_status = "failed"
+        _apply_fallback_scores(all_hits, gnn_mode)
 
     response: RetrievalResponse = {
         "query_id":   nlp_result.get("patent_id", "user_query"),
@@ -428,6 +483,17 @@ def run_end_to_end(
 
     logger.info("=== End-to-End Pipeline COMPLETE: %d results ===", len(all_hits))
     return response
+
+def _apply_fallback_scores(all_hits, gnn_mode):
+    for i, hit in enumerate(all_hits):
+        hit["rank"] = i + 1
+        hit["graph_score"] = None
+        hit["combined_score"] = None
+        hit["gnn_mode"] = gnn_mode
+        hit["rank_change"] = 0
+    all_hits.sort(key=lambda h: h.get("semantic_score") or 0.0, reverse=True)
+    for i, hit in enumerate(all_hits):
+        hit["rank"] = i + 1
 
 
 # ══════════════════════════════════════════════════════════════════════════════

@@ -70,10 +70,13 @@ app.add_middleware(
 from api.routers import pipeline as pipeline_router    # noqa: E402
 from api.routers import kg as kg_router                # noqa: E402
 from api.routers import evaluate as evaluate_router    # noqa: E402
+from api.routers import improve as improve_router      # noqa: E402
 
 app.include_router(pipeline_router.router, prefix="/api")
 app.include_router(kg_router.router, prefix="/api")
 app.include_router(evaluate_router.router, prefix="/api")
+app.include_router(improve_router.router, prefix="/api")
+
 
 
 @app.get("/api/health", tags=["health"])
