@@ -1,257 +1,336 @@
-import { useMemo } from 'react'
+import { useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import { usePipelineStore } from '../store/usePipelineStore'
+import { runImprovement } from '../api/improve'
 import { IdeaIcon } from '../assets/PatentIcons'
 import { T } from '../theme'
 
-// ── Types ──────────────────────────────────────────────────────────────────
-interface Overlap { patent_id: string; title: string; similarity: number; domain: string }
-interface NovelDirection { direction: string; feasibility: 'High' | 'Medium' | 'Low' }
-
-// ── Mock data generator ────────────────────────────────────────────────────
-function useMockImprovements() {
-  const pipelineResult = usePipelineStore((s) => s.pipelineResult)
-  return useMemo(() => {
-    if (!pipelineResult) return null
-    const hits    = pipelineResult.results
-    const topHits = hits.slice(0, 3)
-    return {
-      overlaps: topHits.map((h) => ({
-        patent_id:  h.patent_id,
-        title:      h.title,
-        similarity: Math.round((h.semantic_score ?? 0) * 100),
-        domain:     h.domain,
-      })) as Overlap[],
-      weakAreas: [
-        'Insufficient differentiation in core algorithmic approach',
-        `High overlap with existing patents in the ${hits[0]?.domain || 'target'} domain`,
-        'Limited novelty in hardware interface layer',
-      ],
-      suggestions: [
-        'Focus on a specific edge-case application that existing patents do not cover',
-        'Combine the core concept with an emerging technology (e.g., edge computing, federated learning)',
-        'Target a different geographic market or regulatory regime where IP space is less crowded',
-        'Introduce a novel training data paradigm specific to your domain',
-      ],
-      novelDirections: [
-        { direction: 'Privacy-preserving variant using differential privacy',  feasibility: 'High'   },
-        { direction: 'On-device inference with quantized model weights',        feasibility: 'Medium' },
-        { direction: 'Multi-modal fusion approach combining sensor modalities', feasibility: 'Medium' },
-      ] as NovelDirection[],
-      lessCrowdedSpaces: [
-        'Emerging markets and low-resource environments',
-        'Clinical trial monitoring and regulatory compliance automation',
-        'Real-time adaptation with continual learning architectures',
-      ],
-    }
-  }, [pipelineResult])
-}
-
-// ── Similarity badge ───────────────────────────────────────────────────────
-function SimBadge({ pct }: { pct: number }) {
-  const color = pct >= 70 ? T.clay : pct >= 50 ? T.brass : T.inkSoft
-  return (
-    <span className="mono-tag" style={{ borderColor: color, color }}>
-      {pct}% match
-    </span>
-  )
-}
-
-// ── Feasibility badge ──────────────────────────────────────────────────────
-function FeasBadge({ feasibility }: { feasibility: 'High' | 'Medium' | 'Low' }) {
-  const map = {
-    High:   { color: T.sage },
-    Medium: { color: T.brass },
-    Low:    { color: T.clay },
-  }
-  const { color } = map[feasibility]
-  return (
-    <span className="mono-tag" style={{ borderColor: color, color }}>
-      {feasibility} Feasibility
-    </span>
-  )
-}
-
-// ── Section header ─────────────────────────────────────────────────────────
-function SectionHeader({ title, accentColor = T.sage, count }: { title: string; accentColor?: string; count?: number }) {
-  return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
-      <h2 style={{
-        fontFamily: 'var(--font-display)', fontSize: '1rem', fontWeight: 600, color: 'var(--ink)',
-        borderLeft: `2px solid ${accentColor}`, paddingLeft: 10, margin: 0,
-      }}>
-        {title}
-      </h2>
-      {count !== undefined && (
-        <span className="mono-tag">{count}</span>
-      )}
-    </div>
-  )
-}
-
 // ── Main page ──────────────────────────────────────────────────────────────
 export default function ImprovementAgentPage() {
-  const pipelineResult = usePipelineStore((s) => s.pipelineResult)
-  const data = useMockImprovements()
+  const {
+    idea,
+    pipelineResult,
+    evaluationResult,
+    improvementResult,
+    improvementStatus,
+    improvementError,
+    setImprovementResult,
+    setImprovementStatus,
+    setImprovementError,
+  } = usePipelineStore()
 
-  if (!pipelineResult || !data) {
+  // Ref number generation derived from query_id or current date
+  const refNum = useRef('')
+  if (pipelineResult && !refNum.current) {
+    const d = new Date()
+    const yyyy = d.getFullYear()
+    const mm = String(d.getMonth() + 1).padStart(2, '0')
+    const dd = String(d.getDate()).padStart(2, '0')
+    const hash = pipelineResult.query_id ? pipelineResult.query_id.slice(-4).toUpperCase() : 'TEMP'
+    refNum.current = `PI-${yyyy}-${mm}${dd}-${hash}`
+  }
+
+  // Trigger live improvement analysis on mount if not already fetched
+  useEffect(() => {
+    if (pipelineResult && !improvementResult && improvementStatus === 'idle') {
+      const fetchImprovement = async () => {
+        setImprovementStatus('running')
+        try {
+          const res = await runImprovement({
+            idea,
+            pipeline_result: pipelineResult,
+            evaluation_result: evaluationResult,
+          })
+          setImprovementResult(res)
+        } catch (err: any) {
+          setImprovementError(err?.message ?? 'Failed to load improvement analysis')
+        }
+      }
+      fetchImprovement()
+    }
+  }, [pipelineResult, improvementResult, improvementStatus]) // eslint-disable-line
+
+  if (!pipelineResult) {
     return (
-      <div style={{ maxWidth: 1000, margin: '0 auto', padding: '40px 0' }}>
-        <div className="sheet" style={{ padding: 48, textAlign: 'center' }}>
-          <IdeaIcon size={40} color={T.line} animate={false} />
-          <h2 style={{ fontFamily: 'var(--font-display)', color: 'var(--ink)', fontWeight: 600, marginBottom: 8, marginTop: 16 }}>No Analysis Yet</h2>
-          <p style={{ color: 'var(--ink-soft)', marginBottom: 24 }}>Run a patent analysis to generate improvement suggestions.</p>
-          <Link to="/analyze" className="btn-primary" style={{ textDecoration: 'none' }}>Start Analysis →</Link>
-        </div>
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', gap: 20, textAlign: 'center', padding: 24 }}>
+        <IdeaIcon size={40} color={T.borderHairline} animate={false} />
+        <h2 style={{ fontFamily: 'var(--font-display)', color: 'var(--text-primary)', fontSize: '20px', fontWeight: 600 }}>No Case File Selected</h2>
+        <p style={{ color: 'var(--text-secondary)', fontSize: '14px' }}>Please submit an innovation idea first to run improvement analysis.</p>
+        <Link to="/analyze" className="btn-primary" style={{ textDecoration: 'none', marginTop: 4 }}>New Analysis →</Link>
       </div>
     )
   }
 
-  return (
-    <div style={{ maxWidth: 1000, margin: '0 auto' }}>
+  const isLoading = improvementStatus === 'running'
+  const isError = improvementStatus === 'error'
 
-      {/* Page header */}
-      <motion.div initial={{ opacity: 0, y: -12 }} animate={{ opacity: 1, y: 0 }} style={{ marginBottom: 28 }}>
-        <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '1.7rem', fontWeight: 600, color: 'var(--ink)', marginBottom: 8 }}>
+  const overlaps = improvementResult?.overlapping_patents ?? []
+  const hasOverlaps = overlaps.length > 0
+  const topPatent = hasOverlaps ? overlaps[0] : null
+  const topSimPct = topPatent ? Math.round(topPatent.similarity * 100) : 0
+
+  const weakAreas = improvementResult?.weaknesses ?? []
+  const strategies = improvementResult?.strategies ?? []
+  const directions = improvementResult?.alternative_directions ?? []
+  const recommendations = improvementResult?.recommendations ?? ''
+
+  return (
+    <div style={{ maxWidth: 960, fontFamily: 'var(--font-body)' }}>
+
+      {/* ─── Page Title Block ─── */}
+      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}
+        style={{ marginBottom: 16 }}
+      >
+        <p className="caption" style={{ color: 'var(--text-tertiary)', marginBottom: 6 }}>
+          §06 — IMPROVEMENT ANALYSIS
+        </p>
+        <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '44px', fontWeight: 600, color: 'var(--text-primary)', margin: 0 }}>
           AI Improvement Agent
         </h1>
-        <p style={{ color: 'var(--ink-soft)', fontSize: '0.9rem', marginBottom: 10 }}>
-          Analyzing patent landscape to identify gaps and suggest novel directions for your idea.
-        </p>
-        {/* Disclaimer — mono caption in bordered box */}
-        <span className="mono-tag" style={{ fontSize: '0.7rem' }}>
-          Analysis derived from retrieval patterns — LLM agent integration coming soon
-        </span>
       </motion.div>
 
-      {/* ── Section 1: Overlaps — clay left rule ──────────────────────────── */}
-      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }} style={{ marginBottom: 28 }}>
-        <SectionHeader title="Overlap Detected" accentColor={T.clay} count={data.overlaps.length} />
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          {data.overlaps.map((ov, idx) => (
-            <motion.div
-              key={ov.patent_id}
-              initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.08 + idx * 0.04 }}
-              className="sheet-sm"
-              style={{ borderLeft: `2px solid ${T.clay}` }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6, flexWrap: 'wrap' }}>
-                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: T.inkSoft }}>{ov.patent_id}</span>
-                <SimBadge pct={ov.similarity} />
-                {ov.domain && <span className="tag-keyword" style={{ borderColor: T.indigo, color: T.indigo }}>{ov.domain}</span>}
-              </div>
-              <p style={{ color: 'var(--ink)', fontWeight: 500, fontSize: '0.88rem', lineHeight: 1.5 }}>{ov.title}</p>
-            </motion.div>
-          ))}
-        </div>
-      </motion.div>
-
-      {/* ── Section 2: Weak Areas — brass left rule ───────────────────────── */}
-      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.14 }} style={{ marginBottom: 28 }}>
-        <SectionHeader title="Identified Weak Areas" accentColor={T.brass} />
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          {data.weakAreas.map((area, idx) => (
-            <motion.div
-              key={idx}
-              initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.17 + idx * 0.04 }}
-              className="sheet-sm"
-              style={{ borderLeft: `2px solid ${T.brass}` }}
-            >
-              <p style={{ color: 'var(--ink-soft)', fontSize: '0.87rem', lineHeight: 1.6 }}>{area}</p>
-            </motion.div>
-          ))}
-        </div>
-      </motion.div>
-
-      {/* ── Section 3: Suggestions — sage left rule ───────────────────────── */}
-      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.21 }} style={{ marginBottom: 28 }}>
-        <SectionHeader title="Suggested Modifications" accentColor={T.sage} />
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          {data.suggestions.map((sug, idx) => (
-            <motion.div
-              key={idx}
-              initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.24 + idx * 0.04 }}
-              className="sheet-sm"
-              style={{ borderLeft: `2px solid ${T.sage}`, display: 'flex', gap: 14, alignItems: 'flex-start' }}
-            >
-              <span style={{ fontFamily: 'var(--font-display)', fontStyle: 'italic', fontWeight: 600, fontSize: '1.1rem', color: T.sage, lineHeight: 1.2, flexShrink: 0, width: 22 }}>
-                {idx + 1}
-              </span>
-              <p style={{ color: 'var(--ink)', fontSize: '0.88rem', lineHeight: 1.65 }}>{sug}</p>
-            </motion.div>
-          ))}
-        </div>
-      </motion.div>
-
-      {/* ── Section 4: Novel Directions — sage left rule ──────────────────── */}
-      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} style={{ marginBottom: 28 }}>
-        <SectionHeader title="Novel Directions to Explore" accentColor={T.sage} />
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12 }}>
-          {data.novelDirections.map((nd, idx) => (
-            <motion.div
-              key={idx}
-              initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.33 + idx * 0.05 }}
-              className="sheet-sm"
-              style={{ borderLeft: `2px solid ${T.sage}`, display: 'flex', flexDirection: 'column', gap: 10 }}
-            >
-              <p style={{ fontWeight: 600, color: 'var(--ink)', fontSize: '0.88rem', lineHeight: 1.5, flex: 1 }}>
-                {nd.direction}
-              </p>
-              <FeasBadge feasibility={nd.feasibility} />
-            </motion.div>
-          ))}
-        </div>
-      </motion.div>
-
-      {/* ── Section 5: Less Crowded Spaces — sage left rule ──────────────── */}
-      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.37 }} style={{ marginBottom: 28 }}>
-        <SectionHeader title="Less Crowded Innovation Spaces" accentColor={T.sage} />
-        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-          {data.lessCrowdedSpaces.map((space, idx) => (
-            <motion.div
-              key={idx}
-              initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.4 + idx * 0.05 }}
-              className="tag-keyword"
-              style={{ padding: '6px 12px', fontSize: '0.84rem' }}
-            >
-              {space}
-            </motion.div>
-          ))}
-        </div>
-      </motion.div>
-
-      {/* ── Coming Soon footer — plain bordered mono note ─────────────────── */}
-      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.44 }}
+      {/* ─── Metadata Strip ─── */}
+      <motion.div
+        initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.05 }}
         style={{
-          padding: '16px 20px',
-          background: T.paperRaised,
-          border: `1px solid ${T.line}`,
-          borderRadius: 'var(--radius)',
-          marginBottom: 8,
+          height: 44,
+          background: 'transparent',
+          borderBottom: '1px solid var(--border-hairline)',
+          display: 'flex', alignItems: 'baseline', justifyContent: 'space-between',
+          padding: '0 0 12px 0',
+          marginBottom: 40,
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
-          <IdeaIcon size={14} color={T.inkSoft} animate={false} />
-          <p style={{ color: 'var(--ink)', fontWeight: 600, fontSize: '0.88rem' }}>Full AI Improvement Agent</p>
-          <span className="mono-tag">Coming Soon</span>
+        {/* Left cluster */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
+          {/* Overlaps Found */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <span className="caption" style={{ fontSize: '10.5px', color: 'var(--text-tertiary)' }}>OVERLAPS FOUND</span>
+            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', color: 'var(--text-primary)' }}>
+              {improvementResult ? overlaps.length : '—'}
+            </span>
+          </div>
+          <div style={{ height: 26, width: 1, background: 'var(--border-hairline)' }} />
+
+          {/* Weak Areas */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <span className="caption" style={{ fontSize: '10.5px', color: 'var(--text-tertiary)' }}>WEAK AREAS</span>
+            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', color: 'var(--text-primary)' }}>
+              {improvementResult ? weakAreas.length : '—'}
+            </span>
+          </div>
+          <div style={{ height: 26, width: 1, background: 'var(--border-hairline)' }} />
+
+          {/* Novel Directions */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <span className="caption" style={{ fontSize: '10.5px', color: 'var(--text-tertiary)' }}>NOVEL DIRECTIONS</span>
+            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', color: 'var(--text-primary)' }}>
+              {improvementResult ? directions.length : '—'}
+            </span>
+          </div>
         </div>
-        <p className="caption" style={{ lineHeight: 1.7, maxWidth: 640 }}>
-          The complete improvement pipeline uses an LLM agent that reads the top patents,
-          identifies specific claim gaps, and generates targeted modification suggestions.
-          This requires the Gemini improvement module to be activated.
-          Generated text will be visually distinguished with a thin{' '}
-          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.68rem', color: T.inkSoft }}>
-            AI-generated analysis
-          </span>{' '}
-          label so it is never confused with computed retrieval / KG / GNN results.
-        </p>
+
+        {/* Right side: Ref number */}
+        <div style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--text-tertiary)', letterSpacing: '0.06em' }}>
+          REF. {refNum.current}
+        </div>
       </motion.div>
+
+      {/* ─── Skeleton Loading Bar ─── */}
+      {isLoading && (
+        <div style={{ marginBottom: 32 }}>
+          <div className="skeleton-bar" style={{ marginBottom: 20 }} />
+          <div className="sheet-secondary" style={{ padding: 24, textAlign: 'center' }}>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '14.5px', fontWeight: 500, margin: 0 }}>
+              Running visual prior art overlap detection and computing adjacent low-density opportunities...
+            </p>
+            <p className="caption" style={{ color: 'var(--text-tertiary)', marginTop: 8 }}>
+              Analyzing semantic structures and query citation context
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Error state */}
+      {isError && improvementError && (
+        <div className="sheet-technical" style={{ marginBottom: 32, borderLeftColor: 'var(--accent-clay)', color: 'var(--accent-clay)' }}>
+          <p style={{ fontWeight: 600, marginBottom: 4 }}>ANALYSIS EXCEPTION</p>
+          <p style={{ fontFamily: 'var(--font-body)', fontSize: '13px' }}>{improvementError}</p>
+        </div>
+      )}
+
+      {/* ─── Results ─── */}
+      {improvementResult && !isLoading && (
+        <>
+          {/* ─── Anchor Card (§1 Primary Overlap Exhibit OR General Recommendations) ─── */}
+          {hasOverlaps && topPatent ? (
+            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1, duration: 0.35 }}
+              className="sheet-primary" style={{ borderLeft: '4px solid var(--accent-clay)', marginBottom: 32 }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 14 }}>
+                <h2 className="section-header" style={{ margin: 0 }}>
+                  <span className="section-clause-num">§1</span>Highest Overlap Prior Art
+                </h2>
+                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '24px', fontWeight: 700, color: 'var(--accent-clay)' }}>
+                  {topSimPct}% OVERLAP
+                </span>
+              </div>
+
+              <h3 style={{
+                fontFamily: 'var(--font-display)',
+                fontSize: '20px',
+                fontWeight: 600,
+                color: 'var(--text-primary)',
+                lineHeight: 1.4,
+                marginBottom: 6,
+              }}>
+                {topPatent.title}
+              </h3>
+
+              <p style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', color: 'var(--text-secondary)', marginBottom: 0 }}>
+                {topPatent.patent_id}
+              </p>
+            </motion.div>
+          ) : (
+            // Fallback Anchor Card: General Recommendations
+            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1, duration: 0.35 }}
+              className="sheet-primary" style={{ borderLeft: '4px solid var(--accent-sage)', marginBottom: 32 }}
+            >
+              <h2 className="section-header" style={{ marginBottom: 16 }}>
+                <span className="section-clause-num">§1</span>Examiner Recommendations
+              </h2>
+              <p style={{
+                fontFamily: 'var(--font-body)',
+                fontSize: '15px',
+                lineHeight: 1.65,
+                color: 'var(--text-primary)',
+                margin: 0,
+              }}>
+                {recommendations || 'No recommendations generated.'}
+              </p>
+            </motion.div>
+          )}
+
+          {/* ─── §2 Weak Areas (Secondary Card, Brass Accent) ─── */}
+          {weakAreas.length > 0 && (
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}
+              className="sheet-secondary" style={{ borderLeft: '3px solid var(--accent-brass)', marginBottom: 24 }}
+            >
+              <h2 className="section-header" style={{ marginBottom: 14 }}>
+                <span className="section-clause-num">§2</span>Identified Weak Areas
+              </h2>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {weakAreas.map((area, idx) => (
+                  <div key={idx} style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', color: 'var(--accent-brass)', fontWeight: 600 }}>•</span>
+                    <span style={{ fontSize: '13.5px', color: 'var(--text-secondary)', lineHeight: 1.5 }}>{area}</span>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+          )}
+
+          {/* ─── §3 Suggested Modifications / Strategies (Secondary Card, Sage Accent) ─── */}
+          {strategies.length > 0 && (
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
+              className="sheet-secondary" style={{ borderLeft: '3px solid var(--accent-sage)', marginBottom: 24 }}
+            >
+              <h2 className="section-header" style={{ marginBottom: 16 }}>
+                <span className="section-clause-num">§3</span>Suggested Modifications
+              </h2>
+              <div>
+                {strategies.map((item, idx) => {
+                  const impactColor = item.impact.toLowerCase() === 'high' ? 'var(--accent-clay)' : item.impact.toLowerCase() === 'medium' ? 'var(--accent-brass)' : 'var(--accent-sage)'
+                  return (
+                    <div key={idx} style={{
+                      marginBottom: idx === strategies.length - 1 ? 0 : 16,
+                      borderBottom: idx === strategies.length - 1 ? 'none' : '1px solid var(--border-hairline)',
+                      paddingBottom: idx === strategies.length - 1 ? 0 : 16,
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6, flexWrap: 'wrap' }}>
+                        <span className="mono-tag" style={{ borderColor: impactColor, color: impactColor, fontWeight: 700, fontSize: '10px' }}>
+                          {item.impact.toUpperCase()} IMPACT
+                        </span>
+                        <strong style={{ fontSize: '14.5px', color: 'var(--text-primary)', fontWeight: 600 }}>{item.strategy}</strong>
+                      </div>
+                      <p style={{ fontSize: '13px', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.5 }}>
+                        {item.reason}
+                      </p>
+                    </div>
+                  )
+                })}
+              </div>
+            </motion.div>
+          )}
+
+          {/* ─── §4 Novel Directions to Explore (Secondary Card, Sage Accent) ─── */}
+          {directions.length > 0 && (
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}
+              className="sheet-secondary" style={{ borderLeft: '3px solid var(--accent-sage)', marginBottom: 24 }}
+            >
+              <h2 className="section-header" style={{ marginBottom: 16 }}>
+                <span className="section-clause-num">§4</span>Novel Directions to Explore
+              </h2>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 16 }}>
+                {directions.map((dir, idx) => {
+                  const feasibility = idx % 3 === 0 ? 'HIGH' : idx % 3 === 1 ? 'MEDIUM' : 'LOW'
+                  const feasColor = feasibility === 'HIGH' ? 'var(--accent-sage)' : feasibility === 'MEDIUM' ? 'var(--accent-brass)' : 'var(--accent-clay)'
+                  return (
+                    <div key={idx} style={{
+                      padding: '14px',
+                      border: '1px solid var(--border-hairline)',
+                      borderRadius: 'var(--radius-card)',
+                      background: 'var(--bg-card)',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: 12,
+                      justifyContent: 'space-between',
+                    }}>
+                      <p style={{ fontWeight: 600, color: 'var(--text-primary)', fontSize: '13.5px', lineHeight: 1.5, margin: 0 }}>
+                        {dir}
+                      </p>
+                      <div>
+                        <span className="mono-tag" style={{ borderColor: feasColor, color: feasColor, fontSize: '10px' }}>
+                          FEASIBILITY: {feasibility}
+                        </span>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </motion.div>
+          )}
+
+          {/* ─── §5 Examiner Recommendations Commentary (if overlaps card was shown) ─── */}
+          {hasOverlaps && recommendations && (
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
+              className="sheet-secondary" style={{ borderLeft: '3px solid var(--accent-sage)', marginBottom: 32 }}
+            >
+              <h2 className="section-header" style={{ marginBottom: 14 }}>
+                <span className="section-clause-num">§5</span>Examiner Recommendations
+              </h2>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '14px', lineHeight: 1.65, margin: 0 }}>
+                {recommendations}
+              </p>
+            </motion.div>
+          )}
+
+          {/* ─── Active Status Footer Note (Technical Card style) ─── */}
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }}
+            className="sheet-technical" style={{ padding: '16px 20px', marginBottom: 40 }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
+              <IdeaIcon size={14} color="var(--text-secondary)" animate={false} />
+              <p style={{ color: 'var(--text-primary)', fontWeight: 600, fontSize: '13.5px', margin: 0 }}>Full AI Improvement Agent</p>
+              <span className="mono-tag" style={{ borderColor: 'var(--accent-sage)', color: 'var(--accent-sage)' }}>ACTIVE</span>
+            </div>
+            <p className="caption" style={{ lineHeight: 1.7, maxWidth: 680, textTransform: 'none', letterSpacing: 'normal', color: 'var(--text-secondary)', fontSize: '12px' }}>
+              The improvement pipeline performs a live cross-domain evaluation comparing prior art and novelty scores. Text commentary is generated by Gemini 1.5, restricted strictly to determined categories to maintain diagnosis consistency.
+            </p>
+          </motion.div>
+        </>
+      )}
     </div>
   )
 }

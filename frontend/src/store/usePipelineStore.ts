@@ -3,6 +3,7 @@ import { persist, createJSONStorage } from 'zustand/middleware'
 import type { PipelineResponse, PipelineStatus, EvaluationResult } from '../types/pipeline'
 import type { KGStats, KGExpansion, KGGraphData } from '../types/kg'
 import type { GNNWeights } from '../types/gnn'
+import type { ImprovementResponse } from '../types/improvement'
 
 interface PipelineState {
   // Input
@@ -22,6 +23,10 @@ interface PipelineState {
   evaluationResult: EvaluationResult | null
   evalStatus: 'idle' | 'running' | 'complete' | 'error'
   evalError: string | null
+  // Improvement
+  improvementResult: ImprovementResponse | null
+  improvementStatus: 'idle' | 'running' | 'complete' | 'error'
+  improvementError: string | null
   // Actions
   setIdea: (idea: string) => void
   setTopK: (k: number) => void
@@ -36,6 +41,9 @@ interface PipelineState {
   setEvaluationResult: (result: EvaluationResult) => void
   setEvalStatus: (status: 'idle' | 'running' | 'complete' | 'error') => void
   setEvalError: (error: string | null) => void
+  setImprovementResult: (result: ImprovementResponse) => void
+  setImprovementStatus: (status: 'idle' | 'running' | 'complete' | 'error') => void
+  setImprovementError: (error: string | null) => void
   reset: () => void
 }
 
@@ -53,6 +61,9 @@ const DEFAULTS = {
   evaluationResult: null,
   evalStatus: 'idle' as const,
   evalError: null,
+  improvementResult: null,
+  improvementStatus: 'idle' as const,
+  improvementError: null,
 }
 
 export const usePipelineStore = create<PipelineState>()(
@@ -72,6 +83,9 @@ export const usePipelineStore = create<PipelineState>()(
       setEvaluationResult: (evaluationResult) => set({ evaluationResult, evalStatus: 'complete' }),
       setEvalStatus:       (evalStatus)       => set({ evalStatus }),
       setEvalError:        (evalError)        => set({ evalError, evalStatus: 'error' }),
+      setImprovementResult:(improvementResult)=> set({ improvementResult, improvementStatus: 'complete' }),
+      setImprovementStatus:(improvementStatus)=> set({ improvementStatus }),
+      setImprovementError: (improvementError) => set({ improvementError, improvementStatus: 'error' }),
       reset:               ()                 => set(DEFAULTS),
     }),
     {
@@ -84,6 +98,7 @@ export const usePipelineStore = create<PipelineState>()(
         gnnMode:          state.gnnMode,
         pipelineResult:   state.pipelineResult,
         evaluationResult: state.evaluationResult,
+        improvementResult:state.improvementResult,
       }),
     }
   )

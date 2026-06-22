@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { usePipelineStore } from '../store/usePipelineStore'
@@ -10,13 +10,24 @@ export default function NLPResultsPage() {
   const { pipelineResult } = usePipelineStore()
   const [queryOpen, setQueryOpen] = useState(false)
 
+  // Ref number generation derived from query_id or current date
+  const refNum = useRef('')
+  if (pipelineResult && !refNum.current) {
+    const d = new Date()
+    const yyyy = d.getFullYear()
+    const mm = String(d.getMonth() + 1).padStart(2, '0')
+    const dd = String(d.getDate()).padStart(2, '0')
+    const hash = pipelineResult.query_id ? pipelineResult.query_id.slice(-4).toUpperCase() : 'TEMP'
+    refNum.current = `PI-${yyyy}-${mm}${dd}-${hash}`
+  }
+
   if (!pipelineResult) {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', gap: 20, textAlign: 'center', padding: 24 }}>
-        <IdeaIcon size={40} color={T.line} animate={false} />
-        <h2 style={{ fontFamily: 'var(--font-display)', color: 'var(--ink)', fontSize: '1.3rem', fontWeight: 600 }}>No Results Yet</h2>
-        <p style={{ color: 'var(--ink-soft)', fontSize: '0.9rem' }}>Run an analysis first to see NLP results.</p>
-        <Link to="/analyze" className="btn-primary" style={{ textDecoration: 'none', marginTop: 4 }}>Analyze an Idea →</Link>
+        <IdeaIcon size={40} color={T.borderHairline} animate={false} />
+        <h2 style={{ fontFamily: 'var(--font-display)', color: 'var(--text-primary)', fontSize: '20px', fontWeight: 600 }}>No Case File Selected</h2>
+        <p style={{ color: 'var(--text-secondary)', fontSize: '14px' }}>Please submit an innovation idea first to generate case logs.</p>
+        <Link to="/analyze" className="btn-primary" style={{ textDecoration: 'none', marginTop: 4 }}>New Analysis →</Link>
       </div>
     )
   }
@@ -28,128 +39,195 @@ export default function NLPResultsPage() {
   return (
     <div style={{ maxWidth: 960, fontFamily: 'var(--font-body)' }}>
 
-      {/* ─── Page Header ─── */}
-      <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }}
-        style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 28, flexWrap: 'wrap', gap: 12 }}
+      {/* ─── Page Title Block ─── */}
+      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}
+        style={{ marginBottom: 16 }}
       >
-        <div>
-          <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '1.7rem', fontWeight: 600, color: 'var(--ink)', marginBottom: 8 }}>
-            NLP Analysis
-          </h1>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-            {/* Source badge — mono-text bordered tag */}
-            <span className="mono-tag">{isGemini ? 'Gemini LLM' : 'spaCy Fallback'}</span>
-            <span className="mono-tag">source: {source || 'unknown'}</span>
+        <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between' }}>
+          <div>
+            <p className="caption" style={{ color: 'var(--text-tertiary)', marginBottom: 6 }}>
+              §01 — LANGUAGE PROCESSING
+            </p>
+            <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '44px', fontWeight: 600, color: 'var(--text-primary)', margin: 0 }}>
+              NLP Analysis
+            </h1>
+          </div>
+        </div>
+      </motion.div>
+
+      {/* ─── Metadata Strip ─── */}
+      <motion.div
+        initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.05 }}
+        style={{
+          height: 44,
+          background: 'transparent',
+          borderBottom: '1px solid var(--border-hairline)',
+          display: 'flex', alignItems: 'baseline', justifyContent: 'space-between',
+          padding: '0 0 12px 0',
+          marginBottom: 40,
+        }}
+      >
+        {/* Left cluster */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
+          {/* Model */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <span className="caption" style={{ fontSize: '10.5px', color: 'var(--text-tertiary)' }}>MODEL</span>
+            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', color: 'var(--text-primary)' }}>{model || 'PatentSBERTa'}</span>
+          </div>
+          <div style={{ height: 26, width: 1, background: 'var(--border-hairline)' }} />
+          
+          {/* Source */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <span className="caption" style={{ fontSize: '10.5px', color: 'var(--text-tertiary)' }}>SOURCE</span>
+            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', color: 'var(--text-primary)' }}>{isGemini ? 'Gemini LLM' : 'spaCy'}</span>
+          </div>
+          <div style={{ height: 26, width: 1, background: 'var(--border-hairline)' }} />
+          
+          {/* Keywords count */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <span className="caption" style={{ fontSize: '10.5px', color: 'var(--text-tertiary)' }}>KEYWORDS</span>
+            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', color: 'var(--text-primary)' }}>{keywords?.length || 0}</span>
+          </div>
+          <div style={{ height: 26, width: 1, background: 'var(--border-hairline)' }} />
+          
+          {/* Entities count */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <span className="caption" style={{ fontSize: '10.5px', color: 'var(--text-tertiary)' }}>ENTITIES</span>
+            <span style={{
+              fontFamily: 'var(--font-mono)',
+              fontSize: '13px',
+              color: (entities?.length || 0) === 0 ? 'var(--text-tertiary)' : 'var(--text-primary)'
+            }}>
+              {entities?.length || 0}
+            </span>
           </div>
         </div>
 
-        {/* Slim stat strip */}
-        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-          {[
-            { label: 'Model',    value: model || 'PatentSBERTa' },
-            { label: 'Keywords', value: String(keywords?.length || 0) },
-            { label: 'Entities', value: String(entities?.length || 0) },
-          ].map(pill => (
-            <div key={pill.label} className="sheet-sm" style={{ textAlign: 'center', padding: '8px 14px' }}>
-              <div style={{ fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: '1.05rem', color: 'var(--ink)' }}>{pill.value}</div>
-              <div className="caption" style={{ textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.65rem' }}>{pill.label}</div>
-            </div>
-          ))}
+        {/* Right side: Ref number */}
+        <div style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--text-tertiary)', letterSpacing: '0.06em' }}>
+          REF. {refNum.current}
         </div>
       </motion.div>
 
-      {/* ─── Preprocessed Text ─── */}
-      <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.08, duration: 0.35 }}
-        className="sheet" style={{ marginBottom: 16 }}
+      {/* ─── Anchor Card (§1 Preprocessed Text) ─── */}
+      <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1, duration: 0.35 }}
+        className="sheet-primary" style={{ marginBottom: 32 }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
-          <IdeaIcon size={16} color={T.sage} animate={false} />
-          <h2 className="section-header" style={{ margin: 0 }}>Preprocessed Text</h2>
-        </div>
-        <div style={{
-          background: 'var(--paper)', border: `1px solid ${T.line}`,
-          borderRadius: 'var(--radius)', padding: 14,
-          fontFamily: 'var(--font-body)', fontSize: '0.9rem',
-          color: 'var(--ink-soft)', lineHeight: 1.75, fontStyle: 'italic',
+        <h2 className="section-header" style={{ marginBottom: 14 }}>
+          <span className="section-clause-num">§1</span>Preprocessed Text
+        </h2>
+        <p style={{
+          fontFamily: 'var(--font-display)',
+          fontSize: '18px',
+          fontWeight: 500,
+          fontStyle: 'italic',
+          color: 'var(--text-secondary)',
+          lineHeight: 1.6,
+          margin: 0,
         }}>
-          {clean_text || 'No preprocessed text available.'}
-        </div>
+          {clean_text || 'No preprocessed text available in case log.'}
+        </p>
       </motion.div>
 
-      {/* ─── Keywords + Entities ─── */}
-      <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15, duration: 0.35 }}
-        style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(270px, 1fr))', gap: 16, marginBottom: 16 }}
+      {/* ─── Keywords + Entities (65/35 Split Row) ─── */}
+      <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.16, duration: 0.35 }}
+        style={{ display: 'grid', gridTemplateColumns: '65% 35%', gap: 32, alignItems: 'start', marginBottom: 32 }}
       >
         {/* Keywords */}
-        <div className="sheet">
+        <div className="sheet-secondary">
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
-            <h2 className="section-header" style={{ margin: 0 }}>Extracted Keywords</h2>
+            <h2 className="section-header" style={{ margin: 0 }}>
+              <span className="section-clause-num">§2</span>Extracted Keywords
+            </h2>
             <span className="mono-tag">{keywords?.length || 0}</span>
           </div>
           {keywords && keywords.length > 0
-            ? <div style={{ display: 'flex', flexWrap: 'wrap' }}>
+            ? <div style={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
                 {keywords.map((kw, i) => <span key={i} className="tag-keyword">{kw}</span>)}
               </div>
-            : <p style={{ color: 'var(--ink-soft)', fontSize: '0.85rem', fontStyle: 'italic' }}>No keywords extracted.</p>
+            : <p style={{ color: 'var(--text-secondary)', fontSize: '13px', fontStyle: 'italic' }}>No keywords extracted.</p>
           }
         </div>
 
-        {/* Entities */}
-        <div className="sheet">
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
-            <h2 className="section-header" style={{ margin: 0, borderLeftColor: 'var(--indigo)' }}>Named Entities</h2>
-            <span className="mono-tag">{entities?.length || 0}</span>
+        {/* Entities (or Empty State) */}
+        {entities && entities.length > 0 ? (
+          <div className="sheet-secondary">
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+              <h2 className="section-header" style={{ margin: 0 }}>
+                <span className="section-clause-num">§3</span>Named Entities
+              </h2>
+              <span className="mono-tag">{entities?.length || 0}</span>
+            </div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
+              {entities.map((ent, i) => {
+                const name = typeof ent === 'string' ? ent : ent?.text || ''
+                const label = typeof ent === 'string' ? '' : ent?.label || ''
+                return (
+                  <span key={i} className="tag-entity" title={label}>
+                    {name}{label && ` (${label})`}
+                  </span>
+                )
+              })}
+            </div>
           </div>
-          {entities && entities.length > 0
-            ? <div style={{ display: 'flex', flexWrap: 'wrap' }}>
-                {entities.map((ent, i) => <span key={i} className="tag-entity">{ent}</span>)}
-              </div>
-            : <p style={{ color: 'var(--ink-soft)', fontSize: '0.85rem', fontStyle: 'italic' }}>No entities found.</p>
-          }
-        </div>
+        ) : (
+          <div style={{ padding: '20px 0' }}>
+            <h2 className="section-header" style={{ marginBottom: 12 }}>
+              <span className="section-clause-num">§3</span>Named Entities
+            </h2>
+            {/* Empty state: inline, italic, no card chrome */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--text-tertiary)', fontSize: '13px', fontStyle: 'italic' }}>
+              <IdeaIcon size={14} color={T.textTertiary} animate={false} />
+              No entities detected for this query.
+            </div>
+          </div>
+        )}
       </motion.div>
 
-      {/* ─── FAISS Query (collapsible) ─── */}
+      {/* ─── Technical Card: FAISS Query Text ─── */}
       <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.22, duration: 0.35 }}
-        className="sheet" style={{ marginBottom: 28, padding: 0, overflow: 'hidden' }}
+        className="sheet-technical" style={{ marginBottom: 48, padding: 0, overflow: 'hidden' }}
       >
         <button
           onClick={() => setQueryOpen(o => !o)}
           style={{
             width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-            padding: '14px 20px', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit',
+            padding: '14px 16px', background: 'none', border: 'none', cursor: 'pointer', outline: 'none',
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <FAISSIcon size={15} color={T.sage} animate={false} />
-            <h2 className="section-header" style={{ margin: 0 }}>FAISS Query Text</h2>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--text-secondary)' }}>
+            <span style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', fontWeight: 600, letterSpacing: '0.1em' }}>
+              {queryOpen ? '▼' : '▶'} §4 FAISS QUERY TEXT
+            </span>
           </div>
-          <span className="caption" style={{ transition: 'transform 0.2s', display: 'inline-block', transform: queryOpen ? 'rotate(180deg)' : 'none' }}>▼</span>
         </button>
 
         {queryOpen && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.2 }} style={{ padding: '0 20px 20px' }}>
+          <div style={{ padding: '0 16px 16px 16px' }}>
             <pre style={{
-              background: 'var(--paper)', border: `1px solid ${T.line}`,
-              borderRadius: 'var(--radius)', padding: 14,
-              fontFamily: 'var(--font-mono)', fontSize: '0.8rem',
-              color: 'var(--ink-soft)', whiteSpace: 'pre-wrap', wordBreak: 'break-all',
-              lineHeight: 1.6, margin: 0,
+              background: 'transparent',
+              fontFamily: 'var(--font-mono)', fontSize: '13.5px',
+              color: 'var(--text-secondary)', whiteSpace: 'pre-wrap', wordBreak: 'break-all',
+              lineHeight: 1.65, margin: 0,
             }}>
               {pipelineResult.query_text || 'No query text available.'}
             </pre>
-          </motion.div>
+          </div>
         )}
       </motion.div>
 
-      {/* ─── CTA ─── */}
-      <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3, duration: 0.35 }}
-        className="sheet"
-        style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12, borderLeft: `2px solid ${T.sage}` }}
+      {/* ─── CTA Banner ─── */}
+      <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.28, duration: 0.35 }}
+        style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12,
+          padding: '24px 0 0 0',
+          borderTop: `2px solid ${T.accentSage}`,
+          marginBottom: 32,
+        }}
       >
         <div>
-          <p style={{ fontWeight: 600, fontSize: '0.95rem', color: 'var(--ink)', marginBottom: 2 }}>Ready to explore patent matches?</p>
-          <p className="caption">{pipelineResult.results?.length || 0} patents retrieved and ranked</p>
+          <p style={{ fontWeight: 600, fontSize: '16px', color: 'var(--text-primary)', marginBottom: 2 }}>Ready to explore semantic patent matches?</p>
+          <p className="caption" style={{ color: 'var(--text-secondary)', fontSize: '12px' }}>{pipelineResult.results?.length || 0} patents retrieved and ranked</p>
         </div>
         <button onClick={() => navigate('/results/patents')} className="btn-primary" style={{ padding: '10px 24px' }}>
           View Patent Results →

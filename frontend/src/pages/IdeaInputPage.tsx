@@ -10,7 +10,7 @@ const EXAMPLES = [
   'EEG seizure detection wearable with real-time neural signal processing and adaptive threshold calibration',
   'Autonomous drone navigation with LiDAR-based obstacle avoidance and swarm coordination protocols',
   'Federated learning framework for medical imaging with differential privacy and cross-silo aggregation',
-  'Solid-state lithium battery electrolyte using sulfide-based ceramic composite for ultra-fast charging',
+  'Solid-state lithium battery electrolyte using sulfide-based composite for ultra-fast charging',
   'AI smart grid energy optimization using reinforcement learning for dynamic load balancing',
 ]
 
@@ -22,6 +22,7 @@ export default function IdeaInputPage() {
   const [idea, setIdea] = useState(storeIdea || '')
   const [localTopK, setLocalTopK] = useState(topK)
   const [localGNNMode, setLocalGNNMode] = useState(gnnMode)
+  const [isFocused, setIsFocused] = useState(false)
   const mutation = usePipeline()
 
   useEffect(() => { setStoreIdea(idea) }, [idea, setStoreIdea])
@@ -36,119 +37,131 @@ export default function IdeaInputPage() {
   const isDisabled = !idea.trim() || mutation.isPending
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--paper)', fontFamily: 'var(--font-body)' }}>
-      <div style={{ maxWidth: 880, margin: '0 auto', padding: '32px 24px 60px', position: 'relative', zIndex: 1 }}>
+    <div style={{ minHeight: '100vh', background: 'var(--bg-page)', fontFamily: 'var(--font-body)' }}>
+      <div style={{ maxWidth: 960, margin: '0 auto', padding: '32px 0 60px' }}>
 
-        {/* Back link */}
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }} style={{ marginBottom: 36 }}>
+        {/* Back Link */}
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }} style={{ marginBottom: 24 }}>
           <Link
             to="/"
-            style={{ color: 'var(--ink-soft)', textDecoration: 'none', fontSize: '0.85rem', display: 'inline-flex', alignItems: 'center', gap: 6, transition: 'color 120ms' }}
-            onMouseEnter={e => (e.currentTarget.style.color = 'var(--ink)')}
-            onMouseLeave={e => (e.currentTarget.style.color = 'var(--ink-soft)')}
+            style={{ color: 'var(--text-secondary)', textDecoration: 'none', fontSize: '13px', display: 'inline-flex', alignItems: 'center', gap: 6, transition: 'color 120ms' }}
+            onMouseEnter={e => (e.currentTarget.style.color = 'var(--text-primary)')}
+            onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-secondary)')}
           >
-            ← Back
+            ← Back to Desk
           </Link>
         </motion.div>
 
         {/* Header */}
-        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.1 }} style={{ marginBottom: 32 }}>
-          <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '2rem', fontWeight: 600, color: 'var(--ink)', marginBottom: 10 }}>
-            Describe Your Innovation
-          </h1>
-          <p style={{ color: 'var(--ink-soft)', fontSize: '1rem', lineHeight: 1.65, maxWidth: 520 }}>
-            Our AI pipeline will analyze prior art, extract knowledge graphs, and evaluate your
-            idea's novelty against 58,000+ patents.
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.1 }} style={{ marginBottom: 32 }}>
+          <p className="caption" style={{ color: 'var(--text-tertiary)', marginBottom: 6 }}>
+            §00 — CASE INTAKE
           </p>
+          <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '44px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: 10 }}>
+            New Analysis
+          </h1>
         </motion.div>
 
-        {/* Split layout */}
-        <div style={{ display: 'flex', gap: 24, alignItems: 'flex-start', flexWrap: 'wrap' }}>
+        {/* Two-Column Grid */}
+        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 32, alignItems: 'flex-start' }}>
 
-          {/* ── LEFT: Input ── */}
+          {/* ── LEFT: Case Intake Input ── */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+            initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: 0.2 }}
-            style={{ flex: '2 1 360px', minWidth: 0 }}
+            style={{ display: 'flex', flexDirection: 'column', gap: 0 }}
           >
-            {/* Textarea — document field styling */}
-            <textarea
-              id="idea-input"
-              value={idea}
-              onChange={e => setIdea(e.target.value)}
-              maxLength={2000}
-              placeholder="Describe your invention idea in plain English…"
-              style={{
-                width: '100%', minHeight: 190,
-                background: 'var(--paper-raised)',
-                border: `1px solid ${idea.length > 0 ? T.ink : T.line}`,
-                borderRadius: 'var(--radius)',
-                color: 'var(--ink)',
-                fontSize: '0.95rem',
-                padding: 16,
-                resize: 'vertical',
-                outline: 'none',
-                fontFamily: 'var(--font-body)',
-                lineHeight: 1.65,
-                boxSizing: 'border-box',
-                transition: 'border-color 120ms',
-              }}
-              onFocus={e => { e.currentTarget.style.borderColor = T.ink }}
-              onBlur={e => { e.currentTarget.style.borderColor = idea.length > 0 ? T.ink : T.line }}
-            />
-            <div style={{ color: idea.length > 1800 ? T.clay : T.inkSoft, fontFamily: 'var(--font-mono)', fontSize: '0.72rem', textAlign: 'right', marginBottom: 20 }}>
-              {idea.length} / 2000
+            {/* Textarea Wrapper for elevation feedback */}
+            <div style={{
+              background: 'var(--bg-card)',
+              border: isFocused ? '1.5px solid var(--border-anchor)' : '1px solid var(--border-hairline)',
+              borderRadius: 'var(--radius-card)',
+              boxShadow: isFocused ? 'var(--shadow-l3), var(--shadow-l3-highlight)' : 'var(--shadow-l2)',
+              transition: 'border-color 150ms, box-shadow 150ms',
+              padding: 16,
+              marginBottom: 16,
+            }}>
+              <textarea
+                id="idea-input"
+                value={idea}
+                onChange={e => setIdea(e.target.value)}
+                maxLength={2000}
+                placeholder="Describe your invention idea in plain English to open a new examination case file…"
+                style={{
+                  width: '100%', minHeight: 180,
+                  background: 'transparent',
+                  border: 'none',
+                  color: 'var(--text-primary)',
+                  fontSize: '16px',
+                  resize: 'vertical',
+                  outline: 'none',
+                  fontFamily: 'var(--font-body)',
+                  lineHeight: 1.65,
+                  padding: 0,
+                  boxSizing: 'border-box',
+                }}
+                onFocus={() => setIsFocused(true)}
+                onBlur={() => setIsFocused(false)}
+              />
+              <div style={{ color: idea.length > 1800 ? T.accentClay : T.textTertiary, fontFamily: 'var(--font-mono)', fontSize: '10.5px', textAlign: 'right', marginTop: 8 }}>
+                {idea.length} / 2000
+              </div>
             </div>
 
-            {/* Controls row */}
-            <div style={{ display: 'flex', gap: 16, alignItems: 'flex-end', marginBottom: 20, flexWrap: 'wrap' }}>
-
-              {/* Top-K select */}
-              <div style={{ flex: 1, minWidth: 110 }}>
-                <label className="caption" style={{ display: 'block', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 }}>
-                  Results
-                </label>
+            {/* Compact Control Strip */}
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: '12px 16px',
+              background: 'var(--bg-structural)',
+              border: '1px solid var(--border-hairline)',
+              borderRadius: 'var(--radius-card)',
+              marginBottom: 20,
+              gap: 24,
+            }}>
+              {/* Top-K Select */}
+              <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 12 }}>
+                <span className="caption" style={{ color: 'var(--text-secondary)', flexShrink: 0 }}>
+                  RESULTS:
+                </span>
                 <select
                   id="top-k-select"
                   value={localTopK}
                   onChange={e => setLocalTopK(Number(e.target.value))}
                   style={{
-                    width: '100%',
-                    background: 'var(--paper-raised)',
-                    border: `1px solid ${T.line}`,
-                    borderRadius: 'var(--radius)',
-                    color: 'var(--ink)',
-                    fontSize: '0.9rem',
-                    padding: '9px 12px',
+                    background: 'var(--bg-card)',
+                    border: `1px solid var(--border-hairline)`,
+                    borderRadius: 'var(--radius-control)',
+                    color: 'var(--text-primary)',
+                    fontSize: '13px',
+                    padding: '6px 10px',
                     outline: 'none',
                     cursor: 'pointer',
                     fontFamily: 'var(--font-body)',
-                    transition: 'border-color 120ms',
                   }}
-                  onFocus={e => (e.currentTarget.style.borderColor = T.ink)}
-                  onBlur={e => (e.currentTarget.style.borderColor = T.line)}
                 >
                   {TOP_K_OPTIONS.map(k => (
-                    <option key={k} value={k} style={{ background: T.paperRaised }}>Top {k}</option>
+                    <option key={k} value={k}>Top {k}</option>
                   ))}
                 </select>
               </div>
 
-              {/* GNN mode toggle — sharp segmented control */}
-              <div style={{ flex: 2, minWidth: 220 }}>
-                <label className="caption" style={{ display: 'block', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 }}>
-                  GNN Mode
-                </label>
+              {/* Segmented GNN Control */}
+              <div style={{ flex: 2, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 12 }}>
+                <span className="caption" style={{ color: 'var(--text-secondary)', flexShrink: 0 }}>
+                  GNN MODE:
+                </span>
                 <div style={{
                   display: 'flex',
-                  background: 'var(--paper-raised)',
-                  border: `1px solid ${T.line}`,
-                  borderRadius: 'var(--radius)',
+                  background: 'var(--bg-structural)',
+                  border: `1px solid var(--border-hairline)`,
+                  borderRadius: 'var(--radius-control)',
                   overflow: 'hidden',
                 }}>
                   {[
-                    { value: 'novelty',    label: 'Novelty Score'   },
-                    { value: 'similarity', label: 'Graph Similarity' },
+                    { value: 'novelty',    label: 'Novelty'   },
+                    { value: 'similarity', label: 'Similarity' },
                   ].map(opt => {
                     const active = localGNNMode === opt.value
                     return (
@@ -157,18 +170,18 @@ export default function IdeaInputPage() {
                         id={`gnn-mode-${opt.value}`}
                         onClick={() => setLocalGNNMode(opt.value)}
                         style={{
-                          flex: 1, padding: '9px 8px',
+                          padding: '6px 12px',
                           border: 'none',
-                          background: active ? T.ink : 'transparent',
-                          color: active ? T.paper : T.inkSoft,
-                          fontSize: '0.82rem',
-                          fontWeight: active ? 600 : 400,
+                          background: active ? 'var(--surface-ink)' : 'transparent',
+                          color: active ? 'var(--text-on-dark)' : 'var(--text-secondary)',
+                          fontSize: '11.5px',
+                          fontFamily: 'var(--font-mono)',
+                          fontWeight: 600,
                           cursor: 'pointer',
-                          transition: 'background 150ms, color 150ms',
-                          fontFamily: 'var(--font-body)',
+                          transition: 'background 120ms, color 120ms',
                         }}
                       >
-                        {opt.label}
+                        {opt.label.toUpperCase()}
                       </button>
                     )
                   })}
@@ -176,66 +189,49 @@ export default function IdeaInputPage() {
               </div>
             </div>
 
-            {/* Submit button */}
+            {/* Submit Button */}
             <button
               id="submit-idea"
               onClick={handleSubmit}
               disabled={isDisabled}
               className="btn-primary"
               style={{
-                width: '100%', height: 50,
-                fontSize: '1rem',
-                opacity: isDisabled ? 0.45 : 1,
-                cursor: isDisabled ? 'not-allowed' : 'pointer',
+                width: '100%', height: 48,
+                fontSize: '14px',
                 display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
               }}
             >
-              {mutation.isPending ? (
-                <>
-                  <div style={{
-                    width: 16, height: 16,
-                    border: `2px solid rgba(246,244,238,0.4)`,
-                    borderTopColor: T.paper,
-                    borderRadius: '50%',
-                    animation: 'spin 0.7s linear infinite',
-                  }} />
-                  Analyzing…
-                </>
-              ) : 'Analyze Idea →'}
+              {mutation.isPending ? 'Intaking Case File...' : 'Open Case File & Run Analysis →'}
             </button>
 
-            {/* Error */}
+            {/* Error Message */}
             {mutation.error && (
               <motion.div
                 initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}
-                style={{
-                  marginTop: 14, padding: '12px 16px',
-                  background: 'var(--paper-raised)',
-                  border: `1px solid ${T.clay}`,
-                  borderLeft: `3px solid ${T.clay}`,
-                  borderRadius: 'var(--radius)',
-                  color: T.clay, fontSize: '0.85rem', lineHeight: 1.5,
-                }}
+                className="sheet-technical"
+                style={{ borderLeftColor: T.accentClay, color: T.accentClay, marginTop: 14 }}
               >
-                <strong>Pipeline Error:</strong>{' '}
-                {mutation.error instanceof Error ? mutation.error.message : 'An unexpected error occurred.'}
+                <div style={{ fontWeight: 600, marginBottom: 4, fontSize: '11px', fontFamily: 'var(--font-mono)' }}>ERROR INTAKE</div>
+                <div style={{ fontFamily: 'var(--font-body)', fontSize: '13px' }}>
+                  {mutation.error instanceof Error ? mutation.error.message : 'An unexpected pipeline error occurred.'}
+                </div>
               </motion.div>
             )}
           </motion.div>
 
-          {/* ── RIGHT: Examples ── */}
+          {/* ── RIGHT: Examples Sidebar Card ── */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+            initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: 0.32 }}
-            className="sheet-sm"
-            style={{ flex: '1 1 220px' }}
+            className="sheet-secondary"
+            style={{ padding: 20 }}
           >
-            <p className="caption" style={{ textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 14 }}>
-              Try an Example
-            </p>
+            <h2 className="section-header" style={{ fontSize: '16px', marginBottom: 12 }}>
+              <span className="section-clause-num">§1</span>Example Filings
+            </h2>
 
-            {/* Examples as bordered list with doc icon */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            {/* Plain List Rows (No Card Chrome, background tint hover) */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
               {EXAMPLES.map((ex, i) => {
                 const active = idea === ex
                 return (
@@ -243,39 +239,33 @@ export default function IdeaInputPage() {
                     key={i}
                     onClick={() => setIdea(ex)}
                     style={{
-                      background: active ? 'var(--paper)' : 'transparent',
-                      border: `1px solid ${active ? T.ink : T.line}`,
-                      borderRadius: 'var(--radius)',
-                      padding: '9px 10px',
+                      background: active ? 'var(--bg-hover-tint)' : 'transparent',
+                      border: 'none',
+                      borderRadius: 'var(--radius-control)',
+                      padding: '10px 12px',
                       textAlign: 'left',
-                      color: active ? T.ink : T.inkSoft,
-                      fontSize: '0.78rem',
+                      color: active ? 'var(--text-primary)' : 'var(--text-secondary)',
+                      fontSize: '13px',
                       cursor: 'pointer',
                       width: '100%',
-                      lineHeight: 1.5,
+                      lineHeight: 1.45,
                       display: 'flex',
                       alignItems: 'flex-start',
                       gap: 8,
-                      transition: 'border-color 120ms, color 120ms',
+                      transition: 'background-color 120ms, color 120ms',
                       fontFamily: 'var(--font-body)',
                     }}
                     onMouseEnter={e => {
-                      if (!active) {
-                        (e.currentTarget as HTMLButtonElement).style.borderColor = T.ink
-                        ;(e.currentTarget as HTMLButtonElement).style.color = T.ink
-                      }
+                      if (!active) e.currentTarget.style.background = 'var(--bg-hover-tint)'
                     }}
                     onMouseLeave={e => {
-                      if (!active) {
-                        (e.currentTarget as HTMLButtonElement).style.borderColor = T.line
-                        ;(e.currentTarget as HTMLButtonElement).style.color = T.inkSoft
-                      }
+                      if (!active) e.currentTarget.style.background = 'transparent'
                     }}
                   >
-                    <PatentDocIcon size={13} color={active ? T.sage : T.line} animate={false} style={{ flexShrink: 0, marginTop: 2 } as React.SVGProps<SVGSVGElement>} />
+                    <PatentDocIcon size={14} color={active ? T.accentSage : T.textTertiary} animate={false} style={{ flexShrink: 0, marginTop: 2 } as React.SVGProps<SVGSVGElement>} />
                     <span style={{
                       display: '-webkit-box',
-                      WebkitLineClamp: 2,
+                      WebkitLineClamp: 3,
                       WebkitBoxOrient: 'vertical',
                       overflow: 'hidden',
                     }}>{ex}</span>
@@ -284,17 +274,11 @@ export default function IdeaInputPage() {
               })}
             </div>
 
-            {/* Tip */}
-            <div style={{
-              marginTop: 16, padding: '9px 12px',
-              background: 'var(--paper)',
-              border: `1px solid ${T.line}`,
-              borderLeft: `2px solid ${T.sage}`,
-              borderRadius: 'var(--radius)',
-            }}>
-              <p className="caption" style={{ color: T.sage, marginBottom: 3 }}>Tip</p>
-              <p style={{ color: 'var(--ink-soft)', fontSize: '0.75rem', lineHeight: 1.55 }}>
-                More technical detail = better results. Include materials, methods, or target application.
+            {/* Intaking Guidelines Panel */}
+            <div className="sheet-technical" style={{ borderLeftColor: T.accentSage, padding: '12px 14px', marginTop: 16 }}>
+              <div className="caption" style={{ color: T.accentSage, marginBottom: 4 }}>INTAKE GUIDELINES</div>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '12px', lineHeight: 1.5, fontFamily: 'var(--font-body)' }}>
+                Provide technical mechanisms, algorithms, and application contexts. Vague inputs increase semantic retrieval overlap warnings.
               </p>
             </div>
           </motion.div>

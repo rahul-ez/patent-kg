@@ -114,13 +114,14 @@ async def get_kg_graph(
         )
         try:
             with driver.session() as session:
-                rows = session.run(
+                result = session.run(
                     """
                     MATCH (n)-[r]->(m)
                     RETURN n, r, m
                     LIMIT 200
                     """
-                ).data()
+                )
+                rows = list(result)
         finally:
             driver.close()
     except Exception as exc:
