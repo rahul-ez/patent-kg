@@ -13,11 +13,16 @@ import sys
 from contextlib import asynccontextmanager
 from pathlib import Path
 
+from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-# ── Ensure backend/src/ is importable ────────────────────────────────────────
+# ── Load .env before anything else ───────────────────────────────────────────
+# Searches upward from backend/ — finds patent-kg/.env
 _BACKEND_DIR = Path(__file__).resolve().parents[1]
+load_dotenv(_BACKEND_DIR.parent / ".env")   # patent-kg/.env
+
+# ── Ensure backend/src/ is importable ────────────────────────────────────────
 _SRC = _BACKEND_DIR / "src"
 if str(_SRC) not in sys.path:
     sys.path.insert(0, str(_SRC))
@@ -62,11 +67,13 @@ app.add_middleware(
 )
 
 # ── Routers ───────────────────────────────────────────────────────────────────
-from api.routers import pipeline as pipeline_router  # noqa: E402
-from api.routers import kg as kg_router              # noqa: E402
+from api.routers import pipeline as pipeline_router    # noqa: E402
+from api.routers import kg as kg_router                # noqa: E402
+from api.routers import evaluate as evaluate_router    # noqa: E402
 
 app.include_router(pipeline_router.router, prefix="/api")
 app.include_router(kg_router.router, prefix="/api")
+app.include_router(evaluate_router.router, prefix="/api")
 
 
 @app.get("/api/health", tags=["health"])

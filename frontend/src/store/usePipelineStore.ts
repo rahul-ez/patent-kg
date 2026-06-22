@@ -1,5 +1,6 @@
 import { create } from 'zustand'
-import type { PipelineResponse, PipelineStatus } from '../types/pipeline'
+import { persist, createJSONStorage } from 'zustand/middleware'
+import type { PipelineResponse, PipelineStatus, EvaluationResult } from '../types/pipeline'
 import type { KGStats, KGExpansion, KGGraphData } from '../types/kg'
 import type { GNNWeights } from '../types/gnn'
 
@@ -17,6 +18,10 @@ interface PipelineState {
   kgExpansion: KGExpansion | null
   kgGraphData: KGGraphData | null
   gnnWeights: GNNWeights
+  // Evaluation
+  evaluationResult: EvaluationResult | null
+  evalStatus: 'idle' | 'running' | 'complete' | 'error'
+  evalError: string | null
   // Actions
   setIdea: (idea: string) => void
   setTopK: (k: number) => void
@@ -28,6 +33,9 @@ interface PipelineState {
   setKGExpansion: (exp: KGExpansion) => void
   setKGGraphData: (data: KGGraphData) => void
   setGNNWeights: (w: GNNWeights) => void
+  setEvaluationResult: (result: EvaluationResult) => void
+  setEvalStatus: (status: 'idle' | 'running' | 'complete' | 'error') => void
+  setEvalError: (error: string | null) => void
   reset: () => void
 }
 
@@ -42,19 +50,41 @@ const DEFAULTS = {
   kgExpansion: null,
   kgGraphData: null,
   gnnWeights: { semantic: 0.6, gnn: 0.4 },
+  evaluationResult: null,
+  evalStatus: 'idle' as const,
+  evalError: null,
 }
 
-export const usePipelineStore = create<PipelineState>()((set) => ({
-  ...DEFAULTS,
-  setIdea:           (idea)           => set({ idea }),
-  setTopK:           (topK)           => set({ topK }),
-  setGNNMode:        (gnnMode)        => set({ gnnMode }),
-  setStatus:         (status)         => set({ status }),
-  setError:          (error)          => set({ error }),
-  setPipelineResult: (pipelineResult) => set({ pipelineResult }),
-  setKGStats:        (kgStats)        => set({ kgStats }),
-  setKGExpansion:    (kgExpansion)    => set({ kgExpansion }),
-  setKGGraphData:    (kgGraphData)    => set({ kgGraphData }),
-  setGNNWeights:     (gnnWeights)     => set({ gnnWeights }),
-  reset:             ()               => set(DEFAULTS),
-}))
+export const usePipelineStore = create<PipelineState>()(
+  persist(
+    (set) => ({
+      ...DEFAULTS,
+      setIdea:             (idea)             => set({ idea }),
+      setTopK:             (topK)             => set({ topK }),
+      setGNNMode:          (gnnMode)          => set({ gnnMode }),
+      setStatus:           (status)           => set({ status }),
+      setError:            (error)            => set({ error }),
+      setPipelineResult:   (pipelineResult)   => set({ pipelineResult }),
+      setKGStats:          (kgStats)          => set({ kgStats }),
+      setKGExpansion:      (kgExpansion)      => set({ kgExpansion }),
+      setKGGraphData:      (kgGraphData)      => set({ kgGraphData }),
+      setGNNWeights:       (gnnWeights)       => set({ gnnWeights }),
+      setEvaluationResult: (evaluationResult) => set({ evaluationResult, evalStatus: 'complete' }),
+      setEvalStatus:       (evalStatus)       => set({ evalStatus }),
+      setEvalError:        (evalError)        => set({ evalError, evalStatus: 'error' }),
+      reset:               ()                 => set(DEFAULTS),
+    }),
+    {
+      name: 'patent-intelligence-store',
+      storage: createJSONStorage(() => localStorage),
+      // Only persist the results and inputs — not transient run state
+      partialize: (state) => ({
+        idea:             state.idea,
+        topK:             state.topK,
+        gnnMode:          state.gnnMode,
+        pipelineResult:   state.pipelineResult,
+        evaluationResult: state.evaluationResult,
+      }),
+    }
+  )
+)

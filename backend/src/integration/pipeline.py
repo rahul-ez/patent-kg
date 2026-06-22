@@ -61,8 +61,15 @@ _VECTOR_DIR    = VECTOR_STORE
 _PATENTS_CSV   = _VECTOR_DIR / "patents_deduped.csv"
 _FAISS_INDEX   = _VECTOR_DIR / "patents.index"
 _METADATA_FILE = _VECTOR_DIR / "metadata_mapping.json"
-_MODEL_NAME    = "AI-Growth-Lab/PatentSBERTa"   # Must match build_faiss_index.py
 _gnn_scorer = None   # lazy-loaded on first query
+
+# Model is selected at runtime based on the FAISS index dimension so this file
+# works regardless of which model was used when build_faiss_index.py was run.
+_DIM_TO_MODEL: Dict[int, str] = {
+    384: "all-MiniLM-L6-v2",
+    768: "AI-Growth-Lab/PatentSBERTa",
+}
+_MODEL_NAME: str = "all-MiniLM-L6-v2"   # updated in _load_resources() after index is read
 # ── Shared Types ──────────────────────────────────────────────────────────────
 NLPResult = Dict[str, Any]
 RetrievalHit = Dict[str, Any]
@@ -135,6 +142,18 @@ def _load_resources() -> tuple:
             _cached_index.ntotal,
             _cached_index.d,
         )
+        # Auto-select embedding model to match the index dimension
+        global _MODEL_NAME
+        detected = _DIM_TO_MODEL.get(_cached_index.d)
+        if detected:
+            _MODEL_NAME = detected
+            logger.info("Auto-selected embedding model '%s' (index dim=%d)", _MODEL_NAME, _cached_index.d)
+        else:
+            logger.warning(
+                "Unknown index dimension %d — keeping default model '%s'. "
+                "Queries may fail if dimensions do not match.",
+                _cached_index.d, _MODEL_NAME,
+            )
 
     if _cached_metadata is None:
         if not _METADATA_FILE.exists():
@@ -155,25 +174,34 @@ def _load_resources() -> tuple:
                 _cached_metadata = json.load(f)   # {"0": "US-12345-B2", ...}
 
     if _cached_patents_df is None:
-        if not _PATENTS_CSV.exists():
-            # Graceful fallback: return an empty DataFrame so hits are still
-            # returned (with blank metadata) rather than crashing the pipeline.
+        from config.paths import ROOT
+        _CSV_CANDIDATES = [
+            _PATENTS_CSV,
+            ROOT / "patents.csv",
+            PROCESSED_DATA / "patents.csv",
+        ]
+        csv_path = next((p for p in _CSV_CANDIDATES if p.exists()), None)
+
+        if csv_path is None:
             logger.warning(
-                "patents_deduped.csv not found at '%s'. "
+                "No patents CSV found (tried %s). "
                 "Title/abstract/domain/url will be empty in results.",
-                _PATENTS_CSV,
+                ", ".join(str(p) for p in _CSV_CANDIDATES),
             )
             _cached_patents_df = pd.DataFrame(
                 columns=["patent_id", "title", "abstract", "domain", "url"]
             )
         else:
-            logger.info("Loading patents metadata from '%s' ...", _PATENTS_CSV)
-            _cached_patents_df = pd.read_csv(
-                _PATENTS_CSV,
-                usecols=["patent_id", "title", "abstract", "domain", "url"],
-                dtype=str,
-            ).fillna("")
-            logger.info("Loaded %d patent records.", len(_cached_patents_df))
+            logger.info("Loading patents metadata from '%s' ...", csv_path)
+            # Load only the columns we need — tolerate CSVs that lack domain/url
+            available = pd.read_csv(csv_path, nrows=0).columns.tolist()
+            usecols = [c for c in ["patent_id", "title", "abstract", "domain", "url"] if c in available]
+            _cached_patents_df = pd.read_csv(csv_path, usecols=usecols, dtype=str).fillna("")
+            # Ensure all expected columns exist even if not in CSV
+            for col in ["patent_id", "title", "abstract", "domain", "url"]:
+                if col not in _cached_patents_df.columns:
+                    _cached_patents_df[col] = ""
+            logger.info("Loaded %d patent records from '%s'.", len(_cached_patents_df), csv_path)
 
     return _cached_index, _cached_metadata, _cached_patents_df
 
@@ -186,11 +214,12 @@ _st_model: Optional[SentenceTransformer] = None
 
 
 def _get_model() -> SentenceTransformer:
-    """Return cached SentenceTransformer model."""
+    """Return cached SentenceTransformer model. Reloads if _MODEL_NAME changed after index detection."""
     global _st_model
-    if _st_model is None:
+    if _st_model is None or getattr(_st_model, "_loaded_name", None) != _MODEL_NAME:
         logger.info("Loading SentenceTransformer '%s' ...", _MODEL_NAME)
         _st_model = SentenceTransformer(_MODEL_NAME)
+        _st_model._loaded_name = _MODEL_NAME  # type: ignore[attr-defined]
     return _st_model
 
 

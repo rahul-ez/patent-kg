@@ -129,17 +129,25 @@ This takes a few minutes. When it finishes, you will have the full graph
 
 ---
 
-## Step 5 — Build the FAISS Index
+## Step 5 — Set Up the FAISS Index
 
-This embeds all 58K patents and saves the index locally. Run once:
+The FAISS index is pre-built and available on the shared drive alongside the Neo4j dump.
+Copy both files into the correct folder — no rebuilding needed:
+
+```
+patent-kg/
+  data/
+    vector_store/
+      patents.index            ← copy from shared drive
+      metadata_mapping.json    ← copy from shared drive
+```
+
+If for any reason the pre-built files are missing, you can rebuild locally (takes ~15 minutes):
 
 ```powershell
 cd patent-kg/backend
 python scripts/build_faiss_index.py
 ```
-
-Takes roughly 15–20 minutes on first run. The index is saved to
-`patent-kg/data/vector_store/patents.index`.
 
 ---
 
