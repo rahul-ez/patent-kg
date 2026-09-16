@@ -2,6 +2,17 @@
 
 This is a full-stack AI platform that evaluates innovation ideas, analyzes patent citation relationships, and provides actionable design improvement guidance.
 
+## Repository layout
+
+- `backend/` — FastAPI API, production services, and operational scripts.
+- `frontend/` — React/Vite user interface.
+- `data/` — local raw, processed, vector, and export data; ignored by Git.
+- `docs/` — architecture, technical guides, planning, and reference material.
+- `tests/` — automated and opt-in integration tests.
+
+See [docs/README.md](docs/README.md) for supporting documentation and
+[`backend/scripts/README.md`](backend/scripts/README.md) for offline commands.
+
 ## Pipeline Architecture
 
 The end-to-end intelligence pipeline executes in the following order:
@@ -67,7 +78,7 @@ During the final backend cleanup pass, the following integration refactors were 
    GOOGLE_API_KEY=your_gemini_api_key
    NEO4J_URI=bolt://localhost:7687
    NEO4J_USER=neo4j
-   NEO4J_PASSWORD=r1hu12005
+   NEO4J_PASSWORD=your_neo4j_password
    ```
 4. Start the backend developer API server:
    ```bash
@@ -89,4 +100,4 @@ During the final backend cleanup pass, the following integration refactors were 
    ```bash
    npm run dev
    ```
-   The Vite app will start on [http://localhost:5175/](http://localhost:5175/) (or the next available port) and will proxy `/api` requests automatically to port 8000.
+   The Vite app starts on [http://localhost:5173/](http://localhost:5173/) by default (or the next available port) and proxies `/api` requests automatically to port 8000.

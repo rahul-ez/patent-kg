@@ -327,7 +327,7 @@ _FIELDS = [
 # ── Routes ────────────────────────────────────────────────────────────────────
 
 @router.post("/evaluate", response_model=EvaluateResponse)
-async def evaluate_idea(req: EvaluateRequest) -> EvaluateResponse:
+def evaluate_idea(req: EvaluateRequest) -> EvaluateResponse:
     """
     Full patentability evaluation — nested JSON used by the React dashboard.
 
@@ -349,7 +349,7 @@ async def evaluate_idea(req: EvaluateRequest) -> EvaluateResponse:
 
 
 @router.post("/evaluate/full")
-async def evaluate_idea_flat(req: EvaluateRequest) -> Dict[str, Any]:
+def evaluate_idea_flat(req: EvaluateRequest) -> Dict[str, Any]:
     """
     Full patentability evaluation — **flat single-level JSON**.
 
@@ -375,7 +375,7 @@ async def evaluate_idea_flat(req: EvaluateRequest) -> Dict[str, Any]:
 
 
 @router.get("/evaluate/fields")
-async def list_evaluation_fields():
+def list_evaluation_fields():
     """
     Returns a description of every field produced by **POST /api/evaluate/full**.
 

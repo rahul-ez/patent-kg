@@ -1,7 +1,11 @@
-# Setup Guide — After Knowledge Graph Module
+# Legacy Streamlit Setup Guide — After Knowledge Graph Module
 
 This document covers everything a teammate needs to get the full pipeline
 running locally, including the Knowledge Graph (Neo4j) and KG expansion steps.
+
+> The supported product interface is the React frontend with the FastAPI backend;
+> see `README.md` for that path. This guide is retained only for the legacy
+> Streamlit demo.
 
 ---
 
@@ -13,9 +17,9 @@ The following has been added on top of the existing NLP + FAISS retrieval pipeli
 |---|---|
 | `backend/src/kg/builder.py` | Builds a Neo4j subgraph for any set of patent IDs |
 | `backend/src/kg/expander.py` | Expands retrieved patents via family edges and CPC sibling links |
-| `backend/scripts/build_full_kg.py` | One-time script to populate Neo4j with all 58K patents |
-| `backend/scripts/dump_kg.py` | Exports the built database to a shareable `.dump` file |
-| `backend/scripts/load_kg.py` | Loads a `.dump` file into your local Neo4j instance |
+| `backend/scripts/kg/build_full_kg.py` | One-time script to populate Neo4j with all 58K patents |
+| `backend/scripts/kg/dump_kg.py` | Exports the built database to a shareable `.dump` file |
+| `backend/scripts/kg/load_kg.py` | Loads a `.dump` file into your local Neo4j instance |
 
 The Streamlit app now runs the following steps automatically after each search:
 
@@ -50,6 +54,7 @@ cd patent-kg
 python -m venv venv
 .\venv\Scripts\Activate.ps1
 pip install -r backend/requirements.txt
+pip install -r backend/requirements-legacy.txt
 python -m spacy download en_core_web_sm
 ```
 
@@ -110,7 +115,7 @@ Get the `neo4j.dump` file from the shared Google Drive / OneDrive folder.
 
 ```powershell
 cd patent-kg/backend
-python scripts/load_kg.py --dump "C:/path/to/neo4j.dump"
+python scripts/kg/load_kg.py --dump "C:/path/to/neo4j.dump"
 ```
 
 Start your DBMS again in Neo4j Desktop when it finishes.
@@ -121,7 +126,7 @@ Make sure your Neo4j DBMS is **running**, then:
 
 ```powershell
 cd patent-kg/backend
-python scripts/build_full_kg.py
+python scripts/kg/build_full_kg.py
 ```
 
 This takes a few minutes. When it finishes, you will have the full graph
@@ -146,12 +151,12 @@ If for any reason the pre-built files are missing, you can rebuild locally (take
 
 ```powershell
 cd patent-kg/backend
-python scripts/build_faiss_index.py
+python scripts/indexing/build_faiss_index.py
 ```
 
 ---
 
-## Step 6 — Run the App
+## Step 6 — Run the Legacy Demo
 
 Make sure your Neo4j DBMS is running in Neo4j Desktop, then:
 
@@ -206,6 +211,6 @@ If these match, everything is set up correctly.
 | `No module named 'spacy'` | Run `pip install spacy` then `python -m spacy download en_core_web_sm` |
 | `No module named 'faiss'` | Run `pip install faiss-cpu` |
 | `streamlit not recognized` | Use `python -m streamlit run streamlit_app.py` |
-| `FileNotFoundError: patents.index` | Run `python scripts/build_faiss_index.py` first |
+| `FileNotFoundError: patents.index` | Run `python scripts/indexing/build_faiss_index.py` first |
 | `Neo4j connection failed` | Make sure the DBMS is started (green Active badge in Neo4j Desktop) |
 | `torchvision` warnings in terminal | Harmless — Streamlit's file watcher noise, app works fine |

@@ -57,7 +57,8 @@ const DEFAULTS = {
   kgStats: null,
   kgExpansion: null,
   kgGraphData: null,
-  gnnWeights: { semantic: 0.6, gnn: 0.4 },
+  // Matches the server-side reranker defaults. UI changes are preview-only.
+  gnnWeights: { semantic: 0.7, gnn: 0.3 },
   evaluationResult: null,
   evalStatus: 'idle' as const,
   evalError: null,

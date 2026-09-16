@@ -1,11 +1,11 @@
 from __future__ import annotations
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import Any, Dict, List, Optional
 
 
 class PipelineRequest(BaseModel):
     idea: str
-    top_k: int = 10
+    top_k: int = Field(default=10, ge=1, le=100)
     gnn_mode: str = "novelty"
 
 
@@ -22,10 +22,10 @@ class PipelineResponse(BaseModel):
 
 class EvaluateRequest(BaseModel):
     idea: str
-    top_k: int = 10
+    top_k: int = Field(default=10, ge=1, le=100)
     gnn_mode: str = "novelty"
     run_fast: bool = False
-    n_reconstruction_samples: int = 5
+    n_reconstruction_samples: int = Field(default=5, ge=1, le=10)
     pipeline_result: Optional[Dict[str, Any]] = None  # pass existing hits to skip re-running pipeline
 
 
@@ -51,7 +51,7 @@ class EvaluateResponse(BaseModel):
 
 
 class KGBuildRequest(BaseModel):
-    patent_ids: List[str]
+    patent_ids: List[str] = Field(min_length=1, max_length=100)
 
 
 class KGBuildResponse(BaseModel):
@@ -60,8 +60,8 @@ class KGBuildResponse(BaseModel):
 
 
 class KGExpandRequest(BaseModel):
-    patent_ids: List[str]
-    cpc_cap: int = 10
+    patent_ids: List[str] = Field(min_length=1, max_length=100)
+    cpc_cap: int = Field(default=10, ge=1, le=100)
 
 
 class KGExpandResponse(BaseModel):

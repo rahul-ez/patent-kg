@@ -10,22 +10,28 @@ PROJECT_ROOT = TEST_DIR.parent
 BACKEND_SRC = PROJECT_ROOT / "backend" / "src"
 sys.path.insert(0, str(BACKEND_SRC))
 
-from gnn.model import PatentGraphSAGE
-from gnn.graph_builder import build_subgraph_data
-from gnn.inference import get_model, run_gnn_inference
-from gnn.reranker import rerank_hits
-from integration.pipeline import _load_resources, _get_model
-
+@unittest.skipUnless(
+    os.getenv("RUN_INTEGRATION_TESTS") == "1",
+    "requires local FAISS data and GNN model artefacts; set RUN_INTEGRATION_TESTS=1",
+)
 class TestGNNInferencePipeline(unittest.TestCase):
     
     def test_model_architecture(self):
         """Test model load and keys in state_dict."""
+        from gnn.inference import get_model
+        from gnn.model import PatentGraphSAGE
+
         model = get_model()
         self.assertIsNotNone(model)
         self.assertTrue(isinstance(model, PatentGraphSAGE))
         
     def test_graph_builder_and_inference(self):
         """Test GNN graph building and running inference on seed patents."""
+        from gnn.graph_builder import build_subgraph_data
+        from gnn.inference import run_gnn_inference
+        from gnn.reranker import rerank_hits
+        from integration.pipeline import _get_model, _load_resources
+
         # Load real resources
         faiss_index, metadata_mapping, patents_df = _load_resources()
         st_model = _get_model()

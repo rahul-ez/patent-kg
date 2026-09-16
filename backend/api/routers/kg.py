@@ -29,16 +29,21 @@ from api.schemas import (
 
 router = APIRouter(tags=["kg"])
 
+_GRAPH_EDGE_LIMIT = 200
+_SCOPED_GRAPH_QUERY = """
+MATCH (seed:Patent)
+WHERE seed.patent_id IN $ids
+MATCH (seed)-[r]-(related)
+WHERE related:Patent OR related:Company OR related:Inventor OR related:CPCCode OR related:Paper
+RETURN seed AS n, r, related AS m
+ORDER BY seed.patent_id, type(r)
+LIMIT $limit
+"""
 
-# ── Helper: build KG and return node/edge counts ──────────────────────────────
 
-def _build_kg_and_count(patent_ids: List[str]) -> dict:
-    """Build Neo4j subgraph and return node + edge type counts."""
+def _scoped_graph_rows(patent_ids: List[str]) -> list:
+    """Return only edges adjacent to the patents requested by this client."""
     from neo4j import GraphDatabase
-    from kg.builder import KGBuilder
-
-    with KGBuilder() as builder:
-        builder.build_subgraph(patent_ids)
 
     driver = GraphDatabase.driver(
         os.getenv("NEO4J_URI", "bolt://localhost:7687"),
@@ -46,26 +51,40 @@ def _build_kg_and_count(patent_ids: List[str]) -> dict:
     )
     try:
         with driver.session() as session:
-            node_rows = session.run(
-                "MATCH (n) WITH labels(n)[0] AS lbl, count(n) AS cnt "
-                "RETURN lbl, cnt ORDER BY lbl"
-            ).data()
-            edge_rows = session.run(
-                "MATCH ()-[r]->() WITH type(r) AS t, count(r) AS cnt "
-                "RETURN t, cnt ORDER BY t"
-            ).data()
+            return list(session.run(_SCOPED_GRAPH_QUERY, ids=patent_ids, limit=_GRAPH_EDGE_LIMIT))
     finally:
         driver.close()
 
-    nodes = {row["lbl"]: row["cnt"] for row in node_rows if row["lbl"]}
-    edges = {row["t"]: row["cnt"] for row in edge_rows if row["t"]}
-    return {"nodes": nodes, "edges": edges}
+
+def _counts_from_rows(rows: list) -> dict:
+    """Count the graph slice that will actually be rendered, not the whole database."""
+    nodes: dict[str, set[str]] = {}
+    edges: dict[str, int] = {}
+    for row in rows:
+        for node in (row["n"], row["m"]):
+            label = next(iter(node.labels), "Unknown")
+            nodes.setdefault(label, set()).add(str(node.element_id))
+        edge_type = row["r"].type
+        edges[edge_type] = edges.get(edge_type, 0) + 1
+    return {"nodes": {label: len(ids) for label, ids in nodes.items()}, "edges": edges}
+
+
+# ── Helper: build KG and return node/edge counts ──────────────────────────────
+
+def _build_kg_and_count(patent_ids: List[str]) -> dict:
+    """Build missing graph records and return counts for this request's graph slice."""
+    from kg.builder import KGBuilder
+
+    with KGBuilder() as builder:
+        builder.build_subgraph(patent_ids)
+
+    return _counts_from_rows(_scoped_graph_rows(patent_ids))
 
 
 # ── POST /api/kg/build ────────────────────────────────────────────────────────
 
 @router.post("/kg/build", response_model=KGBuildResponse)
-async def build_kg(req: KGBuildRequest) -> KGBuildResponse:
+def build_kg(req: KGBuildRequest) -> KGBuildResponse:
     """Write a patent subgraph to Neo4j and return node/edge statistics."""
     if not req.patent_ids:
         raise HTTPException(status_code=422, detail="patent_ids cannot be empty.")
@@ -79,7 +98,7 @@ async def build_kg(req: KGBuildRequest) -> KGBuildResponse:
 # ── POST /api/kg/expand ───────────────────────────────────────────────────────
 
 @router.post("/kg/expand", response_model=KGExpandResponse)
-async def expand_kg(req: KGExpandRequest) -> KGExpandResponse:
+def expand_kg(req: KGExpandRequest) -> KGExpandResponse:
     """Find family members and CPC siblings via Neo4j expansion."""
     if not req.patent_ids:
         raise HTTPException(status_code=422, detail="patent_ids cannot be empty.")
@@ -94,7 +113,7 @@ async def expand_kg(req: KGExpandRequest) -> KGExpandResponse:
 # ── GET /api/kg/graph ─────────────────────────────────────────────────────────
 
 @router.get("/kg/graph", response_model=KGGraphResponse)
-async def get_kg_graph(
+def get_kg_graph(
     patent_ids: str = Query(..., description="Comma-separated patent IDs"),
 ) -> KGGraphResponse:
     """
@@ -106,24 +125,7 @@ async def get_kg_graph(
         raise HTTPException(status_code=422, detail="No valid patent_ids provided.")
 
     try:
-        from neo4j import GraphDatabase
-
-        driver = GraphDatabase.driver(
-            os.getenv("NEO4J_URI", "bolt://localhost:7687"),
-            auth=(os.getenv("NEO4J_USER", "neo4j"), os.getenv("NEO4J_PASSWORD", "")),
-        )
-        try:
-            with driver.session() as session:
-                result = session.run(
-                    """
-                    MATCH (n)-[r]->(m)
-                    RETURN n, r, m
-                    LIMIT 200
-                    """
-                )
-                rows = list(result)
-        finally:
-            driver.close()
+        rows = _scoped_graph_rows(ids)
     except Exception as exc:
         raise HTTPException(status_code=500, detail=f"Neo4j query failed: {exc}") from exc
 
@@ -133,9 +135,10 @@ async def get_kg_graph(
 
     NODE_TYPE_MAP = {
         "Patent": "patent",
-        "Assignee": "company",
-        "CPC": "cpc",
+        "Company": "company",
+        "CPCCode": "cpc",
         "Inventor": "inventor",
+        "Paper": "paper",
     }
 
     for row in rows:

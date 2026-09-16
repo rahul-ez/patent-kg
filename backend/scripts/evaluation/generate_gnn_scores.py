@@ -22,7 +22,7 @@ computes structural uniqueness live at query time.
 Usage
 -----
     cd patent-kg/backend
-    python scripts/generate_gnn_scores.py
+    python scripts/evaluation/generate_gnn_scores.py
 
 Output files land in:  patent-kg/data/vector_store/
 Runtime:               5–20 min depending on corpus size (215K patents, 384-dim)
@@ -45,7 +45,7 @@ logger = logging.getLogger(__name__)
 
 # ── Path setup ────────────────────────────────────────────────────────────────
 _SCRIPTS_DIR  = Path(__file__).resolve().parent
-_BACKEND_DIR  = _SCRIPTS_DIR.parent
+_BACKEND_DIR  = _SCRIPTS_DIR.parents[1]
 _SRC_DIR      = _BACKEND_DIR / "src"
 sys.path.insert(0, str(_SRC_DIR))
 

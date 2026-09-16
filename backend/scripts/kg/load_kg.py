@@ -6,10 +6,10 @@ Run this instead of build_full_kg.py if you have the dump file.
 
 Usage:
     cd patent-kg/backend
-    python scripts/load_kg.py --dump <path_to_neo4j.dump>
+    python scripts/kg/load_kg.py --dump <path_to_neo4j.dump>
 
 Example:
-    python scripts/load_kg.py --dump "C:/Shared/neo4j.dump"
+    python scripts/kg/load_kg.py --dump "C:/Shared/neo4j.dump"
 
 IMPORTANT:
     1. Your Neo4j DBMS must be STOPPED before loading.
@@ -29,7 +29,7 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
-_BACKEND = Path(__file__).resolve().parent.parent
+_BACKEND = Path(__file__).resolve().parents[2]
 load_dotenv(_BACKEND.parent / ".env")
 
 NEO4J_HOME = os.getenv("NEO4J_HOME", "")

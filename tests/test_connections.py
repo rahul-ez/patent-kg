@@ -1,22 +1,31 @@
-# 1. Test Neo4j
+"""Manual Neo4j connectivity probe; it is not part of the automated test suite."""
+import os
+
+from dotenv import load_dotenv
 from neo4j import GraphDatabase
 
-uri = "bolt://localhost:7687"
-driver = GraphDatabase.driver(uri, auth=("neo4j", "password123"))
 
-try:
-    driver.verify_connectivity()
-    print("Neo4j is connected!")
-except Exception as e:
-    print(f"Neo4j failed: {e}")
+def main() -> int:
+    load_dotenv()
+    password = os.getenv("NEO4J_PASSWORD")
+    if not password:
+        print("NEO4J_PASSWORD is not configured; skipping connectivity probe.")
+        return 0
 
-# 2. Test Chroma
-import chromadb
+    driver = GraphDatabase.driver(
+        os.getenv("NEO4J_URI", "bolt://localhost:7687"),
+        auth=(os.getenv("NEO4J_USER", "neo4j"), password),
+    )
+    try:
+        driver.verify_connectivity()
+        print("Neo4j is connected.")
+        return 0
+    except Exception as exc:
+        print(f"Neo4j connectivity failed: {exc}")
+        return 1
+    finally:
+        driver.close()
 
-try:
-    # Connect to the Docker container, not a local file
-    chroma_client = chromadb.HttpClient(host='localhost', port=8000)
-    chroma_client.heartbeat()
-    print("ChromaDB is connected!")
-except Exception as e:
-    print(f"Chroma failed: {e}")
+
+if __name__ == "__main__":
+    raise SystemExit(main())

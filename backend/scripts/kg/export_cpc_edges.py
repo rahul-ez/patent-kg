@@ -1,9 +1,13 @@
-# Run locally: patent-kg/scripts/export_cpc_edges.py
-from neo4j import GraphDatabase
-import pandas as pd
 import os
+from pathlib import Path
+
+import pandas as pd
+from neo4j import GraphDatabase
 from dotenv import load_dotenv
-load_dotenv()
+
+_REPO_ROOT = Path(__file__).resolve().parents[3]
+_OUTPUT_DIR = _REPO_ROOT / "data" / "exports"
+load_dotenv(_REPO_ROOT / ".env")
 
 driver = GraphDatabase.driver(
     os.getenv("NEO4J_URI", "bolt://localhost:7687"),
@@ -29,7 +33,8 @@ with driver.session() as session:
 
 driver.close()
 
-cpc_df.to_csv("patent_cpc_map.csv", index=False)
-cpc_edges_df.to_csv("cpc_sibling_edges.csv", index=False)
+_OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+cpc_df.to_csv(_OUTPUT_DIR / "patent_cpc_map.csv", index=False)
+cpc_edges_df.to_csv(_OUTPUT_DIR / "cpc_sibling_edges.csv", index=False)
 print(f"CPC map: {len(cpc_df)} rows")
 print(f"CPC sibling edges: {len(cpc_edges_df)} rows")

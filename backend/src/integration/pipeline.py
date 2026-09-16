@@ -14,7 +14,7 @@ Pipeline:
         → RetrievalResponse               — structured JSON output
 
 Usage:
-    cd patent-kg/backend/
+    cd backend/
     python -m src.integration.pipeline
 
     Or as a library:
@@ -41,7 +41,7 @@ import faiss
 import numpy as np
 import pandas as pd
 from sentence_transformers import SentenceTransformer
-from gnn.scorer import get_scorer
+from gnn.scorer import run_live_gnn_rerank
 
 from nlp.pipeline import process_user_query       # NLP layer (your code)
 
@@ -55,13 +55,12 @@ logger = logging.getLogger("integration.pipeline")
 # ── Configuration ─────────────────────────────────────────────────────────────
 from config.paths import VECTOR_STORE, PROCESSED_DATA
 
-# All runtime artefacts (index, metadata, csv) live in patent-kg/data/vector_store/
+# All runtime artefacts (index, metadata, csv) live in data/vector_store/
 # — this is where build_faiss_index.py writes them.
 _VECTOR_DIR    = VECTOR_STORE
 _PATENTS_CSV   = _VECTOR_DIR / "patents_deduped.csv"
 _FAISS_INDEX   = _VECTOR_DIR / "patents.index"
 _METADATA_FILE = _VECTOR_DIR / "metadata_mapping.json"
-_gnn_scorer = None   # lazy-loaded on first query
 
 # Model is selected at runtime based on the FAISS index dimension so this file
 # works regardless of which model was used when build_faiss_index.py was run.
@@ -114,6 +113,8 @@ def prepare_retrieval_query(nlp_result: NLPResult) -> str:
 _cached_index: Optional[faiss.Index] = None
 _cached_metadata: Optional[Dict[str, str]] = None
 _cached_patents_df: Optional[pd.DataFrame] = None
+_cached_faiss_row_by_patent: Optional[Dict[str, int]] = None
+_cached_patent_rows: Optional[Dict[str, Dict[str, str]]] = None
 
 
 def _load_resources() -> tuple:
@@ -125,15 +126,16 @@ def _load_resources() -> tuple:
 
     Raises:
         FileNotFoundError: If the FAISS index or metadata file is missing.
-            Run `python scripts/build_faiss_index.py` first.
+            Run `python scripts/indexing/build_faiss_index.py` first.
     """
     global _cached_index, _cached_metadata, _cached_patents_df
+    global _cached_faiss_row_by_patent, _cached_patent_rows
 
     if _cached_index is None:
         if not _FAISS_INDEX.exists():
             raise FileNotFoundError(
                 f"FAISS index not found at '{_FAISS_INDEX}'.\n"
-                "Run: python patent-kg/backend/scripts/build_faiss_index.py"
+                "Run: python backend/scripts/indexing/build_faiss_index.py"
             )
         logger.info("Loading FAISS index from '%s' ...", _FAISS_INDEX)
         _cached_index = faiss.read_index(str(_FAISS_INDEX))
@@ -172,6 +174,11 @@ def _load_resources() -> tuple:
         else:
             with open(_METADATA_FILE, "r", encoding="utf-8") as f:
                 _cached_metadata = json.load(f)   # {"0": "US-12345-B2", ...}
+        _cached_faiss_row_by_patent = {
+            patent_id: int(row_index)
+            for row_index, patent_id in _cached_metadata.items()
+            if str(row_index).isdigit()
+        }
 
     if _cached_patents_df is None:
         from config.paths import ROOT
@@ -211,6 +218,12 @@ def _load_resources() -> tuple:
                         _cached_patents_df[col] = ""
             logger.info("Loaded %d patent records from '%s'.", len(_cached_patents_df), csv_path)
 
+        _cached_patent_rows = (
+            _cached_patents_df.drop_duplicates(subset="patent_id")
+            .set_index("patent_id")
+            .to_dict(orient="index")
+        )
+
     return _cached_index, _cached_metadata, _cached_patents_df
 
 
@@ -241,7 +254,7 @@ def faiss_search(query_text: str, top_k: int = 10) -> List[RetrievalHit]:
 
     Returns:
         List of RetrievalHit dicts with keys:
-            rank, patent_id, score, title, abstract, domain, url
+            rank, patent_id, semantic_score, title, abstract, domain, url
     """
     index, metadata, patents_df = _load_resources()
     model = _get_model()
@@ -262,15 +275,12 @@ def faiss_search(query_text: str, top_k: int = 10) -> List[RetrievalHit]:
 
         patent_id = metadata.get(str(idx), f"UNKNOWN_{idx}")
 
-        # Enrich with metadata from patents.csv
-        row = patents_df[patents_df["patent_id"] == patent_id]
-        if not row.empty:
-            title    = row.iloc[0]["title"]
-            abstract = row.iloc[0]["abstract"]
-            domain   = row.iloc[0]["domain"]
-            url      = row.iloc[0]["url"]
-        else:
-            title = abstract = domain = url = ""
+        # Metadata lookup is pre-indexed when the resource cache is loaded.
+        row = (_cached_patent_rows or {}).get(patent_id, {})
+        title = row.get("title", "")
+        abstract = row.get("abstract", "")
+        domain = row.get("domain", "")
+        url = row.get("url", "")
 
         hits.append({
             "rank":           rank,
@@ -292,31 +302,6 @@ def faiss_search(query_text: str, top_k: int = 10) -> List[RetrievalHit]:
 # ══════════════════════════════════════════════════════════════════════════════
 # 4. Main Integration Entrypoint
 # ══════════════════════════════════════════════════════════════════════════════
-
-def build_subgraph(expanded_hits: list) -> tuple:
-    """Helper to convert candidate patents into a PyG Data object."""
-    from gnn.graph_builder import build_subgraph_data
-    index, metadata, patents_df = _load_resources()
-    model = _get_model()
-    return build_subgraph_data(expanded_hits, patents_df, metadata, index, model)
-
-def run_gnn(graph_data) -> tuple:
-    """Helper to run live GraphSAGE forward pass."""
-    from gnn.inference import run_gnn_inference
-    return run_gnn_inference(graph_data)
-
-def hybrid_rerank(hits: list, semantic_scores, graph_embeddings, preds, pid_to_idx, gnn_mode) -> list:
-    """Helper to blend semantic scores and GNN scores."""
-    from gnn.reranker import rerank_hits
-    return rerank_hits(
-        hits=hits,
-        embeddings=graph_embeddings,
-        preds=preds,
-        pid_to_idx=pid_to_idx,
-        mode=gnn_mode,
-        semantic_weight=0.7,
-        novelty_weight=0.3
-    )
 
 def run_end_to_end(
     user_idea: str,
@@ -380,21 +365,24 @@ def run_end_to_end(
         faiss.normalize_L2(query_vec)
         query_vec = query_vec[0]
         
+        faiss_row_by_patent = _cached_faiss_row_by_patent or {}
+
         def get_patent_emb(pid, p_title, p_abstract):
             emb = None
-            row_idx_str = None
-            for k, v in _cached_metadata.items():
-                if v == pid:
-                    row_idx_str = k
-                    break
-            if row_idx_str is not None:
+            row_idx = faiss_row_by_patent.get(pid)
+            if row_idx is not None:
                 try:
-                    emb = _cached_index.reconstruct(int(row_idx_str))
+                    emb = _cached_index.reconstruct(row_idx)
                 except Exception:
                     pass
             if emb is None:
                 text = f"{p_title}. {p_abstract}".strip()
-                emb = model.encode(text) if text and text != "." else np.zeros(768, dtype=np.float32)
+                if text and text != ".":
+                    emb = model.encode([text], convert_to_numpy=True).astype(np.float32)
+                    faiss.normalize_L2(emb)
+                    emb = emb[0]
+                else:
+                    emb = np.zeros(_cached_index.d, dtype=np.float32)
             return emb
         
         # Add family members
@@ -446,21 +434,7 @@ def run_end_to_end(
     logger.info("Step 5 — Running GNN Scoring ...")
     gnn_status = "success"
     try:
-        # Build query-time graph object from retrieved + expanded patents
-        graph_data, pid_to_idx = build_subgraph(all_hits)
-        
-        # Run live forward pass
-        graph_embeddings, preds = run_gnn(graph_data)
-        
-        # Perform hybrid re-ranking
-        all_hits = hybrid_rerank(
-            hits=all_hits,
-            semantic_scores=None,
-            graph_embeddings=graph_embeddings,
-            preds=preds,
-            pid_to_idx=pid_to_idx,
-            gnn_mode=gnn_mode
-        )
+        all_hits = run_live_gnn_rerank(all_hits, mode=gnn_mode)
     except FileNotFoundError as exc:
         logger.warning("GNN scorer unavailable (%s) — skipping.", exc)
         gnn_status = "skipped_missing_embeddings"
@@ -519,8 +493,8 @@ if __name__ == "__main__":
     except FileNotFoundError as e:
         print(f"\n[ERROR] {e}")
         print("\nSetup steps required:")
-        print("  1. python src/processing/process_patents.py")
-        print("  2. python patent-kg/backend/scripts/build_faiss_index.py")
+        print("  1. python backend/scripts/data/process_patents.py")
+        print("  2. python backend/scripts/indexing/build_faiss_index.py")
         print("  3. python -m src.integration.pipeline")
         sys.exit(1)
 

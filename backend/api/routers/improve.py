@@ -16,7 +16,7 @@ logger = logging.getLogger("api.routers.improve")
 router = APIRouter(tags=["improvement"])
 
 @router.post("/improve", response_model=ImprovementResponse)
-async def improve_idea(req: ImprovementRequest):
+def improve_idea(req: ImprovementRequest):
     """
     Generate structured patent improvement recommendations.
     

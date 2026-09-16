@@ -3,6 +3,7 @@ import sys
 import json
 import logging
 from collections import defaultdict
+from pathlib import Path
 
 # Suppress TensorFlow warnings
 os.environ.setdefault("USE_TF", "0")
@@ -10,8 +11,11 @@ os.environ.setdefault("USE_TORCH", "1")
 os.environ.setdefault("TRANSFORMERS_NO_TF", "1")
 
 # Setup paths
-_BACKEND_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.insert(0, os.path.join(_BACKEND_DIR, "src"))
+_BACKEND_DIR = Path(__file__).resolve().parents[2]
+_REPO_ROOT = _BACKEND_DIR.parent
+_FIXTURE_PATH = _BACKEND_DIR / "fixtures" / "retrieval_evaluation" / "dataset.json"
+_REPORT_PATH = _REPO_ROOT / "docs" / "reports" / "faiss-evaluation-latest.txt"
+sys.path.insert(0, str(_BACKEND_DIR / "src"))
 
 from integration.pipeline import faiss_search
 from retrieval.metrics import (
@@ -27,7 +31,7 @@ logging.getLogger("sentence_transformers").setLevel(logging.WARNING)
 logging.getLogger("integration.pipeline").setLevel(logging.WARNING)
 
 def run_evaluation():
-    dataset_path = os.path.join(os.path.dirname(__file__), "evaluation_dataset.json")
+    dataset_path = _FIXTURE_PATH
     if not os.path.exists(dataset_path):
         print(f"Dataset not found at {dataset_path}")
         return
@@ -46,7 +50,8 @@ def run_evaluation():
     domain_metrics = {k: defaultdict(lambda: defaultdict(list)) for k in k_vals}
     
     # Output file
-    report_path = os.path.join(os.path.dirname(__file__), "evaluation_report.txt")
+    _REPORT_PATH.parent.mkdir(parents=True, exist_ok=True)
+    report_path = _REPORT_PATH
     
     with open(report_path, "w", encoding="utf-8") as out:
         def emit(text=""):
@@ -71,7 +76,7 @@ def run_evaluation():
             # Fetch top 10 (since max K is 10)
             hits = faiss_search(query, top_k=10)
             retrieved_ids = [h["patent_id"] for h in hits]
-            retrieved_scores = [h["score"] for h in hits]
+            retrieved_scores = [h["semantic_score"] for h in hits]
             
             emit(f"Retrieved patents: {retrieved_ids}")
             emit(f"Retrieved scores: {retrieved_scores}\n")

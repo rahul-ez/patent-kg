@@ -9,7 +9,7 @@ from tqdm import tqdm
 from sentence_transformers import SentenceTransformer
 
 # Setup paths relative to the script location
-# scripts/ → backend/ → patent-kg/ → PROJECT_ROOT
+# scripts/indexing/ → scripts/ → backend/ → patent-kg/
 _SCRIPTS_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(_SCRIPTS_DIR)))
 
@@ -17,7 +17,7 @@ PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(_SCRIPTS_DIR)))
 DATA_FILE = os.path.join(PROJECT_ROOT, "data", "processed", "patents.csv")
 
 # Output: FAISS index stored inside patent-kg/ (co-located with the backend)
-BASE_DIR = os.path.dirname(os.path.dirname(_SCRIPTS_DIR))  # → patent-kg/
+BASE_DIR = PROJECT_ROOT
 INDEX_DIR = os.path.join(BASE_DIR, "data", "vector_store")
 FAISS_INDEX_FILE = os.path.join(INDEX_DIR, "patents.index")
 METADATA_FILE = os.path.join(INDEX_DIR, "metadata_mapping.json")
@@ -107,7 +107,7 @@ def build_faiss_index():
     if not os.path.exists(DATA_FILE):
         raise FileNotFoundError(
             f"patents.csv not found at '{DATA_FILE}'.\n"
-            "Run: python src/processing/process_patents.py  (from the project root)"
+            "Run: python backend/scripts/data/process_patents.py  (from the repository root)"
         )
     df = pd.read_csv(DATA_FILE)
 

@@ -54,7 +54,7 @@ Scorers degrade gracefully:
 Python packages (see `backend/requirements.txt`):
 ```
 fastapi uvicorn faiss-cpu sentence-transformers
-google-generativeai python-dotenv neo4j pandas numpy tqdm
+google-genai python-dotenv neo4j pandas numpy tqdm
 ```
 
 ---
@@ -97,7 +97,7 @@ If `data/vector_store/patents.index` does not exist:
 
 ```bash
 cd patent-kg/backend
-python scripts/build_faiss_index.py
+python scripts/indexing/build_faiss_index.py
 ```
 
 ### 4. (Optional) Generate GNN scores
@@ -106,7 +106,7 @@ Enables GNN-based novelty scoring (~5–20 min, one-time):
 
 ```bash
 cd patent-kg/backend
-python scripts/generate_gnn_scores.py
+python scripts/evaluation/generate_gnn_scores.py
 ```
 
 Output: `data/vector_store/novelty_scores.json` and `data/vector_store/node_embeddings.npy`
@@ -133,7 +133,7 @@ Opens at [http://localhost:5173](http://localhost:5173). The Vite proxy forwards
 
 ## Optional: Generate GNN Scores
 
-`backend/scripts/generate_gnn_scores.py` derives novelty scores locally without a trained GNN or Colab:
+`backend/scripts/evaluation/generate_gnn_scores.py` derives novelty scores locally without a trained GNN or Colab:
 
 1. Reconstructs all embeddings from the FAISS index
 2. Computes **embedding isolation** — how far each patent sits from its K nearest neighbours in vector space (patents in sparse regions = novel)

@@ -73,6 +73,12 @@ export default function GNNAnalysisPage() {
   const activeMode = rerankedHits[0]?.gnn_mode ?? 'novelty'
   const weightSum  = +(gnnWeights.semantic + gnnWeights.gnn).toFixed(4)
   const sumOk      = Math.abs(weightSum - 1.0) < 0.01
+  const setSemanticWeight = (semantic: number) => {
+    setGNNWeights({ semantic, gnn: Number((1 - semantic).toFixed(2)) })
+  }
+  const setGNNWeight = (gnn: number) => {
+    setGNNWeights({ semantic: Number((1 - gnn).toFixed(2)), gnn })
+  }
 
   // Ref number generation derived from query_id or current date
   const refNum = useRef('')
@@ -217,7 +223,7 @@ export default function GNNAnalysisPage() {
             <input
               type="range" min={0} max={1} step={0.05}
               value={gnnWeights.semantic}
-              onChange={(e) => setGNNWeights({ ...gnnWeights, semantic: +e.target.value })}
+              onChange={(e) => setSemanticWeight(+e.target.value)}
               style={{ width: '100%', accentColor: T.accentSage, cursor: 'pointer' }}
             />
           </div>
@@ -233,7 +239,7 @@ export default function GNNAnalysisPage() {
             <input
               type="range" min={0} max={1} step={0.05}
               value={gnnWeights.gnn}
-              onChange={(e) => setGNNWeights({ ...gnnWeights, gnn: +e.target.value })}
+              onChange={(e) => setGNNWeight(+e.target.value)}
               style={{ width: '100%', accentColor: T.accentBrass, cursor: 'pointer' }}
             />
           </div>
@@ -248,6 +254,9 @@ export default function GNNAnalysisPage() {
             }
           </span>
         </div>
+        <p style={{ color: 'var(--text-tertiary)', fontSize: '12px', margin: '12px 0 0', lineHeight: 1.5 }}>
+          These controls preview alternative blends in the browser. The persisted server ranking uses 70% semantic and 30% GNN weight.
+        </p>
       </motion.div>
 
       {/* No GNN Notice */}

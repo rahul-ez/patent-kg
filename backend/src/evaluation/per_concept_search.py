@@ -108,7 +108,7 @@ def _load_resources_direct(index_only: bool = False):
     if not index_path.exists():
         raise FileNotFoundError(
             f"FAISS index not found at '{index_path}'. "
-            "Run: python scripts/build_faiss_index.py"
+            "Run: python scripts/indexing/build_faiss_index.py"
         )
 
     index = faiss.read_index(str(index_path))
@@ -133,7 +133,7 @@ def _load_resources_direct(index_only: bool = False):
             PROCESSED_DATA / "patents.csv",
             ROOT / "data" / "processed" / "patents.csv",
             ROOT / "patents.csv",
-            ROOT.parent / "patents.csv",   # C:\PantentsAI\patents.csv
+            ROOT / "patents.csv",
         ]
         fallback_df = None
         for fb in fallbacks:

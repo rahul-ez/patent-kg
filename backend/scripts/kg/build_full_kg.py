@@ -7,7 +7,7 @@ satellite data: assignees, inventors, CPC codes, family edges, paper nodes.
 Run from the patent-kg/backend directory:
 
     cd patent-kg/backend
-    python scripts/build_full_kg.py
+    python scripts/kg/build_full_kg.py
 
 Prerequisites:
     1. Neo4j DBMS is running in Neo4j Desktop.
@@ -15,7 +15,7 @@ Prerequisites:
     3. All 7 CSV files are present in the project root (C:/PantentsAI/).
 
 After completion this script prints dump instructions.
-Run scripts/dump_kg.py next to produce the shareable .dump file.
+Run scripts/kg/dump_kg.py next to produce the shareable .dump file.
 """
 
 import logging
@@ -24,7 +24,7 @@ import time
 from pathlib import Path
 
 # Ensure src/ is importable when run as a script
-_BACKEND = Path(__file__).resolve().parent.parent
+_BACKEND = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(_BACKEND / "src"))
 
 from dotenv import load_dotenv
@@ -59,7 +59,7 @@ def main():
     logger.info("")
     logger.info("Next step — create the shareable dump file:")
     logger.info("  1. Stop your Neo4j DBMS in Neo4j Desktop.")
-    logger.info("  2. Run:  python scripts/dump_kg.py")
+    logger.info("  2. Run:  python scripts/kg/dump_kg.py")
     logger.info("  3. Share the resulting .dump file with your teammates.")
     logger.info("")
 

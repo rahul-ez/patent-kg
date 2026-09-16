@@ -207,9 +207,9 @@ across these connections in a way that FAISS embeddings alone cannot support.
 | `backend/src/kg/builder.py` | KGBuilder class — subgraph and full corpus builds |
 | `backend/src/kg/expander.py` | expand_via_kg function — family and CPC sibling queries |
 | `backend/src/kg/__init__.py` | Module exports |
-| `backend/scripts/build_full_kg.py` | Terminal command for the one-time full build |
-| `backend/scripts/dump_kg.py` | Exports the built database to a .dump file |
-| `backend/scripts/load_kg.py` | Teammate command to load the .dump file |
+| `backend/scripts/kg/build_full_kg.py` | Terminal command for the one-time full build |
+| `backend/scripts/kg/dump_kg.py` | Exports the built database to a .dump file |
+| `backend/scripts/kg/load_kg.py` | Teammate command to load the .dump file |
 
 ---
 

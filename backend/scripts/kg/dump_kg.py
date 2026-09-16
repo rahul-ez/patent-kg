@@ -2,13 +2,13 @@
 Neo4j Database Dump — run after build_full_kg.py
 =================================================
 Exports the Neo4j 'neo4j' database to a .dump file that teammates
-can load with scripts/load_kg.py.
+can load with scripts/kg/load_kg.py.
 
 IMPORTANT: Your Neo4j DBMS must be STOPPED before running this.
 Stop it in Neo4j Desktop, then run:
 
     cd patent-kg/backend
-    python scripts/dump_kg.py
+    python scripts/kg/dump_kg.py
 
 The dump file will be saved to:
     patent-kg/data/kg_dump/neo4j.dump
@@ -23,7 +23,7 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
-_BACKEND  = Path(__file__).resolve().parent.parent
+_BACKEND  = Path(__file__).resolve().parents[2]
 _DUMP_DIR = _BACKEND.parent / "data" / "kg_dump"
 
 load_dotenv(_BACKEND.parent / ".env")
@@ -32,11 +32,15 @@ load_dotenv(_BACKEND.parent / ".env")
 # e.g. C:\Users\you\.Neo4jDesktop2\Data\dbmss\dbms-<id>
 NEO4J_HOME = os.getenv(
     "NEO4J_HOME",
-    r"C:\Users\samku\.Neo4jDesktop2\Data\dbmss\dbms-47a4a4b2-4d37-440f-bdc5-e8fc41bfdfc9",
+    "",
 )
 
 
 def main():
+    if not NEO4J_HOME:
+        print("[ERROR] NEO4J_HOME is not set in your .env file.")
+        sys.exit(1)
+
     neo4j_admin = Path(NEO4J_HOME) / "bin" / "neo4j-admin.bat"
 
     if not neo4j_admin.exists():
@@ -80,7 +84,7 @@ def main():
     print(f"\n  Dump complete: {dump_path}  ({size_mb:.1f} MB)")
     print()
     print("  Share this file with teammates.")
-    print("  They load it with:  python scripts/load_kg.py --dump <path_to_neo4j.dump>")
+    print("  They load it with:  python scripts/kg/load_kg.py --dump <path_to_neo4j.dump>")
     print("=" * 60)
 
 

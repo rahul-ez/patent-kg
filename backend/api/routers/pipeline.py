@@ -19,11 +19,12 @@ router = APIRouter(tags=["pipeline"])
 
 
 @router.post("/pipeline/run", response_model=PipelineResponse)
-async def run_pipeline(req: PipelineRequest) -> PipelineResponse:
+def run_pipeline(req: PipelineRequest) -> PipelineResponse:
     """
     Execute the full end-to-end patent analysis pipeline.
     NLP → Embedding → FAISS retrieval → GNN re-ranking.
-    This is a blocking call; it may take 30-90 seconds on first load.
+    This synchronous handler is run in FastAPI's thread pool, so model and
+    database work do not block the async event loop.
     """
     if not req.idea.strip():
         raise HTTPException(status_code=422, detail="Idea text cannot be empty.")

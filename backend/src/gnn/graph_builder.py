@@ -135,20 +135,20 @@ def build_subgraph_data(hits: list, patents_df: pd.DataFrame, metadata_mapping: 
     else:
         patents_lookup = patents_df
         
+    faiss_row_by_patent = {
+        patent_id: int(row_index)
+        for row_index, patent_id in metadata_mapping.items()
+        if str(row_index).isdigit()
+    }
+
     for pid in all_pids:
         # A. SBERTa embedding (768-dim) lookup with SentenceTransformer fallback
         emb = None
-        row_idx_str = None
-        
-        # Check metadata mapping first to find its row index in the FAISS index
-        for k, v in metadata_mapping.items():
-            if v == pid:
-                row_idx_str = k
-                break
-                
-        if row_idx_str is not None:
+        row_idx = faiss_row_by_patent.get(pid)
+
+        if row_idx is not None:
             try:
-                emb = faiss_index.reconstruct(int(row_idx_str))
+                emb = faiss_index.reconstruct(row_idx)
             except Exception:
                 pass
                 
@@ -176,10 +176,12 @@ def build_subgraph_data(hits: list, patents_df: pd.DataFrame, metadata_mapping: 
                         
             text = f"{title}. {abstract}".strip()
             if text and text != ".":
-                emb = st_model.encode(text)
+                emb = st_model.encode([text], convert_to_numpy=True).astype(np.float32)
+                faiss.normalize_L2(emb)
+                emb = emb[0]
             else:
                 # Absolute baseline zero embedding
-                emb = np.zeros(768, dtype=np.float32)
+                emb = np.zeros(faiss_index.d, dtype=np.float32)
                 
         # B. Load structural and categorical metadata from patents_deduped.csv
         cites = 0.0

@@ -1,10 +1,12 @@
 import pandas as pd
-import os
 import uuid
+from pathlib import Path
 
-# Configuration
-INPUT_FILE = "../data/raw/patents_sample.csv"
-OUTPUT_DIR = "../data/processed"
+# Legacy experiment configuration. Production preprocessing lives in
+# scripts/data/process_patents.py and writes the canonical data/processed files.
+_REPO_ROOT = Path(__file__).resolve().parents[3]
+INPUT_FILE = _REPO_ROOT / "data" / "source_exports" / "patents_sample.csv"
+OUTPUT_DIR = _REPO_ROOT / "data" / "legacy_processed"
 
 def normalize_data():
     print(f"Loading raw data from {INPUT_FILE}...")
@@ -14,7 +16,7 @@ def normalize_data():
         print(f"Error: {INPUT_FILE} not found. Please run download_patents.py first.")
         return
 
-    os.makedirs(OUTPUT_DIR, exist_ok=True)
+    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
     # 1. Patents Table
     # Schema: patent_id, title, abstract, date, ipc_codes, claims_text
@@ -24,7 +26,7 @@ def normalize_data():
     # Mocking ipc_codes and claims_text as they aren't fully present in the basic sample API fetch
     patents_df['ipc_codes'] = "G06N" 
     patents_df['claims_text'] = ""
-    patents_df.to_csv(os.path.join(OUTPUT_DIR, "patents.csv"), index=False)
+    patents_df.to_csv(OUTPUT_DIR / "patents.csv", index=False)
 
     # 2. Inventors Table
     # Schema: patent_id, inventor_name, inventor_id
@@ -43,7 +45,7 @@ def normalize_data():
                     "inventor_id": f"INV-{abs(hash(inv))}"
                 })
     inventors_df = pd.DataFrame(inventors_list)
-    inventors_df.to_csv(os.path.join(OUTPUT_DIR, "inventors.csv"), index=False)
+    inventors_df.to_csv(OUTPUT_DIR / "inventors.csv", index=False)
 
     # 3. Assignees Table
     # Schema: patent_id, company_name, company_id (if available)
@@ -61,16 +63,16 @@ def normalize_data():
                     "company_id": f"ORG-{abs(hash(org))}"
                 })
     assignees_df = pd.DataFrame(assignees_list)
-    assignees_df.to_csv(os.path.join(OUTPUT_DIR, "assignees.csv"), index=False)
+    assignees_df.to_csv(OUTPUT_DIR / "assignees.csv", index=False)
 
     # 4. Citations Table
     # Schema: citing_id, cited_id
     # Without API citation depth, we'll create an empty template or random sample for schema validation
     print("Generating citations.csv...")
     citations_df = pd.DataFrame(columns=['citing_id', 'cited_id'])
-    citations_df.to_csv(os.path.join(OUTPUT_DIR, "citations.csv"), index=False)
+    citations_df.to_csv(OUTPUT_DIR / "citations.csv", index=False)
 
-    print("Normalization complete! All files saved to data/processed/")
+    print("Normalization complete! Legacy files saved to data/legacy_processed/")
 
 if __name__ == "__main__":
     normalize_data()

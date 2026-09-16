@@ -7,7 +7,7 @@ using Precision@K and Recall@K.
 
 Usage:
     cd backend/
-    python -m scripts.test_search
+    python scripts/legacy/test_search.py
 """
 
 import sys
@@ -23,7 +23,7 @@ os.environ.setdefault("USE_TORCH", "1")
 os.environ.setdefault("TRANSFORMERS_NO_TF", "1")
 
 # -- Setup import path so `retrieval` is importable ----------------
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "..", "src"))
 
 from retrieval.embed import get_embeddings
 from retrieval.vector_store import save_embeddings, load_embeddings

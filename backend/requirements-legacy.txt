@@ -1,0 +1,3 @@
+# Optional dependencies for backend/streamlit_app.py only.
+# The supported React + FastAPI application does not install these packages.
+streamlit>=1.30.0

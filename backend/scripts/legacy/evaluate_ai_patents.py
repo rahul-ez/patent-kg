@@ -1,6 +1,7 @@
 import sys
 import os
 import logging
+from pathlib import Path
 import pandas as pd
 import numpy as np
 import time
@@ -11,7 +12,8 @@ os.environ.setdefault("USE_TORCH", "1")
 os.environ.setdefault("TRANSFORMERS_NO_TF", "1")
 
 # Setup import path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
+_BACKEND_DIR = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(_BACKEND_DIR / "src"))
 
 from retrieval.embed import get_embeddings
 from retrieval.search import search
@@ -21,7 +23,7 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s | %(levelname)-7s | 
 logger = logging.getLogger("eval_ai_patents")
 
 def main():
-    csv_path = "c:/Users/Lenovo/Documents/Projects/Graph-Enhanced Patent Intelligence Platform/data/raw/ai.csv"
+    csv_path = _BACKEND_DIR.parent / "data" / "raw" / "ai.csv"
     logger.info(f"Loading data from {csv_path}")
     
     try:

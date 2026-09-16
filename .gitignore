@@ -16,11 +16,13 @@ dist/
 
 # --- Environment Variables (Security Risk!) ---
 .env
+keys.txt
 
 # --- Data & Databases (Too big for GitHub) ---
 data/
 neo4j_data/
 chroma_data/
+artifacts/
 
 # --- OS Files ---
 .DS_Store
