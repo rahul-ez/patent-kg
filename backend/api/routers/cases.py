@@ -1,4 +1,4 @@
-"""CRUD endpoints for persisted DBMS-lab analysis cases and SQL reports."""
+"""CRUD endpoints for persisted analysis cases and SQL reports."""
 from __future__ import annotations
 
 import sys

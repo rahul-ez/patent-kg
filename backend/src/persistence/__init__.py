@@ -1,1 +1,1 @@
-"""Relational persistence layer for the DBMS-lab implementation."""
+"""Relational persistence layer for MySQL-backed analysis data."""

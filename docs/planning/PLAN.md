@@ -1,10 +1,10 @@
-# PLAN.md — DBMS Lab Adaptation for Patent Intelligence Platform
+# PLAN.md — MySQL Integration Plan for Patent Intelligence Platform
 
 Blueprint ready.
 
 ## Summary
 
-Keep the full NLP → FAISS → Neo4j → GNN → evaluation → improvement pipeline intact. Add MySQL as the normalized relational source of truth and retain Neo4j as its derived graph-query layer. Target Units I–III plus the SQL–NoSQL integration required by the lab guidelines.
+Keep the full NLP → FAISS → Neo4j → GNN → evaluation → improvement pipeline intact. Add MySQL as the normalized relational source of truth and retain Neo4j as its derived graph-query layer, with clear SQL–NoSQL integration boundaries.
 
 ## Architecture and database design
 
@@ -36,17 +36,17 @@ Keep the full NLP → FAISS → Neo4j → GNN → evaluation → improvement pip
 - Add read-only reporting endpoints/pages backed by SQL joins and aggregations: patent counts by domain/year, top assignees, prolific inventors, CPC distribution, family size/citation reports, and analysis-case risk summaries.
 - Use a dedicated application database user, read-only reporting user, environment secrets, least privilege, foreign-key enforcement, validation, and audit timestamps. Do not expose database passwords in Compose, tests, or tracked files.
 
-## DBMS demonstration and submission pack
+## Database operations and documentation
 
-- Provide SQL DDL, seed/bootstrap scripts, sample DML, views, indexes, and at least 8 documented complex queries using joins, grouping, `HAVING`, subqueries, updates, and deletes.
+- Provide SQL DDL, seed/bootstrap scripts, sample DML, views, indexes, and documented complex queries using joins, grouping, `HAVING`, subqueries, updates, and deletes.
 - Include relational-algebra equivalents for representative selection, projection, join, and division-style queries.
 - Document why Neo4j is the NoSQL component and why FAISS is a retrieval index rather than the project database.
-- Create:
+- Maintain:
   - ER/EER diagram and cardinality/key documentation.
   - Relational schema and 3NF proof.
   - SQL query portfolio with expected output screenshots.
   - Docker setup guide and demo script.
-  - Report outline covering domain, requirements, architecture, security, database design, AI integration, limitations, and future work.
+  - Architecture notes covering domain, requirements, security, database design, AI integration, limitations, and future work.
 - Demo sequence: seed MySQL → project to Neo4j → build FAISS → run a complete AI analysis → show persisted case/run data → execute SQL reports → show equivalent Neo4j traversal.
 
 ## Test plan
@@ -61,6 +61,6 @@ Keep the full NLP → FAISS → Neo4j → GNN → evaluation → improvement pip
 ## Assumptions
 
 - MySQL + Neo4j is accepted as the required SQL–NoSQL integrated solution.
-- The project targets Units I–III; transaction/concurrency and distributed-data features are out of scope.
+- The initial scope excludes transaction/concurrency and distributed-data features.
 - The existing AI pipeline remains mandatory and unchanged in purpose; database integration adds persistence, traceability, and reproducible reporting.
-- The final submission includes both the running application and academic documentation/demo artefacts.
+- The implementation includes the running application and its supporting technical documentation.

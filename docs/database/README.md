@@ -1,4 +1,4 @@
-# DBMS Lab Implementation
+# MySQL Persistence Implementation
 
 MySQL is the normalized source of truth. Neo4j is a one-way graph projection
 for traversal, while FAISS is an embedding index rather than a database.
@@ -15,7 +15,7 @@ for traversal, while FAISS is an embedding index rather than a database.
 6. Create a saved analysis through `POST /api/cases` or attach `case_id` to
    `POST /api/pipeline/run`; inspect persisted history and `/api/reports/*`.
 
-## Submission artefacts
+## Implementation artefacts
 
 - [`../../database/sql/01_schema.sql`](../../database/sql/01_schema.sql): 3NF DDL, keys, checks, indexes, and FK constraints.
 - [`../../database/sql/02_reporting_views.sql`](../../database/sql/02_reporting_views.sql): retrieval and reporting views.

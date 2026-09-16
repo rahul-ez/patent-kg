@@ -9,17 +9,17 @@ BACKEND_SRC = TEST_DIR.parent / "backend" / "src"
 sys.path.insert(0, str(BACKEND_SRC))
 
 
-class TestDBMSLabContract(unittest.TestCase):
+class TestPersistenceContract(unittest.TestCase):
     def test_mysql_url_uses_environment_credentials(self):
         from persistence.database import database_url
 
         with patch.dict(os.environ, {
             "MYSQL_HOST": "db.example", "MYSQL_PORT": "3307", "MYSQL_DATABASE": "patents",
-            "MYSQL_USER": "lab_user", "MYSQL_PASSWORD": "safe value",
+            "MYSQL_USER": "app_user", "MYSQL_PASSWORD": "safe value",
         }, clear=True):
             self.assertEqual(
                 database_url(),
-                "mysql+pymysql://lab_user:safe+value@db.example:3307/patents?charset=utf8mb4",
+                "mysql+pymysql://app_user:safe+value@db.example:3307/patents?charset=utf8mb4",
             )
 
     def test_pipeline_request_supports_case_linking(self):
