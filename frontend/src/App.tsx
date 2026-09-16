@@ -11,6 +11,7 @@ const KGVisualizationPage     = lazy(() => import('./pages/KGVisualizationPage')
 const GNNAnalysisPage         = lazy(() => import('./pages/GNNAnalysisPage'))
 const EvaluationDashboardPage = lazy(() => import('./pages/EvaluationDashboardPage'))
 const ImprovementAgentPage    = lazy(() => import('./pages/ImprovementAgentPage'))
+const CaseHistoryPage         = lazy(() => import('./pages/CaseHistoryPage'))
 
 function LoadingFallback() {
   return (
@@ -34,6 +35,7 @@ export default function App() {
           <Route path="/results/gnn"          element={<GNNAnalysisPage />} />
           <Route path="/results/evaluation"   element={<EvaluationDashboardPage />} />
           <Route path="/results/improvements" element={<ImprovementAgentPage />} />
+          <Route path="/results/cases"        element={<CaseHistoryPage />} />
         </Route>
       </Routes>
     </Suspense>

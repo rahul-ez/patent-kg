@@ -31,12 +31,17 @@ export interface PipelineResponse {
   results: RetrievalHit[]
   gnn_status?: string
   kg_status?: string
+  case_id?: string | null
+  run_id?: string | null
+  persistence_status?: string | null
 }
 
 export interface PipelineRequest {
   idea: string
   top_k: number
   gnn_mode: string
+  case_id?: string
+  case_title?: string
 }
 
 export type PipelineStatus = 'idle' | 'running' | 'complete' | 'error'
@@ -159,4 +164,5 @@ export interface EvaluateRequest {
   run_fast:                boolean
   n_reconstruction_samples: number
   pipeline_result?:        PipelineResponse | null
+  run_id?:                 string | null
 }

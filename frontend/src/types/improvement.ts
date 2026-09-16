@@ -23,4 +23,5 @@ export interface ImprovementRequest {
   idea: string
   pipeline_result?: any | null
   evaluation_result?: any | null
+  run_id?: string | null
 }

@@ -194,7 +194,16 @@ def _load_resources() -> tuple:
             "jurisdiction", "cites_patent_count", "cited_by_patent_count", "family_size"
         ]
 
-        if csv_path is None:
+        mysql_metadata = None
+        try:
+            from persistence.patent_repository import load_patent_dataframe
+            mysql_metadata = load_patent_dataframe()
+        except Exception as exc:
+            logger.debug("MySQL metadata repository unavailable: %s", exc)
+
+        if mysql_metadata is not None:
+            _cached_patents_df = mysql_metadata
+        elif csv_path is None:
             logger.warning(
                 "No patents CSV found (tried %s). "
                 "Title/abstract/domain/url will be empty in results.",

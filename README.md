@@ -8,10 +8,21 @@ This is a full-stack AI platform that evaluates innovation ideas, analyzes paten
 - `frontend/` — React/Vite user interface.
 - `data/` — local raw, processed, vector, and export data; ignored by Git.
 - `docs/` — architecture, technical guides, planning, and reference material.
+- `database/` — MySQL DDL, views, security roles, and SQL lab-query portfolio.
 - `tests/` — automated and opt-in integration tests.
 
 See [docs/README.md](docs/README.md) for supporting documentation and
 [`backend/scripts/README.md`](backend/scripts/README.md) for offline commands.
+
+## DBMS-lab setup
+
+The application uses **MySQL as the normalized source of truth**, **Neo4j as a
+derived graph traversal layer**, and **FAISS as a semantic retrieval index**.
+After configuring `.env`, start MySQL and Neo4j with `docker compose up -d`,
+then run `python backend/scripts/database/bootstrap_mysql.py` and
+`python backend/scripts/database/sync_mysql_to_neo4j.py`. The complete schema,
+normalization proof, SQL portfolio, and demo sequence are in
+[docs/dbms/README.md](docs/dbms/README.md).
 
 ## Pipeline Architecture
 

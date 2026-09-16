@@ -7,6 +7,8 @@ class PipelineRequest(BaseModel):
     idea: str
     top_k: int = Field(default=10, ge=1, le=100)
     gnn_mode: str = "novelty"
+    case_id: Optional[str] = None
+    case_title: Optional[str] = Field(default=None, max_length=250)
 
 
 class PipelineResponse(BaseModel):
@@ -18,6 +20,9 @@ class PipelineResponse(BaseModel):
     results: List[Dict[str, Any]]
     gnn_status: Optional[str] = None
     kg_status: Optional[str] = None
+    case_id: Optional[str] = None
+    run_id: Optional[str] = None
+    persistence_status: Optional[str] = None
 
 
 class EvaluateRequest(BaseModel):
@@ -27,6 +32,7 @@ class EvaluateRequest(BaseModel):
     run_fast: bool = False
     n_reconstruction_samples: int = Field(default=5, ge=1, le=10)
     pipeline_result: Optional[Dict[str, Any]] = None  # pass existing hits to skip re-running pipeline
+    run_id: Optional[str] = None
 
 
 class EvaluateResponse(BaseModel):
@@ -73,3 +79,29 @@ class KGExpandResponse(BaseModel):
 class KGGraphResponse(BaseModel):
     nodes: List[Dict[str, Any]]
     edges: List[Dict[str, Any]]
+
+
+class AnalysisCaseCreate(BaseModel):
+    title: str = Field(min_length=1, max_length=250)
+    idea_text: str = Field(min_length=1)
+
+
+class AnalysisCaseUpdate(BaseModel):
+    title: Optional[str] = Field(default=None, min_length=1, max_length=250)
+    idea_text: Optional[str] = Field(default=None, min_length=1)
+    status: Optional[str] = None
+
+
+class AnalysisCaseResponse(BaseModel):
+    case_id: str
+    title: str
+    idea_text: str
+    status: str
+    created_at: Any
+    updated_at: Any
+    runs: List[Dict[str, Any]] = Field(default_factory=list)
+
+
+class ReportResponse(BaseModel):
+    report: str
+    rows: List[Dict[str, Any]]

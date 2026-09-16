@@ -1,3 +1,4 @@
+import argparse
 import os
 import json
 import hashlib
@@ -99,17 +100,17 @@ def deduplicate(df: pd.DataFrame) -> pd.DataFrame:
 # Main builder
 # ─────────────────────────────────────────────────────────────────────────────
 
-def build_faiss_index():
+def build_faiss_index(data_file: str = DATA_FILE):
     print(f"Loading embedding model ({_MODEL_NAME})...")
     model = SentenceTransformer(_MODEL_NAME)
 
-    print(f"Loading patent data from {DATA_FILE}...")
-    if not os.path.exists(DATA_FILE):
+    print(f"Loading patent data from {data_file}...")
+    if not os.path.exists(data_file):
         raise FileNotFoundError(
-            f"patents.csv not found at '{DATA_FILE}'.\n"
+            f"patents.csv not found at '{data_file}'.\n"
             "Run: python backend/scripts/data/process_patents.py  (from the repository root)"
         )
-    df = pd.read_csv(DATA_FILE)
+    df = pd.read_csv(data_file)
 
     # Drop rows with no text to embed
     df = df.dropna(subset=["title", "abstract"])
@@ -193,4 +194,6 @@ def build_faiss_index():
 
 
 if __name__ == "__main__":
-    build_faiss_index()
+    parser = argparse.ArgumentParser(description="Build a FAISS index from a CSV or MySQL retrieval export.")
+    parser.add_argument("--input", default=DATA_FILE, help="CSV with patent_id, title, and abstract columns.")
+    build_faiss_index(parser.parse_args().input)

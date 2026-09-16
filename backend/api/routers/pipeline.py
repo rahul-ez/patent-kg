@@ -4,6 +4,7 @@ Pipeline router — POST /api/pipeline/run
 from __future__ import annotations
 
 import sys
+import os
 from pathlib import Path
 
 from fastapi import APIRouter, HTTPException
@@ -34,6 +35,16 @@ def run_pipeline(req: PipelineRequest) -> PipelineResponse:
     try:
         from integration.pipeline import run_end_to_end
         result = run_end_to_end(req.idea.strip(), top_k=req.top_k, gnn_mode=req.gnn_mode)
+        try:
+            from persistence.analysis_store import persist_pipeline_result
+            result.update(persist_pipeline_result(
+                idea=req.idea.strip(), top_k=req.top_k, gnn_mode=req.gnn_mode,
+                pipeline_result=result, case_id=req.case_id, case_title=req.case_title,
+            ))
+        except Exception as persistence_exc:
+            if os.getenv("PERSISTENCE_REQUIRED", "false").lower() == "true":
+                raise HTTPException(status_code=503, detail=f"Pipeline completed but MySQL persistence failed: {persistence_exc}") from persistence_exc
+            result["persistence_status"] = "skipped_unavailable"
         return PipelineResponse(**result)
     except FileNotFoundError as exc:
         raise HTTPException(

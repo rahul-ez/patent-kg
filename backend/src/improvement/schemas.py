@@ -6,6 +6,7 @@ class ImprovementRequest(BaseModel):
     idea: str
     pipeline_result: Optional[Dict[str, Any]] = None
     evaluation_result: Optional[Dict[str, Any]] = None
+    run_id: Optional[str] = None
 
 class StrategyItem(BaseModel):
     strategy: str

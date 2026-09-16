@@ -12,6 +12,7 @@ compete with the primary guide.
 | Reference | [knowledge-graph.md](reference/knowledge-graph.md) | Neo4j model, build process, and graph operations. |
 | Reference | [gnn.md](reference/gnn.md) | GraphSAGE and ranking notes. |
 | Planning | [planning/](planning/) | DBMS-lab plan and prior redesign specifications. |
+| DBMS lab | [dbms/](dbms/) | MySQL schema, 3NF proof, relational algebra, security, and demo instructions. |
 | Internal | [internal/](internal/) | Development context and checklist. |
 | Reports | [reports/](reports/) | Checked-in example evaluation output. |
 

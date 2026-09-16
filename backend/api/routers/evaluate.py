@@ -35,13 +35,21 @@ def _run(req: EvaluateRequest) -> dict:
         hits = raw.get("results", [])
 
     from evaluation.patentability_engine import run_evaluation
-    return run_evaluation(
+    result = run_evaluation(
         user_idea=req.idea.strip(),
         hits=hits,
         top_k_concepts=min(req.top_k, 5),
         run_fast=req.run_fast,
         n_reconstruction_samples=req.n_reconstruction_samples,
     )
+    if req.run_id:
+        try:
+            from persistence.analysis_store import persist_evaluation
+            persist_evaluation(req.run_id, result)
+        except Exception as exc:
+            if __import__("os").getenv("PERSISTENCE_REQUIRED", "false").lower() == "true":
+                raise RuntimeError(f"Evaluation completed but MySQL persistence failed: {exc}") from exc
+    return result
 
 
 def _flatten(r: dict) -> Dict[str, Any]:

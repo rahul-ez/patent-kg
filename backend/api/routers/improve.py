@@ -63,6 +63,13 @@ def improve_idea(req: ImprovementRequest):
             pipeline_result=pipeline_res,
             evaluation_result=eval_res
         )
+        if req.run_id:
+            try:
+                from persistence.analysis_store import persist_improvements
+                persist_improvements(req.run_id, output)
+            except Exception as exc:
+                if __import__("os").getenv("PERSISTENCE_REQUIRED", "false").lower() == "true":
+                    raise RuntimeError(f"Improvement completed but MySQL persistence failed: {exc}") from exc
         return output
     except Exception as exc:
         logger.error("Improvement agent orchestration failed: %s", exc)

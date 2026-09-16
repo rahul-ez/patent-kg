@@ -11,6 +11,7 @@ const NAV_ITEMS = [
   { path: '/results/gnn',          label: 'GNN Re-ranking',   Icon: GNNIcon    },
   { path: '/results/evaluation',   label: 'Evaluation',       Icon: NoveltyIcon },
   { path: '/results/improvements', label: 'Improvements',     Icon: IdeaIcon   },
+  { path: '/results/cases',        label: 'Saved Cases',      Icon: PatentDocIcon },
 ]
 
 export default function RootLayout() {

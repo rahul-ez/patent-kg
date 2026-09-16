@@ -1,4 +1,25 @@
 services:
+  mysql:
+    image: mysql:8.4
+    container_name: patent_mysql
+    restart: unless-stopped
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-patent_intelligence}
+      MYSQL_USER: ${MYSQL_USER:?Set MYSQL_USER in .env}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:?Set MYSQL_PASSWORD in .env}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?Set MYSQL_ROOT_PASSWORD in .env}
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./database/sql/01_schema.sql:/docker-entrypoint-initdb.d/01_schema.sql:ro
+      - ./database/sql/02_reporting_views.sql:/docker-entrypoint-initdb.d/02_reporting_views.sql:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "--password=$$MYSQL_ROOT_PASSWORD"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
   # Configure NEO4J_PASSWORD in patent-kg/.env. Never commit real credentials.
   neo4j:
     image: neo4j:community
@@ -10,3 +31,6 @@ services:
       NEO4J_AUTH: neo4j/${NEO4J_PASSWORD:?Set NEO4J_PASSWORD in .env}
     volumes:
       - ./neo4j_data:/data
+
+volumes:
+  mysql_data:

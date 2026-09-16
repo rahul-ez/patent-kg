@@ -253,6 +253,7 @@ export default function EvaluationDashboardPage() {
         run_fast: runFast,
         n_reconstruction_samples: runFast ? 3 : 5,
         pipeline_result: pipelineResult,
+        run_id: pipelineResult?.run_id,
       })
       setEvalResult(result)
     } catch (err: any) {

@@ -41,6 +41,7 @@ export default function ImprovementAgentPage() {
             idea,
             pipeline_result: pipelineResult,
             evaluation_result: evaluationResult,
+            run_id: pipelineResult.run_id,
           })
           setImprovementResult(res)
         } catch (err: any) {

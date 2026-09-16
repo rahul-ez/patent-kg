@@ -4,7 +4,7 @@
 
 This repository is a prototype **patent-intelligence platform**. A user submits an invention idea; the system cleans and enriches the text, retrieves similar patents with FAISS, expands the candidate set through a Neo4j knowledge graph, optionally re-ranks it with a GraphSAGE model, evaluates patentability heuristics, and generates improvement suggestions. The primary product surface is a React/Vite frontend backed by FastAPI. A large Streamlit application remains as a legacy/alternate UI.
 
-`patent-kg/` is the complete project boundary. Raw and processed datasets, vector artefacts, a populated Neo4j database, and local environment values are intentionally ignored by Git but live under this repository when available.
+`patent-kg/` is the complete project boundary. Raw and processed datasets, vector artefacts, populated MySQL/Neo4j databases, and local environment values are intentionally ignored by Git but live under this repository when available. MySQL is the normalized source of truth; Neo4j is a one-way graph projection and FAISS is a derived retrieval index.
 
 ## Runtime flow
 
@@ -32,9 +32,9 @@ The pipeline can degrade when dependencies are absent: failed Neo4j expansion le
 ```text
 data/raw/*.csv (Lens-style source exports)
   └─ backend/scripts/data/process_patents.py
-       └─ data/processed/*.csv (normalised graph inputs)
-            ├─ backend/scripts/kg/build_full_kg.py → Neo4j full graph
-            └─ backend/scripts/indexing/build_faiss_index.py → data/vector_store/
+       └─ data/processed/*.csv (reproducible ETL inputs)
+            ├─ backend/scripts/database/bootstrap_mysql.py → MySQL 3NF source of truth
+            └─ backend/scripts/database/sync_mysql_to_neo4j.py → Neo4j projection`n                 └─ backend/scripts/database/export_mysql_retrieval.py → backend/scripts/indexing/build_faiss_index.py → data/vector_store/
                                                         patents.index
                                                         metadata_mapping.json
                                                         patents_deduped.csv
@@ -53,7 +53,7 @@ The API reads FAISS/vector artefacts and Neo4j. It does not build them automatic
 | Vector retrieval | Local FAISS files | Production semantic retrieval. |
 | LLM | Google Gemini credentials via `GOOGLE_API_KEY` | Used for NLP, evaluation sub-scorers, and improvement prose; fallbacks exist. |
 
-Required environment values are `GOOGLE_API_KEY`, `NEO4J_URI`, `NEO4J_USER`, and `NEO4J_PASSWORD`; KG export/import scripts additionally use `NEO4J_HOME`. Copy `.env.example` to `.env`; both `.env` and `keys.txt` are ignored by Git.
+Required environment values are `GOOGLE_API_KEY`, `NEO4J_URI`, `NEO4J_USER`, `NEO4J_PASSWORD`, and the `MYSQL_*` values; KG export/import scripts additionally use `NEO4J_HOME`. Copy `.env.example` to `.env`; both `.env` and `keys.txt` are ignored by Git.
 
 ## API contract and UI routes
 
