@@ -44,6 +44,7 @@ from sentence_transformers import SentenceTransformer
 from gnn.scorer import run_live_gnn_rerank
 
 from nlp.pipeline import process_user_query       # NLP layer (your code)
+from retrieval.result_grouping import group_identical_publications
 
 # ── Logging ───────────────────────────────────────────────────────────────────
 logging.basicConfig(
@@ -289,6 +290,7 @@ def faiss_search(query_text: str, top_k: int = 10) -> List[RetrievalHit]:
         title = row.get("title", "")
         abstract = row.get("abstract", "")
         domain = row.get("domain", "")
+        jurisdiction = row.get("jurisdiction", "")
         url = row.get("url", "")
 
         hits.append({
@@ -296,8 +298,9 @@ def faiss_search(query_text: str, top_k: int = 10) -> List[RetrievalHit]:
             "patent_id":      patent_id,
             "semantic_score": round(float(score), 6),   # raw cosine sim (L2-normed)
             "title":          title,
-            "abstract":       abstract[:300] + "..." if len(abstract) > 300 else abstract,
+            "abstract":       abstract,
             "domain":         domain,
+            "jurisdiction":   jurisdiction,
             "url":            url,
         })
 
@@ -409,6 +412,7 @@ def run_end_to_end(
                 "title": p["title"],
                 "abstract": p["abstract"],
                 "domain": p["domain"],
+                "jurisdiction": p["jurisdiction"],
                 "url": p["url"],
                 "faiss_rank": -1
             })
@@ -428,6 +432,7 @@ def run_end_to_end(
                 "title": p["title"],
                 "abstract": p["abstract"],
                 "domain": p["domain"],
+                "jurisdiction": p["jurisdiction"],
                 "url": p["url"],
                 "faiss_rank": -1
             })
@@ -452,6 +457,8 @@ def run_end_to_end(
         logger.warning("GNN scorer failed: %s", exc)
         gnn_status = "failed"
         _apply_fallback_scores(all_hits, gnn_mode)
+
+    all_hits = group_identical_publications(all_hits)
 
     response: RetrievalResponse = {
         "query_id":   nlp_result.get("patent_id", "user_query"),

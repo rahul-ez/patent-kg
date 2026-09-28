@@ -88,9 +88,18 @@ def sync(batch_size: int) -> None:
     try:
         with driver.session() as session:
             for label, source_sql, cypher in queries:
+                if label == "cpc":
+                    # MERGE alone leaves stale links from older mixed-type imports.
+                    session.run("MATCH (:Patent)-[r:HAS_CPC]->(:CPCCode) DELETE r").consume()
                 rows = _read_rows(source_sql)
                 for batch in _batches(rows, batch_size):
                     session.run(cypher, rows=batch).consume()
+                if label == "cpc":
+                    session.run("""
+                        MATCH (c:CPCCode)
+                        WHERE NOT EXISTS { MATCH (c)--() }
+                        DELETE c
+                    """).consume()
                 print(f"Projected {len(rows):,} {label} rows")
     finally:
         driver.close()

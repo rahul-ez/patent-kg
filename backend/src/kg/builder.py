@@ -40,6 +40,7 @@ logging.basicConfig(
 
 # ── Paths ──────────────────────────────────────────────────────────────────────
 from config.paths import VECTOR_STORE, PROCESSED_DATA
+from retrieval.classifications import cpc_rows
 
 # Required: patents_deduped.csv  (canonical deduplicated corpus)
 # Optional: all others — KG build skips gracefully if they are absent
@@ -100,6 +101,8 @@ class KGBuilder:
         assignees       = self._load("assignees",       ids)
         inventors       = self._load("inventors",       ids)
         classifications = self._load("classifications", ids)
+        if not classifications.empty:
+            classifications = cpc_rows(classifications)
         families        = self._load("families",        ids)
         citations       = self._load("citations",       ids)
         npl             = self._load("npl",             ids)
@@ -111,6 +114,12 @@ class KGBuilder:
 
         # ── Write nodes then edges ─────────────────────────────────────────────
         with self.driver.session() as session:
+            # Replace any old IPCR/US links that were mislabeled as CPC.
+            session.run("""
+                MATCH (p:Patent)-[r:HAS_CPC]->(:CPCCode)
+                WHERE p.patent_id IN $ids
+                DELETE r
+            """, ids=list(ids))
             self._write_patent_nodes(session, patents)
             if not families.empty:
                 self._write_stub_nodes(session, families, ids)
@@ -439,6 +448,8 @@ class KGBuilder:
 
         # ── Write all nodes ────────────────────────────────────────────────────
         with self.driver.session() as session:
+            # Full rebuild replaces classification links from the CPC-only source.
+            session.run("MATCH (:Patent)-[r:HAS_CPC]->(:CPCCode) DELETE r")
             logger.info("Writing Patent nodes (%d) ...", len(patents))
             self._write_in_batches(
                 session, patents.to_dict("records"),
@@ -501,7 +512,7 @@ class KGBuilder:
             logger.info("Writing CPCCode nodes (chunked from classifications.csv) ...")
             seen_codes: Set[str] = set()
             for chunk in pd.read_csv(_CSV["classifications"], dtype=str, chunksize=50_000):
-                chunk = chunk.fillna("")
+                chunk = cpc_rows(chunk.fillna(""))
                 new_codes = chunk[~chunk["classification_code"].isin(seen_codes)]
                 unique = new_codes[["classification_code", "classification_type"]].drop_duplicates("classification_code")
                 if not unique.empty:
@@ -556,7 +567,7 @@ class KGBuilder:
             logger.info("Writing HAS_CPC edges (chunked from classifications.csv) ...")
             total_cpc_edges = 0
             for chunk in pd.read_csv(_CSV["classifications"], dtype=str, chunksize=50_000):
-                chunk = chunk.fillna("")
+                chunk = cpc_rows(chunk.fillna(""))
                 records = chunk[["patent_id", "classification_code"]].to_dict("records")
                 self._write_in_batches(
                     session, records,
@@ -570,6 +581,13 @@ class KGBuilder:
                 )
                 total_cpc_edges += len(records)
             logger.info("  HAS_CPC total: %d edges.", total_cpc_edges)
+
+            session.run("""
+                MATCH (c:CPCCode)
+                WHERE NOT EXISTS { MATCH (:Patent)-[:HAS_CPC]->(c) }
+                  AND NOT EXISTS { MATCH (c)--() }
+                DELETE c
+            """)
 
             logger.info("Writing FAMILY edges (chunked from patent_families.csv) ...")
             total_family_edges = 0

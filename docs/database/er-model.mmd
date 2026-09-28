@@ -1,0 +1,128 @@
+erDiagram
+  DOMAINS ||--o{ PATENTS : classifies
+  PATENTS ||--o{ PATENT_ASSIGNEES : has
+  ASSIGNEES ||--o{ PATENT_ASSIGNEES : owns
+  PATENTS ||--o{ PATENT_INVENTORS : has
+  INVENTORS ||--o{ PATENT_INVENTORS : creates
+  PATENTS ||--o{ PATENT_CPC_CODES : has
+  CPC_CODES ||--o{ PATENT_CPC_CODES : classifies
+  PATENTS ||--o{ PATENT_NPL_REFERENCES : cites
+  NPL_REFERENCES ||--o{ PATENT_NPL_REFERENCES : is_cited_by
+  PATENTS ||--o{ PATENT_FAMILIES : source
+  PATENTS ||--o{ PATENT_FAMILIES : related
+  PATENTS ||--o{ CITATION_SNAPSHOTS : has
+  APP_USERS ||--o{ USER_ROLES : receives
+  ROLES ||--o{ USER_ROLES : grants
+  APP_USERS o|--o{ ANALYSIS_CASES : owns
+  ANALYSIS_CASES ||--o{ ANALYSIS_RUNS : contains
+  ANALYSIS_RUNS ||--o{ RUN_PATENT_RESULTS : stores
+  PATENTS ||--o{ RUN_PATENT_RESULTS : appears_in
+  ANALYSIS_RUNS ||--|| EVALUATION_METRICS : receives
+  ANALYSIS_RUNS ||--o{ IMPROVEMENT_RECOMMENDATIONS : produces
+
+  DOMAINS {
+    int domain_id PK
+    varchar name UK
+  }
+  PATENTS {
+    varchar patent_id PK
+    int domain_id FK
+    text title
+    text abstract
+    smallint publication_year
+    varchar legal_status
+  }
+  ASSIGNEES {
+    int assignee_id PK
+    varchar name UK
+  }
+  PATENT_ASSIGNEES {
+    varchar patent_id PK, FK
+    int assignee_id PK, FK
+  }
+  INVENTORS {
+    int inventor_id PK
+    varchar name UK
+  }
+  PATENT_INVENTORS {
+    varchar patent_id PK, FK
+    int inventor_id PK, FK
+  }
+  CPC_CODES {
+    varchar cpc_code PK
+    char section
+    text description
+  }
+  PATENT_CPC_CODES {
+    varchar patent_id PK, FK
+    varchar cpc_code PK, FK
+  }
+  NPL_REFERENCES {
+    bigint npl_id PK
+    text citation
+    char normalized_key UK
+  }
+  PATENT_NPL_REFERENCES {
+    varchar patent_id PK, FK
+    bigint npl_id PK, FK
+  }
+  PATENT_FAMILIES {
+    varchar patent_id PK, FK
+    varchar related_patent_id PK, FK
+    varchar relation_type PK
+  }
+  CITATION_SNAPSHOTS {
+    bigint snapshot_id PK
+    varchar patent_id FK
+    int cited_by_count
+    datetime observed_on
+  }
+  APP_USERS {
+    char user_id PK
+    varchar email UK
+    varchar display_name
+    boolean is_active
+  }
+  ROLES {
+    int role_id PK
+    varchar name UK
+  }
+  USER_ROLES {
+    char user_id PK, FK
+    int role_id PK, FK
+  }
+  ANALYSIS_CASES {
+    char case_id PK
+    char owner_user_id FK
+    varchar title
+    text idea_text
+    enum status
+  }
+  ANALYSIS_RUNS {
+    char run_id PK
+    char case_id FK
+    varchar query_id UK
+    enum gnn_mode
+    enum run_status
+  }
+  RUN_PATENT_RESULTS {
+    char run_id PK, FK
+    varchar patent_id PK, FK
+    smallint rank_position
+    enum source
+    double combined_score
+  }
+  EVALUATION_METRICS {
+    bigint metric_id PK
+    char run_id FK, UK
+    double patentability_score
+    varchar risk
+    varchar verdict
+  }
+  IMPROVEMENT_RECOMMENDATIONS {
+    bigint recommendation_id PK
+    char run_id FK
+    smallint position UK
+    varchar category
+    text recommendation
+  }

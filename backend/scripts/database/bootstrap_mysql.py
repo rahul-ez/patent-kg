@@ -16,6 +16,7 @@ _BACKEND = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(_BACKEND / "src"))
 
 from persistence.database import DatabaseUnavailable, get_engine, verify_database  # noqa: E402
+from retrieval.classifications import cpc_rows  # noqa: E402
 
 _PROCESSED = _BACKEND.parent / "data" / "processed"
 
@@ -49,7 +50,8 @@ def _import_patents(connection, path: Path, batch_size: int) -> int:
             legal_status=VALUES(legal_status), cited_by_patent_count=VALUES(cited_by_patent_count),
             url=VALUES(url), domain_id=VALUES(domain_id)
     """)
-    for frame in pd.read_csv(path, dtype=str, chunksize=batch_size).fillna(""):
+    for frame in pd.read_csv(path, dtype=str, chunksize=batch_size):
+        frame = frame.fillna("")
         domain_ids = _upsert_domains(connection, frame)
         rows = []
         for row in frame.to_dict(orient="records"):
@@ -74,7 +76,8 @@ def _import_named_relationship(connection, path: Path, entity_table: str, entity
     junction = "patent_assignees" if entity_table == "assignees" else "patent_inventors"
     entity_pk = "assignee_id" if entity_table == "assignees" else "inventor_id"
     total = 0
-    for frame in pd.read_csv(path, dtype=str, chunksize=batch_size).fillna(""):
+    for frame in pd.read_csv(path, dtype=str, chunksize=batch_size):
+        frame = frame.fillna("")
         names = [{"name": value.strip()} for value in frame[entity_column].astype(str) if value.strip()]
         if names:
             connection.execute(text(f"INSERT IGNORE INTO {entity_table}(name) VALUES (:name)"), names)
@@ -95,21 +98,54 @@ def _import_named_relationship(connection, path: Path, entity_table: str, entity
 def _import_cpc(connection, path: Path, batch_size: int) -> int:
     from sqlalchemy import text
 
+    # Reconcile old imports as well as new ones: previous versions inserted
+    # IPCR/US links into the CPC-only tables. The processed CSV is authoritative.
+    connection.execute(text("DROP TEMPORARY TABLE IF EXISTS valid_cpc_links"))
+    connection.execute(text("""
+        CREATE TEMPORARY TABLE valid_cpc_links (
+            patent_id VARCHAR(80) NOT NULL,
+            cpc_code VARCHAR(32) NOT NULL,
+            PRIMARY KEY (patent_id, cpc_code)
+        ) ENGINE=InnoDB
+    """))
     total = 0
-    for frame in pd.read_csv(path, dtype=str, chunksize=batch_size).fillna(""):
-        rows = []
-        for row in frame.to_dict(orient="records"):
-            code = row.get("classification_code", "").strip()
-            if code:
-                rows.append({"cpc_code": code, "section": code[0]})
-        if rows:
-            connection.execute(text("INSERT IGNORE INTO cpc_codes(cpc_code, section) VALUES (:cpc_code, :section)"), rows)
+    try:
+        for frame in pd.read_csv(path, dtype=str, chunksize=batch_size):
+            frame = cpc_rows(frame.fillna(""))
+            if frame.empty:
+                continue
+            links = [
+                {"patent_id": row["patent_id"], "cpc_code": row["classification_code"]}
+                for row in frame.to_dict(orient="records")
+            ]
             connection.execute(
-                text("INSERT IGNORE INTO patent_cpc_codes(patent_id, cpc_code) VALUES (:patent_id, :cpc_code)"),
-                [{"patent_id": row["patent_id"], "cpc_code": row["classification_code"].strip()}
-                 for row in frame.to_dict(orient="records") if row.get("classification_code", "").strip()],
+                text("INSERT IGNORE INTO cpc_codes(cpc_code, section) VALUES (:cpc_code, :section)"),
+                [{"cpc_code": link["cpc_code"], "section": link["cpc_code"][0]} for link in links],
             )
-        total += len(rows)
+            connection.execute(text("""
+                INSERT IGNORE INTO valid_cpc_links(patent_id, cpc_code)
+                VALUES (:patent_id, :cpc_code)
+            """), links)
+            connection.execute(text("""
+                INSERT IGNORE INTO patent_cpc_codes(patent_id, cpc_code)
+                VALUES (:patent_id, :cpc_code)
+            """), links)
+            total += len(links)
+
+        connection.execute(text("""
+            DELETE linked FROM patent_cpc_codes AS linked
+            LEFT JOIN valid_cpc_links AS valid
+              ON valid.patent_id = linked.patent_id AND valid.cpc_code = linked.cpc_code
+            WHERE valid.patent_id IS NULL
+        """))
+        # Only discard unreferenced codes without curated descriptions.
+        connection.execute(text("""
+            DELETE codes FROM cpc_codes AS codes
+            LEFT JOIN patent_cpc_codes AS linked ON linked.cpc_code = codes.cpc_code
+            WHERE linked.cpc_code IS NULL AND codes.description IS NULL
+        """))
+    finally:
+        connection.execute(text("DROP TEMPORARY TABLE IF EXISTS valid_cpc_links"))
     return total
 
 
@@ -117,7 +153,8 @@ def _import_families(connection, path: Path, batch_size: int) -> int:
     from sqlalchemy import text
 
     total = 0
-    for frame in pd.read_csv(path, dtype=str, chunksize=batch_size).fillna(""):
+    for frame in pd.read_csv(path, dtype=str, chunksize=batch_size):
+        frame = frame.fillna("")
         rows = [
             {"patent_id": row["patent_id"], "related_patent_id": row["family_member"], "relation_type": row.get("family_type", "SIMPLE")}
             for row in frame.to_dict(orient="records")
@@ -139,7 +176,8 @@ def _import_citation_snapshots(connection, path: Path, batch_size: int) -> int:
     from sqlalchemy import text
 
     total = 0
-    for frame in pd.read_csv(path, dtype=str, chunksize=batch_size).fillna(""):
+    for frame in pd.read_csv(path, dtype=str, chunksize=batch_size):
+        frame = frame.fillna("")
         rows = [
             {"patent_id": row["patent_id"], "cited_by_count": int(float(row.get("cited_by_patent_count", "0") or 0))}
             for row in frame.to_dict(orient="records") if row.get("patent_id")
@@ -159,7 +197,8 @@ def _import_npl(connection, path: Path, batch_size: int) -> int:
     from sqlalchemy import text
 
     total = 0
-    for frame in pd.read_csv(path, dtype=str, chunksize=batch_size).fillna(""):
+    for frame in pd.read_csv(path, dtype=str, chunksize=batch_size):
+        frame = frame.fillna("")
         source_rows = []
         for row in frame.to_dict(orient="records"):
             citation = row.get("npl_text", "").strip()

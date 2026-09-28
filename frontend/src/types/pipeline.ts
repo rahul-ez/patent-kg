@@ -11,6 +11,7 @@ export interface RetrievalHit {
   title: string
   abstract: string
   domain: string
+  jurisdiction?: string
   url: string
   source: 'faiss' | 'kg_family' | 'kg_cpc'
   faiss_rank?: number
@@ -20,6 +21,15 @@ export interface RetrievalHit {
   combined_score: number | null
   gnn_mode?: string
   expansion_type?: 'family' | 'cpc_sibling' | null
+  related_publications?: {
+    patent_id: string
+    url: string
+    domain: string
+    jurisdiction: string
+    source: string
+    semantic_score: number | null
+    combined_score: number | null
+  }[]
 }
 
 export interface PipelineResponse {

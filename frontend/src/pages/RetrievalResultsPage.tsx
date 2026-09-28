@@ -6,6 +6,32 @@ import type { RetrievalHit } from '../types/pipeline'
 import { FAISSIcon } from '../assets/PatentIcons'
 import { T } from '../theme'
 
+function RelatedPublications({ hit }: { hit: RetrievalHit }) {
+  const publications = hit.related_publications ?? []
+  if (publications.length === 0) return null
+
+  return (
+    <details style={{ borderTop: '1px solid var(--border-hairline)', paddingTop: 12, marginTop: 12 }}>
+      <summary style={{ color: 'var(--accent-sage)', cursor: 'pointer', fontSize: 13, fontWeight: 600 }}>
+        {publications.length} other matched publication{publications.length === 1 ? '' : 's'} with identical title and abstract
+      </summary>
+      <ul style={{ listStyle: 'none', padding: '8px 0 0', margin: 0 }}>
+        {publications.map((publication) => (
+          <li key={publication.patent_id} style={{ display: 'flex', gap: 10, alignItems: 'baseline', flexWrap: 'wrap', padding: '5px 0', fontSize: 12 }}>
+            <span style={{ fontFamily: 'var(--font-mono)' }}>{publication.patent_id}</span>
+            {publication.jurisdiction && <span style={{ color: 'var(--text-secondary)' }}>{publication.jurisdiction}</span>}
+            {publication.url && (
+              <a href={publication.url} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent-sage)' }}>
+                View on Lens.org ↗
+              </a>
+            )}
+          </li>
+        ))}
+      </ul>
+    </details>
+  )
+}
+
 // ─── PatentCard (for ranks 2 to 100) ──────────────────────────────────────────
 function PatentCard({ hit, idx }: { hit: RetrievalHit; idx: number }) {
   const [expanded, setExpanded] = useState(false)
@@ -118,6 +144,7 @@ function PatentCard({ hit, idx }: { hit: RetrievalHit; idx: number }) {
             )}
           </div>
         )}
+        <RelatedPublications hit={hit} />
       </div>
     </div>
   )
@@ -330,6 +357,8 @@ export default function RetrievalResultsPage() {
             )}
           </div>
 
+          <RelatedPublications hit={topHit} />
+
           {/* Full Score Breakdown */}
           <div style={{ borderTop: '1px solid var(--border-hairline)', paddingTop: 20 }}>
             <p className="caption" style={{ color: 'var(--text-secondary)', marginBottom: 14 }}>Full Score Breakdown</p>
@@ -419,4 +448,3 @@ export default function RetrievalResultsPage() {
     </div>
   )
 }
-

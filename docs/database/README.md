@@ -3,6 +3,19 @@
 MySQL is the normalized source of truth. Neo4j is a one-way graph projection
 for traversal, while FAISS is an embedding index rather than a database.
 
+## Entity-relationship model
+
+The Chen ER diagram is deliberately split into two print-ready sheets so its
+attributes and relationships remain readable:
+
+- [Sheet 1 — patent knowledge data (SVG)](er-diagram-chen-patent-data.svg)
+- [Sheet 2 — user and analysis data (SVG)](er-diagram-chen-analysis-data.svg)
+
+Both use rectangles for entities, diamonds for relationships, ovals for
+attributes, and underlined key attributes. The earlier
+[relational implementation map](er-model.svg) and its editable
+[Mermaid source](er-model.mmd) remain available for the full physical-table view.
+
 ## Setup and demo
 
 1. Copy `.env.example` to `.env` and assign all `MYSQL_*` and `NEO4J_*` values.

@@ -50,7 +50,7 @@ def _content_hash(title: str, abstract: str) -> str:
 
 def deduplicate(df: pd.DataFrame) -> pd.DataFrame:
     """
-    Remove patent records that are semantic duplicates of an earlier record.
+    Remove patent records with identical normalized title and abstract text.
 
     Strategy
     --------
@@ -83,7 +83,7 @@ def deduplicate(df: pd.DataFrame) -> pd.DataFrame:
     print("  DEDUPLICATION SUMMARY")
     print("-" * 55)
     print(f"  Original patents        : {original_count:>8,}")
-    print(f"  Duplicate inventions    : {duplicate_count:>8,}  (removed)")
+    print(f"  Repeated text records   : {duplicate_count:>8,}  (excluded from index)")
     print(f"  Final retrieval corpus  : {final_count:>8,}")
     print("-" * 55 + "\n")
 
