@@ -79,7 +79,7 @@ export default function NLPResultsPage() {
           {/* Source */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             <span className="caption" style={{ fontSize: '10.5px', color: 'var(--text-tertiary)' }}>SOURCE</span>
-            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', color: 'var(--text-primary)' }}>{isGemini ? 'Gemini LLM' : 'spaCy'}</span>
+            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', color: 'var(--text-primary)' }}>{isGemini ? 'Gemini LLM' : source === 'spacy' ? 'spaCy' : source ?? 'Unknown'}</span>
           </div>
           <div style={{ height: 26, width: 1, background: 'var(--border-hairline)' }} />
           

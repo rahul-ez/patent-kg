@@ -47,6 +47,9 @@ class Patent(Base, Timestamped):
     abstract: Mapped[str] = mapped_column(Text, nullable=False)
     publication_year: Mapped[Optional[int]] = mapped_column(Integer)
     legal_status: Mapped[Optional[str]] = mapped_column(String(50))
+    jurisdiction: Mapped[Optional[str]] = mapped_column(String(10))
+    cites_patent_count: Mapped[Optional[int]] = mapped_column(Integer)
+    family_size: Mapped[Optional[int]] = mapped_column(Integer)
     cited_by_patent_count: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
     url: Mapped[Optional[str]] = mapped_column(String(2048))
     domain_id: Mapped[Optional[int]] = mapped_column(ForeignKey("domains.domain_id"))
@@ -55,6 +58,14 @@ class Patent(Base, Timestamped):
         CheckConstraint("cited_by_patent_count >= 0", name="citation_count"),
         Index("ix_patents_year_domain", "publication_year", "domain_id"),
     )
+
+
+class PatentDomain(Base):
+    __tablename__ = "patent_domains"
+    patent_id: Mapped[str] = mapped_column(
+        ForeignKey("patents.patent_id", ondelete="CASCADE"), primary_key=True
+    )
+    domain_id: Mapped[int] = mapped_column(ForeignKey("domains.domain_id"), primary_key=True)
 
 
 class Assignee(Base):
@@ -158,7 +169,9 @@ class AnalysisRun(Base):
     __tablename__ = "analysis_runs"
     run_id: Mapped[str] = mapped_column(String(36), primary_key=True)
     case_id: Mapped[str] = mapped_column(ForeignKey("analysis_cases.case_id", ondelete="CASCADE"), nullable=False, index=True)
-    query_id: Mapped[Optional[str]] = mapped_column(String(64), unique=True)
+    query_id: Mapped[Optional[str]] = mapped_column(String(64), index=True)
+    idea_text: Mapped[Optional[str]] = mapped_column(Text)
+    improvement_payload: Mapped[Optional[dict]] = mapped_column(JSON)
     gnn_mode: Mapped[str] = mapped_column(String(20), nullable=False)
     top_k: Mapped[int] = mapped_column(Integer, nullable=False)
     run_status: Mapped[str] = mapped_column(String(20), default="completed", nullable=False)

@@ -18,7 +18,7 @@ const TOP_K_OPTIONS = [5, 10, 25, 50, 100]
 
 export default function IdeaInputPage() {
   const navigate = useNavigate()
-  const { idea: storeIdea, topK, gnnMode, setIdea: setStoreIdea, setTopK, setGNNMode } = usePipelineStore()
+  const { idea: storeIdea, topK, gnnMode, activeCaseId, setIdea: setStoreIdea, setTopK, setGNNMode } = usePipelineStore()
   const [idea, setIdea] = useState(storeIdea || '')
   const [localTopK, setLocalTopK] = useState(topK)
   const [localGNNMode, setLocalGNNMode] = useState(gnnMode)
@@ -31,7 +31,7 @@ export default function IdeaInputPage() {
     if (!idea.trim() || mutation.isPending) return
     setTopK(localTopK)
     setGNNMode(localGNNMode)
-    mutation.mutate({ idea: idea.trim(), top_k: localTopK, gnn_mode: localGNNMode })
+    mutation.mutate({ idea: idea.trim(), top_k: localTopK, gnn_mode: localGNNMode, case_id: activeCaseId ?? undefined })
   }
 
   const isDisabled = !idea.trim() || mutation.isPending
@@ -58,7 +58,7 @@ export default function IdeaInputPage() {
             §00 — CASE INTAKE
           </p>
           <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '44px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: 10 }}>
-            New Analysis
+            {activeCaseId ? 'New run in saved case' : 'New Analysis'}
           </h1>
         </motion.div>
 
@@ -262,7 +262,7 @@ export default function IdeaInputPage() {
                       if (!active) e.currentTarget.style.background = 'transparent'
                     }}
                   >
-                    <PatentDocIcon size={14} color={active ? T.accentSage : T.textTertiary} animate={false} style={{ flexShrink: 0, marginTop: 2 } as React.SVGProps<SVGSVGElement>} />
+                    <PatentDocIcon size={14} color={active ? T.accentSage : T.textTertiary} animate={false} />
                     <span style={{
                       display: '-webkit-box',
                       WebkitLineClamp: 3,

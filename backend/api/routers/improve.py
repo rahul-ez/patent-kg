@@ -11,6 +11,7 @@ if str(_SRC) not in sys.path:
 
 from improvement.schemas import ImprovementRequest, ImprovementResponse
 from improvement.agent import ImprovementAgent
+from api.persistence import attach_saving_status
 
 logger = logging.getLogger("api.routers.improve")
 router = APIRouter(tags=["improvement"])
@@ -64,13 +65,13 @@ def improve_idea(req: ImprovementRequest):
             evaluation_result=eval_res
         )
         if req.run_id:
-            try:
-                from persistence.analysis_store import persist_improvements
-                persist_improvements(req.run_id, output)
-            except Exception as exc:
-                if __import__("os").getenv("PERSISTENCE_REQUIRED", "false").lower() == "true":
-                    raise RuntimeError(f"Improvement completed but MySQL persistence failed: {exc}") from exc
+            from persistence.analysis_store import persist_improvements
+            attach_saving_status(output, lambda: persist_improvements(req.run_id, output))
+        else:
+            output["persistence_status"] = "not_requested"
         return output
+    except HTTPException:
+        raise
     except Exception as exc:
         logger.error("Improvement agent orchestration failed: %s", exc)
         raise HTTPException(status_code=500, detail=f"Improvement generation failed: {str(exc)}")

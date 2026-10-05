@@ -1,7 +1,7 @@
 """Parameterized persistence and reporting queries for analysis cases/runs."""
 from __future__ import annotations
 
-import os
+import json
 from datetime import datetime, timezone
 from uuid import uuid4
 
@@ -16,8 +16,24 @@ def _text(sql: str):
     return text(sql)
 
 
+def _json_text(sql: str):
+    from sqlalchemy import JSON, bindparam
+    return _text(sql).bindparams(bindparam("payload", type_=JSON))
+
+
+def _decode_payload(value):
+    return json.loads(value) if isinstance(value, (str, bytes)) else value
+
+
+def _utc_dates(payload: dict) -> dict:
+    # MySQL's UTC session returns naive datetime objects; label them so browsers
+    # convert to local time rather than treating UTC as already-local time.
+    return {key: value.replace(tzinfo=timezone.utc) if isinstance(value, datetime) and value.tzinfo is None else value
+            for key, value in payload.items()}
+
+
 def _case_payload(row: dict) -> dict:
-    return {key: row[key] for key in ("case_id", "title", "idea_text", "status", "created_at", "updated_at")}
+    return _utc_dates({key: row[key] for key in ("case_id", "title", "idea_text", "status", "created_at", "updated_at")})
 
 
 def create_case(title: str, idea_text: str, owner_user_id: str | None = None) -> dict:
@@ -37,7 +53,23 @@ def list_cases(limit: int = 50, offset: int = 0) -> list[dict]:
             SELECT case_id, title, idea_text, status, created_at, updated_at
             FROM analysis_cases ORDER BY updated_at DESC LIMIT :limit OFFSET :offset
         """), {"limit": limit, "offset": offset}).mappings()
-        return [_case_payload(row) for row in rows]
+        cases = [_case_payload(row) for row in rows]
+        by_id = {case["case_id"]: case for case in cases}
+        for case in cases:
+            case["runs"] = []
+        runs = session.execute(_text("""
+            SELECT r.run_id, r.case_id, r.query_id, r.gnn_mode, r.top_k,
+                   r.run_status, r.started_at, r.completed_at
+            FROM analysis_runs r JOIN (
+                SELECT case_id FROM analysis_cases
+                ORDER BY updated_at DESC LIMIT :limit OFFSET :offset
+            ) selected ON selected.case_id=r.case_id
+            ORDER BY r.started_at DESC, r.run_id DESC
+        """), {"limit": limit, "offset": offset}).mappings()
+        for run in runs:
+            if run["case_id"] in by_id:
+                by_id[run["case_id"]]["runs"].append(_utc_dates(dict(run)))
+        return cases
 
 
 def get_case(case_id: str) -> dict | None:
@@ -50,8 +82,38 @@ def get_case(case_id: str) -> dict | None:
             SELECT run_id, query_id, gnn_mode, top_k, run_status, started_at, completed_at
             FROM analysis_runs WHERE case_id=:case_id ORDER BY started_at DESC
         """), {"case_id": case_id}).mappings()
-        case["runs"] = [dict(item) for item in runs]
+        case["runs"] = [_utc_dates(dict(item)) for item in runs]
         return case
+
+
+def get_run(case_id: str, run_id: str) -> dict | None:
+    """Restore an immutable run snapshot, not the browser's last local state."""
+    with session_scope() as session:
+        row = session.execute(_text("""
+            SELECT r.*, c.title AS case_title, c.idea_text AS case_idea
+            FROM analysis_runs r JOIN analysis_cases c ON c.case_id=r.case_id
+            WHERE r.case_id=:case_id AND r.run_id=:run_id
+        """), {"case_id": case_id, "run_id": run_id}).mappings().first()
+        if row is None:
+            return None
+        pipeline = _decode_payload(row["pipeline_payload"])
+        if pipeline is not None:
+            pipeline = {**pipeline, "case_id": case_id, "run_id": run_id, "persistence_status": "persisted"}
+        evaluation = session.execute(_text(
+            "SELECT payload FROM evaluation_metrics WHERE run_id=:run_id"
+        ), {"run_id": run_id}).scalar()
+        evaluation = _decode_payload(evaluation)
+        improvement = _decode_payload(row["improvement_payload"])
+        for payload in (evaluation, improvement):
+            if payload is not None:
+                payload["persistence_status"] = "persisted"
+        return {
+            "case_id": case_id, "run_id": run_id, "case_title": row["case_title"],
+            "idea_text": row["idea_text"] or row["case_idea"],
+            "top_k": row["top_k"], "gnn_mode": row["gnn_mode"],
+            "started_at": _utc_dates({"started_at": row["started_at"]})["started_at"], "pipeline_result": pipeline,
+            "evaluation_result": evaluation, "improvement_result": improvement,
+        }
 
 
 def update_case(case_id: str, title: str | None, idea_text: str | None, status: str | None) -> dict | None:
@@ -88,12 +150,13 @@ def persist_pipeline_result(
                 raise ValueError(f"Analysis case '{case_id}' does not exist.")
 
         run_id = str(uuid4())
-        session.execute(_text("""
-            INSERT INTO analysis_runs(run_id, case_id, query_id, gnn_mode, top_k, run_status, completed_at, pipeline_payload)
-            VALUES (:run_id, :case_id, :query_id, :gnn_mode, :top_k, 'completed', :completed_at, :payload)
+        session.execute(_json_text("""
+            INSERT INTO analysis_runs(run_id, case_id, query_id, idea_text, gnn_mode, top_k, run_status, completed_at, pipeline_payload)
+            VALUES (:run_id, :case_id, :query_id, :idea, :gnn_mode, :top_k, 'completed', :completed_at, :payload)
         """), {
             "run_id": run_id, "case_id": case_id, "query_id": pipeline_result.get("query_id"),
-            "gnn_mode": gnn_mode, "top_k": top_k, "completed_at": datetime.now(timezone.utc), "payload": pipeline_result,
+            "idea": idea, "gnn_mode": gnn_mode, "top_k": top_k,
+            "completed_at": datetime.now(timezone.utc).replace(tzinfo=None), "payload": pipeline_result,
         })
         for hit in pipeline_result.get("results", []):
             patent_id = hit.get("patent_id")
@@ -113,12 +176,18 @@ def persist_pipeline_result(
                 "semantic_score": hit.get("semantic_score"), "graph_score": hit.get("graph_score"),
                 "combined_score": hit.get("combined_score"), "novelty_score": hit.get("novelty_score"),
             })
+        session.execute(_text("""
+            UPDATE analysis_cases SET status='active', updated_at=CURRENT_TIMESTAMP
+            WHERE case_id=:case_id
+        """), {"case_id": case_id})
         return {"case_id": case_id, "run_id": run_id, "persistence_status": "persisted"}
 
 
 def persist_evaluation(run_id: str, evaluation: dict) -> None:
     with session_scope() as session:
-        session.execute(_text("""
+        if session.execute(_text("SELECT 1 FROM analysis_runs WHERE run_id=:run_id"), {"run_id": run_id}).first() is None:
+            raise ValueError("Analysis run does not exist.")
+        session.execute(_json_text("""
             INSERT INTO evaluation_metrics(run_id, patentability_score, risk, verdict, payload)
             VALUES (:run_id, :score, :risk, :verdict, :payload)
             ON DUPLICATE KEY UPDATE patentability_score=VALUES(patentability_score), risk=VALUES(risk),
@@ -131,6 +200,12 @@ def persist_improvements(run_id: str, improvement: dict) -> None:
     """Replace stored recommendation rows with the current agent output."""
     strategies = improvement.get("strategies", [])
     with session_scope() as session:
+        exists = session.execute(_text("SELECT 1 FROM analysis_runs WHERE run_id=:run_id"), {"run_id": run_id}).first()
+        if not exists:
+            raise ValueError("Analysis run does not exist.")
+        session.execute(_json_text("""
+            UPDATE analysis_runs SET improvement_payload=:payload WHERE run_id=:run_id
+        """), {"run_id": run_id, "payload": improvement})
         session.execute(_text("DELETE FROM improvement_recommendations WHERE run_id=:run_id"), {"run_id": run_id})
         for position, strategy in enumerate(strategies, start=1):
             session.execute(_text("""

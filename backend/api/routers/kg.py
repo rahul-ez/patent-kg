@@ -1,6 +1,7 @@
 """
 Knowledge Graph router.
-  POST /api/kg/build   — write patent subgraph to Neo4j
+  GET  /api/kg/stats   — read statistics for the displayed graph slice
+  POST /api/kg/build   — deprecated, read-only statistics compatibility alias
   POST /api/kg/expand  — find family + CPC sibling patents
   GET  /api/kg/graph   — return React Flow compatible node/edge JSON
 """
@@ -59,40 +60,43 @@ def _scoped_graph_rows(patent_ids: List[str]) -> list:
 def _counts_from_rows(rows: list) -> dict:
     """Count the graph slice that will actually be rendered, not the whole database."""
     nodes: dict[str, set[str]] = {}
-    edges: dict[str, int] = {}
+    edges: dict[str, set[str]] = {}
     for row in rows:
         for node in (row["n"], row["m"]):
             label = next(iter(node.labels), "Unknown")
             nodes.setdefault(label, set()).add(str(node.element_id))
         edge_type = row["r"].type
-        edges[edge_type] = edges.get(edge_type, 0) + 1
-    return {"nodes": {label: len(ids) for label, ids in nodes.items()}, "edges": edges}
+        edges.setdefault(edge_type, set()).add(str(row["r"].element_id))
+    return {"nodes": {label: len(ids) for label, ids in nodes.items()}, "edges": {label: len(ids) for label, ids in edges.items()}}
 
 
-# ── Helper: build KG and return node/edge counts ──────────────────────────────
+# ── Helper: read the rendered graph slice ───────────────────────────────────
 
-def _build_kg_and_count(patent_ids: List[str]) -> dict:
-    """Build missing graph records and return counts for this request's graph slice."""
-    from kg.builder import KGBuilder
-
-    with KGBuilder() as builder:
-        builder.build_subgraph(patent_ids)
-
+def _graph_stats(patent_ids: List[str]) -> dict:
+    """Viewing a graph must never write CSV facts into the MySQL projection."""
     return _counts_from_rows(_scoped_graph_rows(patent_ids))
 
 
 # ── POST /api/kg/build ────────────────────────────────────────────────────────
 
-@router.post("/kg/build", response_model=KGBuildResponse)
+@router.post("/kg/build", response_model=KGBuildResponse, deprecated=True)
 def build_kg(req: KGBuildRequest) -> KGBuildResponse:
-    """Write a patent subgraph to Neo4j and return node/edge statistics."""
+    """Compatibility endpoint: read statistics without rebuilding the graph."""
     if not req.patent_ids:
         raise HTTPException(status_code=422, detail="patent_ids cannot be empty.")
     try:
-        stats = _build_kg_and_count(req.patent_ids)
+        stats = _graph_stats(req.patent_ids)
         return KGBuildResponse(**stats)
     except Exception as exc:
-        raise HTTPException(status_code=500, detail=f"KG build failed: {exc}") from exc
+        raise HTTPException(status_code=503, detail="Graph statistics unavailable.") from exc
+
+
+@router.get("/kg/stats", response_model=KGBuildResponse)
+def read_graph_stats(patent_ids: str = Query(..., description="Comma-separated patent IDs")):
+    ids = [value.strip() for value in patent_ids.split(",") if value.strip()]
+    if not ids or len(ids) > 100:
+        raise HTTPException(status_code=422, detail="Provide 1 to 100 patent IDs.")
+    return KGBuildResponse(**_graph_stats(ids))
 
 
 # ── POST /api/kg/expand ───────────────────────────────────────────────────────
@@ -132,6 +136,7 @@ def get_kg_graph(
     # Build node + edge sets
     node_map: dict = {}  # node_key -> node properties
     rf_edges = []
+    seen_relationships = set()
 
     NODE_TYPE_MAP = {
         "Patent": "patent",
@@ -154,16 +159,22 @@ def get_kg_graph(
                 node_map[nid] = {
                     "_element_id": nid,
                     "_type": node_type,
-                    "_label": props.get("patent_id") or props.get("name") or props.get("code") or nid[:8],
+                    "_label": props.get("patent_id") or props.get("name") or props.get("company_name") or props.get("inventor_name") or props.get("code") or props.get("title") or nid[:8],
                     "_title": props.get("title", ""),
                     **props,
                 }
 
-        src_id = str(n.element_id)
-        tgt_id = str(m.element_id)
+        relationship_id = str(r.element_id)
+        if relationship_id in seen_relationships:
+            continue
+        seen_relationships.add(relationship_id)
+        # An undirected MATCH may return either seed first. Preserve the actual
+        # stored relationship direction and allow distinct parallel edges.
+        src_id = str(r.start_node.element_id)
+        tgt_id = str(r.end_node.element_id)
         rel_type = r.type
         rf_edges.append({
-            "id": f"e-{src_id}-{tgt_id}-{rel_type}",
+            "id": f"e-{relationship_id}",
             "source": src_id,
             "target": tgt_id,
             "label": rel_type,

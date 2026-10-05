@@ -1,7 +1,7 @@
 export interface NLPResult {
   clean_text: string
   keywords: string[]
-  entities: string[]
+  entities: (string | { text: string; label: string })[]
   source: string
 }
 
@@ -12,6 +12,11 @@ export interface RetrievalHit {
   abstract: string
   domain: string
   jurisdiction?: string
+  publication_year?: string | number | null
+  legal_status?: string | null
+  family_size?: string | number | null
+  cites_patent_count?: string | number | null
+  cited_by_patent_count?: string | number | null
   url: string
   source: 'faiss' | 'kg_family' | 'kg_cpc'
   faiss_rank?: number
@@ -44,6 +49,9 @@ export interface PipelineResponse {
   case_id?: string | null
   run_id?: string | null
   persistence_status?: string | null
+  persistence_message?: string | null
+  indexed_count?: number
+  canonical_count?: number
 }
 
 export interface PipelineRequest {
@@ -90,6 +98,8 @@ export interface IndiaSafeHarbor {
 }
 
 export interface EvaluationResult {
+  persistence_status?: string | null
+  persistence_message?: string | null
   patentability_score: number
   patentability_raw:   number
   verdict:             string

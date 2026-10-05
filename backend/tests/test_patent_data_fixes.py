@@ -56,6 +56,41 @@ class ClassificationTests(unittest.TestCase):
         self.assertTrue(any("DELETE linked FROM patent_cpc_codes" in sql for sql, _ in connection.calls))
 
 
+class GraphProjectionTests(unittest.TestCase):
+    def _module(self):
+        script = BACKEND / "scripts" / "database" / "sync_mysql_to_neo4j.py"
+        spec = importlib.util.spec_from_file_location("graph_projection_for_test", script)
+        module = importlib.util.module_from_spec(spec)
+        assert spec and spec.loader
+        spec.loader.exec_module(module)
+        return module
+
+    def test_projection_indexes_cover_merge_keys(self):
+        class RecordingSession:
+            def __init__(self):
+                self.calls = []
+
+            def run(self, query):
+                self.calls.append(query)
+                return self
+
+            def consume(self):
+                pass
+
+        session = RecordingSession()
+        self._module()._ensure_indexes(session)
+        queries = "\n".join(session.calls)
+        for key in ("patent_id", "name", "company_name", "inventor_name", "code", "npl_id"):
+            self.assertIn(f"n.{key}", queries)
+        self.assertTrue(all("IF NOT EXISTS" in query for query in session.calls[:-1]))
+        self.assertEqual(session.calls[-1], "CALL db.awaitIndexes(60)")
+
+    def test_projection_rejects_nonpositive_batch_sizes_before_database_access(self):
+        for size in (0, -1):
+            with self.assertRaisesRegex(ValueError, "must be positive"):
+                self._module().sync(size)
+
+
 class ResultGroupingTests(unittest.TestCase):
     def test_groups_only_identical_full_text_and_keeps_publication_ids(self):
         hits = [

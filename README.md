@@ -112,3 +112,13 @@ During the final backend cleanup pass, the following integration refactors were 
    npm run dev
    ```
    The Vite app starts on [http://localhost:5173/](http://localhost:5173/) by default (or the next available port) and proxies `/api` requests automatically to port 8000.
+
+For an existing populated database, apply the additive update described in
+[database setup](docs/database/README.md#updating-an-already-populated-database)
+before starting the API. No full reimport is needed.
+
+Current integration work and verification:
+[checklist](docs/planning/integration-checklist.md),
+[results](docs/reports/integration-verification.md).
+The frontend build includes TypeScript checking; `npm test` runs isolated store
+tests using Node 24 or newer.

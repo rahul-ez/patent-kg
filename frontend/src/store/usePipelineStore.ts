@@ -4,8 +4,16 @@ import type { PipelineResponse, PipelineStatus, EvaluationResult } from '../type
 import type { KGStats, KGExpansion, KGGraphData } from '../types/kg'
 import type { GNNWeights } from '../types/gnn'
 import type { ImprovementResponse } from '../types/improvement'
+import type { SavedAnalysisRun } from '../api/cases'
+import type { PipelineRequest } from '../types/pipeline'
 
 interface PipelineState {
+  requestId: string | null
+  activeCaseId: string | null
+  savedRun: { caseId: string; runId: string } | null
+  restoreRun: (run: SavedAnalysisRun) => void
+  selectCase: (caseId: string, idea: string) => void
+  startAnalysis: (request: PipelineRequest) => string
   // Input
   idea: string
   topK: number
@@ -48,6 +56,9 @@ interface PipelineState {
 }
 
 const DEFAULTS = {
+  requestId: null as string | null,
+  activeCaseId: null as string | null,
+  savedRun: null as { caseId: string; runId: string } | null,
   idea: '',
   topK: 10,
   gnnMode: 'novelty',
@@ -71,12 +82,29 @@ export const usePipelineStore = create<PipelineState>()(
   persist(
     (set) => ({
       ...DEFAULTS,
+      startAnalysis: (request) => {
+        const requestId = crypto.randomUUID()
+        set({ ...DEFAULTS, requestId, idea: request.idea, topK: request.top_k, gnnMode: request.gnn_mode, activeCaseId: request.case_id ?? null, status: 'running' })
+        return requestId
+      },
+      selectCase: (caseId, idea) => set({ ...DEFAULTS, activeCaseId: caseId, idea }),
+      restoreRun: (run) => set({
+        ...DEFAULTS, activeCaseId: run.case_id, savedRun: { caseId: run.case_id, runId: run.run_id },
+        idea: run.idea_text, topK: run.top_k, gnnMode: run.gnn_mode,
+        pipelineResult: run.pipeline_result, status: run.pipeline_result ? 'complete' : 'idle',
+        evaluationResult: run.evaluation_result, evalStatus: run.evaluation_result ? 'complete' : 'idle',
+        improvementResult: run.improvement_result, improvementStatus: run.improvement_result ? 'complete' : 'idle',
+      }),
       setIdea:             (idea)             => set({ idea }),
       setTopK:             (topK)             => set({ topK }),
       setGNNMode:          (gnnMode)          => set({ gnnMode }),
       setStatus:           (status)           => set({ status }),
       setError:            (error)            => set({ error }),
-      setPipelineResult:   (pipelineResult)   => set({ pipelineResult }),
+      setPipelineResult:   (pipelineResult)   => set({ pipelineResult,
+        activeCaseId: pipelineResult.case_id ?? null,
+        savedRun: pipelineResult.persistence_status === 'persisted' && pipelineResult.case_id && pipelineResult.run_id
+          ? { caseId: pipelineResult.case_id, runId: pipelineResult.run_id } : null,
+      }),
       setKGStats:          (kgStats)          => set({ kgStats }),
       setKGExpansion:      (kgExpansion)      => set({ kgExpansion }),
       setKGGraphData:      (kgGraphData)      => set({ kgGraphData }),
@@ -92,14 +120,15 @@ export const usePipelineStore = create<PipelineState>()(
     {
       name: 'patent-intelligence-store',
       storage: createJSONStorage(() => localStorage),
-      // Only persist the results and inputs — not transient run state
+      // Saved results are restored from MySQL; local storage keeps only a pointer.
+      version: 1,
+      migrate: () => ({}),
       partialize: (state) => ({
         idea:             state.idea,
         topK:             state.topK,
         gnnMode:          state.gnnMode,
-        pipelineResult:   state.pipelineResult,
-        evaluationResult: state.evaluationResult,
-        improvementResult:state.improvementResult,
+        activeCaseId: state.activeCaseId,
+        savedRun: state.savedRun,
       }),
     }
   )

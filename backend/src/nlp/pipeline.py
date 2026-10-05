@@ -46,6 +46,7 @@ def run_hybrid_pipeline(text_id: str, raw_text: str) -> Dict[str, Any]:
                         break
                         
         final_output["patent_id"] = text_id
+        final_output["source"] = "gemini"
         return final_output
         
     # Step 5: Fallback to existing spaCy pipeline
@@ -61,7 +62,8 @@ def run_hybrid_pipeline(text_id: str, raw_text: str) -> Dict[str, Any]:
         "patent_id": text_id,
         "clean_text": cleaned_txt,
         "keywords": keywords,
-        "entities": entities
+        "entities": entities,
+        "source": "spacy",
     }
 
 def process_patent(patent_id: str, title: str, abstract: str) -> Dict[str, Any]:

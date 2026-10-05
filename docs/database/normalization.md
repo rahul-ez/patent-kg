@@ -4,7 +4,8 @@
 
 ```mermaid
 erDiagram
-  DOMAINS ||--o{ PATENTS : classifies
+  DOMAINS ||--o{ PATENT_DOMAINS : contains
+  PATENTS ||--|{ PATENT_DOMAINS : belongs_to
   PATENTS ||--o{ PATENT_ASSIGNEES : has
   ASSIGNEES ||--o{ PATENT_ASSIGNEES : owns
   PATENTS ||--o{ PATENT_INVENTORS : has
@@ -20,7 +21,8 @@ erDiagram
 
 ## Functional dependencies and 3NF
 
-- `patent_id → title, abstract, publication_year, legal_status, citation_count, url, domain_id`.
+- `patent_id → title, abstract, publication_year, legal_status, citation_count, url, preferred_domain_id`.
+- `(patent_id, domain_id)` identifies one all-domain membership in `PATENT_DOMAINS`.
 - `assignee_id → name`, `inventor_id → name`, and `cpc_code → section, description`.
 - Composite junction keys determine no non-key attributes: `(patent_id, assignee_id)`, `(patent_id, inventor_id)`, and `(patent_id, cpc_code)`.
 - `case_id → owner_user_id, title, idea_text, status`; `run_id → case_id, query_id, gnn_mode, top_k, status, timestamps`.
@@ -42,7 +44,7 @@ tables rather than comma-separated columns.
 
 ## Relational algebra examples
 
-- Selection/projection: `π patent_id,title (σ domain='AI' ∧ year≥2020 (PATENTS ⋈ DOMAINS))`.
+- Selection/projection: `π patent_id,title (σ domain='AI' ∧ year≥2020 (PATENTS ⋈ PATENT_DOMAINS ⋈ DOMAINS))`.
 - Assignee count: `γ assignee_id,name; count(patent_id)→n (ASSIGNEES ⋈ PATENT_ASSIGNEES)`.
 - Patent/CPC join: `PATENTS ⋈ PATENT_CPC_CODES ⋈ CPC_CODES`.
 - Division-style query: `(ASSIGNEE_CPC ÷ REQUIRED_SECTIONS)` returns assignees

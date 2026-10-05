@@ -11,6 +11,8 @@ export interface OverlappingPatentItem {
 }
 
 export interface ImprovementResponse {
+  persistence_status?: string | null
+  persistence_message?: string | null
   diagnosis: string[]
   weaknesses: string[]
   strategies: StrategyItem[]

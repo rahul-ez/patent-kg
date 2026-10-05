@@ -10,7 +10,7 @@ _SRC = Path(__file__).resolve().parents[2] / "src"
 if str(_SRC) not in sys.path:
     sys.path.insert(0, str(_SRC))
 
-from api.schemas import AnalysisCaseCreate, AnalysisCaseResponse, AnalysisCaseUpdate, ReportResponse  # noqa: E402
+from api.schemas import AnalysisCaseCreate, AnalysisCaseResponse, AnalysisCaseUpdate, AnalysisRunResponse, ReportResponse  # noqa: E402
 
 router = APIRouter(tags=["analysis-cases", "reports"])
 
@@ -62,6 +62,18 @@ def update_analysis_case(case_id: str, payload: AnalysisCaseUpdate):
         raise HTTPException(status_code=503, detail=str(exc)) from exc
     if result is None:
         raise HTTPException(status_code=404, detail="Analysis case not found.")
+    return result
+
+
+@router.get("/cases/{case_id}/runs/{run_id}", response_model=AnalysisRunResponse)
+def read_analysis_run(case_id: str, run_id: str):
+    store, unavailable = _store()
+    try:
+        result = store.get_run(case_id, run_id)
+    except unavailable as exc:
+        raise HTTPException(status_code=503, detail="MySQL is unavailable.") from exc
+    if result is None:
+        raise HTTPException(status_code=404, detail="Analysis run not found in this case.")
     return result
 
 

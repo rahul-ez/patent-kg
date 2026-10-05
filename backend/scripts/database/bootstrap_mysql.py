@@ -11,9 +11,11 @@ import sys
 from pathlib import Path
 
 import pandas as pd
+from dotenv import load_dotenv
 
 _BACKEND = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(_BACKEND / "src"))
+load_dotenv(_BACKEND.parent / ".env")
 
 from persistence.database import DatabaseUnavailable, get_engine, verify_database  # noqa: E402
 from retrieval.classifications import cpc_rows  # noqa: E402
@@ -42,13 +44,14 @@ def _import_patents(connection, path: Path, batch_size: int) -> int:
     total = 0
     statement = text("""
         INSERT INTO patents(patent_id, title, abstract, publication_year, legal_status,
-                            cited_by_patent_count, url, domain_id)
+                            cited_by_patent_count, url, domain_id, jurisdiction, cites_patent_count, family_size)
         VALUES (:patent_id, :title, :abstract, :publication_year, :legal_status,
-                :cited_by_patent_count, :url, :domain_id)
+                :cited_by_patent_count, :url, :domain_id, :jurisdiction, :cites_patent_count, :family_size)
         ON DUPLICATE KEY UPDATE
             title=VALUES(title), abstract=VALUES(abstract), publication_year=VALUES(publication_year),
             legal_status=VALUES(legal_status), cited_by_patent_count=VALUES(cited_by_patent_count),
-            url=VALUES(url), domain_id=VALUES(domain_id)
+            url=VALUES(url), domain_id=VALUES(domain_id), jurisdiction=VALUES(jurisdiction),
+            cites_patent_count=VALUES(cites_patent_count), family_size=VALUES(family_size)
     """)
     for frame in pd.read_csv(path, dtype=str, chunksize=batch_size):
         frame = frame.fillna("")
@@ -63,8 +66,47 @@ def _import_patents(connection, path: Path, batch_size: int) -> int:
                 "legal_status": row.get("legal_status") or None,
                 "cited_by_patent_count": int(float(citations)) if citations else 0,
                 "url": row.get("url") or None, "domain_id": domain_ids.get(row.get("domain", "")),
+                "jurisdiction": row.get("jurisdiction") or None,
+                "cites_patent_count": int(row["cites_patent_count"]) if row.get("cites_patent_count") else None,
+                "family_size": int(row["family_size"]) if row.get("family_size") and int(row["family_size"]) > 0 else None,
             })
         connection.execute(statement, rows)
+        total += len(rows)
+    return total
+
+
+def _import_patent_domains(connection, path: Path, batch_size: int) -> int:
+    """Replace the all-domain membership projection from its authoritative CSV."""
+    from sqlalchemy import text
+
+    # CREATE IF NOT EXISTS also migrates databases created before this junction
+    # was added to 01_schema.sql.
+    connection.execute(text("""
+        CREATE TABLE IF NOT EXISTS patent_domains (
+            patent_id VARCHAR(80) NOT NULL,
+            domain_id INT NOT NULL,
+            PRIMARY KEY (patent_id, domain_id),
+            FOREIGN KEY (patent_id) REFERENCES patents(patent_id) ON DELETE CASCADE,
+            FOREIGN KEY (domain_id) REFERENCES domains(domain_id)
+        ) ENGINE=InnoDB
+    """))
+    connection.execute(text("DELETE FROM patent_domains"))
+
+    total = 0
+    for frame in pd.read_csv(path, dtype=str, chunksize=batch_size):
+        frame = frame.fillna("")
+        domain_ids = _upsert_domains(connection, frame)
+        rows = [
+            {"patent_id": row["patent_id"], "domain_id": domain_ids[row["domain"]]}
+            for row in frame.to_dict(orient="records")
+            if row.get("patent_id") and row.get("domain") in domain_ids
+        ]
+        if rows:
+            connection.execute(text("""
+                INSERT IGNORE INTO patent_domains(patent_id, domain_id)
+                SELECT :patent_id, :domain_id
+                WHERE EXISTS (SELECT 1 FROM patents p WHERE p.patent_id=:patent_id)
+            """), rows)
         total += len(rows)
     return total
 
@@ -152,23 +194,49 @@ def _import_cpc(connection, path: Path, batch_size: int) -> int:
 def _import_families(connection, path: Path, batch_size: int) -> int:
     from sqlalchemy import text
 
+    # Stage the authoritative edge set once, then reconcile it with two joins.
+    # This avoids two correlated patent-existence checks for every source row.
+    connection.execute(text("DROP TEMPORARY TABLE IF EXISTS valid_family_links"))
+    connection.execute(text("""
+        CREATE TEMPORARY TABLE valid_family_links (
+            patent_id VARCHAR(80) NOT NULL,
+            related_patent_id VARCHAR(80) NOT NULL,
+            relation_type VARCHAR(32) NOT NULL,
+            PRIMARY KEY (patent_id, related_patent_id, relation_type)
+        ) ENGINE=InnoDB
+    """))
     total = 0
-    for frame in pd.read_csv(path, dtype=str, chunksize=batch_size):
-        frame = frame.fillna("")
-        rows = [
-            {"patent_id": row["patent_id"], "related_patent_id": row["family_member"], "relation_type": row.get("family_type", "SIMPLE")}
-            for row in frame.to_dict(orient="records")
-            if row.get("patent_id") and row.get("family_member") and row["patent_id"] != row["family_member"]
-        ]
-        if rows:
-            # Related patents absent from the corpus are deliberately skipped to preserve FK integrity.
-            connection.execute(text("""
-                INSERT IGNORE INTO patent_families(patent_id, related_patent_id, relation_type)
-                SELECT :patent_id, :related_patent_id, :relation_type
-                WHERE EXISTS (SELECT 1 FROM patents p WHERE p.patent_id = :patent_id)
-                  AND EXISTS (SELECT 1 FROM patents p WHERE p.patent_id = :related_patent_id)
-            """), rows)
-        total += len(rows)
+    try:
+        for frame in pd.read_csv(path, dtype=str, chunksize=batch_size):
+            frame = frame.fillna("")
+            rows = [
+                {
+                    "patent_id": row["patent_id"],
+                    "related_patent_id": row["family_member"],
+                    "relation_type": row.get("family_type") or "SIMPLE",
+                }
+                for row in frame.to_dict(orient="records")
+                if row.get("patent_id") and row.get("family_member")
+                and row["patent_id"] != row["family_member"]
+            ]
+            if rows:
+                connection.execute(text("""
+                    INSERT IGNORE INTO valid_family_links(
+                        patent_id, related_patent_id, relation_type
+                    ) VALUES (:patent_id, :related_patent_id, :relation_type)
+                """), rows)
+            total += len(rows)
+
+        connection.execute(text("DELETE FROM patent_families"))
+        connection.execute(text("""
+            INSERT INTO patent_families(patent_id, related_patent_id, relation_type)
+            SELECT candidate.patent_id, candidate.related_patent_id, candidate.relation_type
+            FROM valid_family_links candidate
+            JOIN patents source ON source.patent_id = candidate.patent_id
+            JOIN patents related ON related.patent_id = candidate.related_patent_id
+        """))
+    finally:
+        connection.execute(text("DROP TEMPORARY TABLE IF EXISTS valid_family_links"))
     return total
 
 
@@ -217,7 +285,7 @@ def _import_npl(connection, path: Path, batch_size: int) -> int:
 
 
 def bootstrap(batch_size: int) -> None:
-    required = ["patents.csv", "assignees.csv", "inventors.csv", "classifications.csv", "patent_families.csv", "citations_metadata.csv", "npl_metadata.csv"]
+    required = ["patents.csv", "patent_domains.csv", "assignees.csv", "inventors.csv", "classifications.csv", "patent_families.csv", "citations_metadata.csv", "npl_metadata.csv"]
     missing = [name for name in required if not (_PROCESSED / name).exists()]
     if missing:
         raise FileNotFoundError(f"Missing processed CSVs: {', '.join(missing)}")
@@ -225,6 +293,7 @@ def bootstrap(batch_size: int) -> None:
     verify_database()
     with get_engine().begin() as connection:
         print(f"Imported/upserted { _import_patents(connection, _PROCESSED / 'patents.csv', batch_size):,} patents")
+        print(f"Imported { _import_patent_domains(connection, _PROCESSED / 'patent_domains.csv', batch_size):,} patent-domain rows")
         print(f"Imported { _import_named_relationship(connection, _PROCESSED / 'assignees.csv', 'assignees', 'company_name', batch_size):,} patent-assignee rows")
         print(f"Imported { _import_named_relationship(connection, _PROCESSED / 'inventors.csv', 'inventors', 'inventor_name', batch_size):,} patent-inventor rows")
         print(f"Imported { _import_cpc(connection, _PROCESSED / 'classifications.csv', batch_size):,} patent-CPC rows")

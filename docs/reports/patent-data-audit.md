@@ -60,7 +60,7 @@ python scripts/database/bootstrap_mysql.py
 python scripts/database/sync_mysql_to_neo4j.py
 ```
 
-The local database refresh was not run during this change because the Docker Compose configuration lacks a value for `MYSQL_USER`. Code-level regression tests pass with `python -m unittest discover -s backend/tests -p test_patent_data_fixes.py -v`.
+The local database refresh was not run during the original code change because the Docker Compose configuration lacked a value for `MYSQL_USER`. The MySQL import and Neo4j projection were subsequently completed and independently checked on October 5, 2026; see the [live migration verification](database-migration-status.md). Code-level regression tests pass with `python -m unittest discover -s backend/tests -p test_patent_data_fixes.py -v`.
 
 The two repeated display keys, repeated family export triples, and potential multi-domain membership are retained for review rather than automatically merged or discarded.
 

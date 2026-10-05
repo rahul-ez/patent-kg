@@ -33,7 +33,28 @@ def _read_rows(sql: str):
         return [dict(row) for row in connection.execute(text(sql)).mappings()]
 
 
-def sync(batch_size: int) -> None:
+def _ensure_indexes(session) -> None:
+    """Index the actual MERGE keys, including keys not used by the CSV builder."""
+    session.run("""
+        CREATE CONSTRAINT patent_id IF NOT EXISTS
+        FOR (n:Patent) REQUIRE n.patent_id IS UNIQUE
+    """).consume()
+    for name, label, property_name in (
+        ("projection_domain_name", "Domain", "name"),
+        ("projection_company_name", "Company", "company_name"),
+        ("projection_inventor_name", "Inventor", "inventor_name"),
+        ("projection_cpc_code", "CPCCode", "code"),
+        ("projection_paper_id", "Paper", "npl_id"),
+    ):
+        session.run(
+            f"CREATE INDEX {name} IF NOT EXISTS FOR (n:{label}) ON (n.{property_name})"
+        ).consume()
+    session.run("CALL db.awaitIndexes(60)").consume()
+
+
+def sync(batch_size: int, metadata_only: bool = False) -> None:
+    if batch_size <= 0:
+        raise ValueError("batch_size must be positive")
     verify_database()
     driver = GraphDatabase.driver(
         os.getenv("NEO4J_URI", "bolt://localhost:7687"),
@@ -42,13 +63,23 @@ def sync(batch_size: int) -> None:
     queries = [
         ("patents", """
             SELECT p.patent_id, p.title, p.abstract, p.publication_year, p.legal_status,
-                   p.cited_by_patent_count, p.url, d.name AS domain
+                   p.cited_by_patent_count, p.url, d.name AS domain,
+                   p.jurisdiction, p.cites_patent_count, p.family_size
             FROM patents p LEFT JOIN domains d ON d.domain_id=p.domain_id
         """, """
             UNWIND $rows AS row MERGE (p:Patent {patent_id: row.patent_id})
             SET p.title=row.title, p.abstract=row.abstract, p.publication_year=row.publication_year,
                 p.legal_status=row.legal_status, p.cited_by_patent_count=row.cited_by_patent_count,
-                p.url=row.url, p.domain=row.domain
+                p.url=row.url, p.domain=row.domain, p.is_stub=false,
+                p.jurisdiction=row.jurisdiction, p.cites_patent_count=row.cites_patent_count,
+                p.family_size=row.family_size
+        """),
+        ("domains", """
+            SELECT pd.patent_id, d.name AS domain FROM patent_domains pd
+            JOIN domains d ON d.domain_id=pd.domain_id
+        """, """
+            UNWIND $rows AS row MATCH (p:Patent {patent_id: row.patent_id})
+            MERGE (d:Domain {name: row.domain}) MERGE (p)-[:IN_DOMAIN]->(d)
         """),
         ("assignees", """
             SELECT p.patent_id, a.name AS company_name FROM patent_assignees pa
@@ -86,21 +117,37 @@ def sync(batch_size: int) -> None:
         """),
     ]
     try:
+        driver.verify_connectivity()
         with driver.session() as session:
-            for label, source_sql, cypher in queries:
+            _ensure_indexes(session)
+            for label, source_sql, cypher in (queries[:1] if metadata_only else queries):
+                rows = _read_rows(source_sql)
+                if label == "domains":
+                    # The source junction is authoritative; remove stale memberships.
+                    session.run("MATCH (:Patent)-[r:IN_DOMAIN]->(:Domain) DELETE r").consume()
                 if label == "cpc":
                     # MERGE alone leaves stale links from older mixed-type imports.
                     session.run("MATCH (:Patent)-[r:HAS_CPC]->(:CPCCode) DELETE r").consume()
-                rows = _read_rows(source_sql)
+                print(f"Projecting {len(rows):,} {label} rows", flush=True)
+                projected = 0
                 for batch in _batches(rows, batch_size):
                     session.run(cypher, rows=batch).consume()
+                    projected += len(batch)
+                    if projected % (batch_size * 10) == 0:
+                        print(f"  {label}: {projected:,}/{len(rows):,}", flush=True)
                 if label == "cpc":
                     session.run("""
                         MATCH (c:CPCCode)
                         WHERE NOT EXISTS { MATCH (c)--() }
                         DELETE c
                     """).consume()
-                print(f"Projected {len(rows):,} {label} rows")
+                if label == "domains":
+                    session.run("""
+                        MATCH (d:Domain)
+                        WHERE NOT EXISTS { MATCH (d)--() }
+                        DELETE d
+                    """).consume()
+                print(f"Projected {len(rows):,} {label} rows", flush=True)
     finally:
         driver.close()
 
@@ -108,5 +155,6 @@ def sync(batch_size: int) -> None:
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Project MySQL patent facts into Neo4j.")
     parser.add_argument("--batch-size", type=int, default=1000)
+    parser.add_argument("--metadata-only", action="store_true", help="Refresh Patent properties without changing relationships.")
     args = parser.parse_args()
-    sync(args.batch_size)
+    sync(args.batch_size, metadata_only=args.metadata_only)

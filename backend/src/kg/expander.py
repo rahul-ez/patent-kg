@@ -55,6 +55,8 @@ RETURN DISTINCT
     fam.publication_year     AS publication_year,
     fam.cited_by_patent_count AS cited_by_patent_count,
     fam.jurisdiction         AS jurisdiction,
+    fam.cites_patent_count   AS cites_patent_count,
+    fam.family_size          AS family_size,
     fam.url                  AS url
 """
 
@@ -78,6 +80,8 @@ RETURN DISTINCT
     sibling.publication_year         AS publication_year,
     sibling.cited_by_patent_count    AS cited_by_patent_count,
     sibling.jurisdiction             AS jurisdiction,
+    sibling.cites_patent_count       AS cites_patent_count,
+    sibling.family_size              AS family_size,
     sibling.url                      AS url
 """
 
@@ -98,8 +102,10 @@ def _row_to_dict(record, expansion_type: str) -> Dict:
         "domain":                record["domain"]           or "",
         "legal_status":          record["legal_status"]     or "",
         "publication_year":      record["publication_year"] or "",
-        "cited_by_patent_count": record["cited_by_patent_count"] or "0",
+        "cited_by_patent_count": record["cited_by_patent_count"],
         "jurisdiction":          record["jurisdiction"]     or "",
+        "cites_patent_count":     record["cites_patent_count"],
+        "family_size":            record["family_size"],
         "url":                   record["url"]              or "",
         "expansion_type":        expansion_type,
     }

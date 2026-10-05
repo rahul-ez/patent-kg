@@ -3,6 +3,9 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { usePipelineStore } from '../store/usePipelineStore'
 import { PatentDocIcon, KGIcon, IdeaIcon, FAISSIcon, GNNIcon, NoveltyIcon } from '../assets/PatentIcons'
 import { T } from '../theme'
+import { useEffect, useState } from 'react'
+import { getRun } from '../api/cases'
+import AnalysisSavingStatus from '../components/AnalysisSavingStatus'
 
 const NAV_ITEMS = [
   { path: '/results/nlp',          label: 'NLP Analysis',     Icon: IdeaIcon   },
@@ -16,7 +19,17 @@ const NAV_ITEMS = [
 
 export default function RootLayout() {
   const location = useLocation()
-  const { status, idea, reset } = usePipelineStore()
+  const { status, idea, reset, savedRun, pipelineResult, restoreRun } = usePipelineStore()
+  const [restoreError, setRestoreError] = useState<string | null>(null)
+  useEffect(() => {
+    if (!savedRun || pipelineResult) return
+    let ignore = false
+    setRestoreError(null)
+    getRun(savedRun.caseId, savedRun.runId)
+      .then(run => { if (!ignore) restoreRun(run) })
+      .catch(error => { if (!ignore) setRestoreError(error.message ?? 'Could not restore saved analysis.') })
+    return () => { ignore = true }
+  }, [savedRun?.caseId, savedRun?.runId, Boolean(pipelineResult), restoreRun])
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', background: 'var(--bg-page)' }}>
@@ -169,7 +182,12 @@ export default function RootLayout() {
               exit={{ opacity: 0, y: -6 }}
               transition={{ duration: 0.2 }}
             >
-              <Outlet />
+          <AnalysisSavingStatus />
+          {savedRun && !pipelineResult ? (
+            <section role="status">
+              {restoreError ? <><p>{restoreError}</p><Link to="/results/cases" onClick={reset}>Open saved cases</Link></> : <p>Restoring saved analysis from MySQL…</p>}
+            </section>
+          ) : <Outlet />}
             </motion.div>
           </AnimatePresence>
         </main>

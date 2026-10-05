@@ -35,7 +35,9 @@ def get_engine():
         from sqlalchemy import create_engine
     except ModuleNotFoundError as exc:
         raise DatabaseUnavailable("SQLAlchemy is not installed. Install backend/requirements.txt.") from exc
-    return create_engine(database_url(), pool_pre_ping=True, pool_recycle=1800, future=True)
+    url = database_url()
+    connect_args = {"init_command": "SET time_zone = '+00:00'"} if url.startswith("mysql+pymysql:") else {}
+    return create_engine(url, connect_args=connect_args, pool_pre_ping=True, pool_recycle=1800, future=True)
 
 
 @contextmanager

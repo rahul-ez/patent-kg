@@ -1,8 +1,8 @@
 import client from './client'
 import type { KGStats, KGExpansion, KGGraphData } from '../types/kg'
 
-export async function buildKG(patent_ids: string[]): Promise<KGStats> {
-  const { data } = await client.post<KGStats>('/kg/build', { patent_ids })
+export async function getKGStats(patent_ids: string[]): Promise<KGStats> {
+  const { data } = await client.get<KGStats>('/kg/stats', { params: { patent_ids: patent_ids.join(',') } })
   return data
 }
 

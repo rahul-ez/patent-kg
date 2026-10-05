@@ -18,6 +18,7 @@ if str(_SRC) not in sys.path:
     sys.path.insert(0, str(_SRC))
 
 from api.schemas import EvaluateRequest, EvaluateResponse  # noqa: E402
+from api.persistence import attach_saving_status
 
 router = APIRouter(tags=["evaluation"])
 
@@ -43,12 +44,10 @@ def _run(req: EvaluateRequest) -> dict:
         n_reconstruction_samples=req.n_reconstruction_samples,
     )
     if req.run_id:
-        try:
-            from persistence.analysis_store import persist_evaluation
-            persist_evaluation(req.run_id, result)
-        except Exception as exc:
-            if __import__("os").getenv("PERSISTENCE_REQUIRED", "false").lower() == "true":
-                raise RuntimeError(f"Evaluation completed but MySQL persistence failed: {exc}") from exc
+        from persistence.analysis_store import persist_evaluation
+        attach_saving_status(result, lambda: persist_evaluation(req.run_id, result))
+    else:
+        result["persistence_status"] = "not_requested"
     return result
 
 
@@ -350,6 +349,8 @@ def evaluate_idea(req: EvaluateRequest) -> EvaluateResponse:
         raise HTTPException(status_code=422, detail="gnn_mode must be 'novelty' or 'graph_sim'.")
     try:
         return EvaluateResponse(**_run(req))
+    except HTTPException:
+        raise
     except FileNotFoundError as exc:
         raise HTTPException(status_code=503, detail=f"Pipeline resource not found: {exc}.") from exc
     except Exception as exc:
@@ -375,7 +376,10 @@ def evaluate_idea_flat(req: EvaluateRequest) -> Dict[str, Any]:
         raise HTTPException(status_code=422, detail="gnn_mode must be 'novelty' or 'graph_sim'.")
     try:
         raw = _run(req)
-        return _flatten(raw)
+        return {**_flatten(raw), "persistence_status": raw.get("persistence_status"),
+                "persistence_message": raw.get("persistence_message")}
+    except HTTPException:
+        raise
     except FileNotFoundError as exc:
         raise HTTPException(status_code=503, detail=f"Pipeline resource not found: {exc}.") from exc
     except Exception as exc:

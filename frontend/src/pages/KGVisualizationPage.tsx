@@ -13,7 +13,7 @@ import 'reactflow/dist/style.css'
 import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import { usePipelineStore } from '../store/usePipelineStore'
-import { useKGBuild } from '../hooks/useKGBuild'
+import { useKGStats } from '../hooks/useKGStats'
 import { useKGExpand } from '../hooks/useKGExpand'
 import { getKGGraph } from '../api/kg'
 import type { PatentExpanded } from '../types/kg'
@@ -94,7 +94,7 @@ export default function KGVisualizationPage() {
   const kgGraphData     = usePipelineStore((s) => s.kgGraphData)
   const setKGGraphData  = usePipelineStore((s) => s.setKGGraphData)
 
-  const buildMutation  = useKGBuild()
+  const statsMutation  = useKGStats()
   const expandMutation = useKGExpand()
 
   const [nodes, setNodes, onNodesChange] = useNodesState([])
@@ -105,7 +105,7 @@ export default function KGVisualizationPage() {
   const [graphError,   setGraphError]   = useState<string | null>(null)
 
   const patentIds = useMemo(() => {
-    return pipelineResult?.results.map((r) => r.patent_id) ?? []
+    return pipelineResult?.results.map((r) => r.patent_id).slice(0, 100) ?? []
   }, [pipelineResult])
 
   // Ref number generation derived from query_id or current date
@@ -125,22 +125,28 @@ export default function KGVisualizationPage() {
   }, [pipelineResult])
 
   useEffect(() => {
-    if (pipelineResult && !kgStats && !buildMutation.isPending && !buildMutation.isError) {
-      buildMutation.mutate(patentIds)
+    if (patentIds.length && pipelineResult && !kgStats && !statsMutation.isPending && !statsMutation.isError) {
+      statsMutation.mutate(patentIds)
     }
-  }, [pipelineResult, kgStats, buildMutation.isPending, buildMutation.isError, patentIds])
+  }, [pipelineResult, kgStats, statsMutation.isPending, statsMutation.isError, patentIds])
 
   useEffect(() => {
-    if (!kgStats) return
+    if (!kgStats || !patentIds.length) return
     if (!kgExpansion && !expandMutation.isPending && !expandMutation.isError) {
       expandMutation.mutate({ ids: patentIds })
     }
+    let ignore = false
     if (!kgGraphData && !graphError) {
       getKGGraph(patentIds)
-        .then((data) => setKGGraphData(data))
-        .catch((err) => setGraphError(err?.message ?? 'Failed to load graph'))
+        .then((data) => {
+          if (!ignore && usePipelineStore.getState().pipelineResult === pipelineResult) setKGGraphData(data)
+        })
+        .catch((err) => {
+          if (!ignore && usePipelineStore.getState().pipelineResult === pipelineResult) setGraphError(err?.message ?? 'Failed to load graph')
+        })
     }
-  }, [kgStats, kgExpansion, expandMutation.isPending, expandMutation.isError, kgGraphData, graphError, patentIds])
+    return () => { ignore = true }
+  }, [pipelineResult, kgStats, kgExpansion, expandMutation.isPending, expandMutation.isError, kgGraphData, graphError, patentIds])
 
   useEffect(() => {
     if (!kgGraphData) return
@@ -175,7 +181,7 @@ export default function KGVisualizationPage() {
     setEdges(rfEdges)
   }, [kgGraphData]) // eslint-disable-line
 
-  const buildStatus = buildMutation.isPending ? 'building' : buildMutation.isError ? 'error' : kgStats ? 'done' : 'idle'
+  const statsStatus = statsMutation.isPending ? 'loading' : statsMutation.isError ? 'error' : kgStats ? 'done' : 'idle'
   const { nodeCount, edgeCount } = kgStats ? StatStrip({ kgStats }) : { nodeCount: 0, edgeCount: 0 }
 
   if (!pipelineResult) {
@@ -183,7 +189,7 @@ export default function KGVisualizationPage() {
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', gap: 20, textAlign: 'center', padding: 24 }}>
         <KGIcon size={40} color={T.borderHairline} animate={false} />
         <h2 style={{ fontFamily: 'var(--font-display)', color: 'var(--text-primary)', fontSize: '20px', fontWeight: 600 }}>No Case File Selected</h2>
-        <p style={{ color: 'var(--text-secondary)', fontSize: '14px' }}>Please submit an innovation idea first to construct the Knowledge Graph.</p>
+        <p style={{ color: 'var(--text-secondary)', fontSize: '14px' }}>Submit an invention idea or reopen a saved analysis to explore its graph.</p>
         <Link to="/analyze" className="btn-primary" style={{ textDecoration: 'none', marginTop: 4 }}>New Analysis →</Link>
       </div>
     )
@@ -220,14 +226,14 @@ export default function KGVisualizationPage() {
         <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
           {/* Nodes */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            <span className="caption" style={{ fontSize: '10.5px', color: 'var(--text-tertiary)' }}>NODES</span>
+            <span className="caption" style={{ fontSize: '10.5px', color: 'var(--text-tertiary)' }}>VISIBLE NODES</span>
             <span style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', color: 'var(--text-primary)' }}>{nodeCount}</span>
           </div>
           <div style={{ height: 26, width: 1, background: 'var(--border-hairline)' }} />
 
           {/* Edges */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            <span className="caption" style={{ fontSize: '10.5px', color: 'var(--text-tertiary)' }}>EDGES</span>
+            <span className="caption" style={{ fontSize: '10.5px', color: 'var(--text-tertiary)' }}>VISIBLE EDGES</span>
             <span style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', color: 'var(--text-primary)' }}>{edgeCount}</span>
           </div>
           <div style={{ height: 26, width: 1, background: 'var(--border-hairline)' }} />
@@ -235,8 +241,8 @@ export default function KGVisualizationPage() {
           {/* Status */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             <span className="caption" style={{ fontSize: '10.5px', color: 'var(--text-tertiary)' }}>STATUS</span>
-            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', fontWeight: 600, color: buildStatus === 'done' ? 'var(--accent-sage)' : 'var(--text-secondary)' }}>
-              {buildStatus.toUpperCase()}
+            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', fontWeight: 600, color: statsStatus === 'done' ? 'var(--accent-sage)' : 'var(--text-secondary)' }}>
+              {statsStatus.toUpperCase()}
             </span>
           </div>
           <div style={{ height: 26, width: 1, background: 'var(--border-hairline)' }} />
@@ -274,12 +280,12 @@ export default function KGVisualizationPage() {
         }}>
           {kgGraphData === null ? (
             <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 14, padding: 24 }}>
-              {buildStatus === 'error' ? (
+              {statsStatus === 'error' ? (
                 <>
                   <KGIcon size={32} color="var(--accent-clay)" animate={false} />
-                  <p style={{ color: 'var(--accent-clay)', fontSize: '14.5px', fontWeight: 600, margin: 0 }}>SUBGRAPH BUILD FAILED</p>
+                  <p style={{ color: 'var(--accent-clay)', fontSize: '14.5px', fontWeight: 600, margin: 0 }}>GRAPH STATISTICS UNAVAILABLE</p>
                   <p style={{ color: 'var(--text-secondary)', fontSize: '13px', maxWidth: 400, textAlign: 'center', lineHeight: 1.5, margin: 0 }}>
-                    {(buildMutation.error as any)?.message ?? 'An error occurred while connecting to Neo4j database.'}
+                    {(statsMutation.error as any)?.message ?? 'An error occurred while connecting to Neo4j database.'}
                   </p>
                 </>
               ) : graphError ? (
@@ -293,8 +299,8 @@ export default function KGVisualizationPage() {
               ) : (
                 <>
                   <Spinner size={32} />
-                  <p style={{ color: 'var(--text-secondary)', fontSize: '14px', fontWeight: 500 }}>Building knowledge graph…</p>
-                  <p className="caption" style={{ color: 'var(--text-tertiary)' }}>Connecting to Neo4j and ingesting {patentIds.length} patents</p>
+                  <p style={{ color: 'var(--text-secondary)', fontSize: '14px', fontWeight: 500 }}>Loading knowledge graph…</p>
+                  <p className="caption" style={{ color: 'var(--text-tertiary)' }}>Reading the Neo4j projection for {patentIds.length} matched publications</p>
                 </>
               )}
             </div>
@@ -368,7 +374,7 @@ export default function KGVisualizationPage() {
           {/* §4 Family Members */}
           {kgExpansion.family.length > 0 && (
             <div className="sheet-secondary" style={{ marginBottom: 24 }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyUnderline: 'space-between', justifyContent: 'space-between', marginBottom: 14 }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
                 <h2 className="section-header" style={{ margin: 0 }}>
                   <span className="section-clause-num">§4</span>Patent Family Members
                 </h2>
@@ -387,7 +393,7 @@ export default function KGVisualizationPage() {
           {/* §5 CPC Technology Siblings */}
           {kgExpansion.cpc_siblings.length > 0 && (
             <div className="sheet-secondary" style={{ marginBottom: 24 }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyUnderline: 'space-between', justifyContent: 'space-between', marginBottom: 14 }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
                 <h2 className="section-header" style={{ margin: 0 }}>
                   <span className="section-clause-num">§5</span>CPC Technology Siblings
                 </h2>

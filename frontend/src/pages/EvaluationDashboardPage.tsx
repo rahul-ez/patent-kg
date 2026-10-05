@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useRef } from 'react'
 import {
   RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis,
   ResponsiveContainer, Tooltip as RechartsTooltip,
@@ -179,25 +179,6 @@ function DepthBadge({ level, confidence }: { level: string; confidence: number }
   )
 }
 
-const EVAL_STEPS = [
-  'Extracting concepts from your idea…',
-  'Searching prior art for each concept…',
-  'Computing combination difficulty…',
-  'Analyzing motivation to combine…',
-  'Scoring cross-domain novelty…',
-  'Checking citation isolation…',
-  'Estimating long-felt need…',
-  'Detecting teaching-away signals…',
-  'Running reconstruction difficulty test…',
-  'Checking for unexpected effects…',
-  'Scoring competitive landscape…',
-  'Assessing claim breadth potential…',
-  'Analyzing patent timing…',
-  'Checking Indian Patent Act eligibility…',
-  'Assessing technical depth…',
-  'Computing final patentability score…',
-]
-
 // ── Main page ────────────────────────────────────────────────────────────────
 export default function EvaluationDashboardPage() {
   const idea           = usePipelineStore((s) => s.idea)
@@ -213,8 +194,6 @@ export default function EvaluationDashboardPage() {
 
   const [runFast, setRunFast]         = useState(false)
   const [showNOBreak, setShowNOBreak] = useState(false)
-  const [stepIdx, setStepIdx]         = useState(0)
-  const stepTimer                     = useRef<ReturnType<typeof setInterval> | null>(null)
 
   const isLoading = evalStatus === 'running'
 
@@ -229,18 +208,6 @@ export default function EvaluationDashboardPage() {
     refNum.current = `PI-${yyyy}-${mm}${dd}-${hash}`
   }
 
-  // Cycle through step messages while loading
-  useEffect(() => {
-    if (isLoading) {
-      setStepIdx(0)
-      stepTimer.current = setInterval(() => {
-        setStepIdx((i) => Math.min(i + 1, EVAL_STEPS.length - 1))
-      }, runFast ? 1500 : 4500)
-    } else {
-      if (stepTimer.current) clearInterval(stepTimer.current)
-    }
-    return () => { if (stepTimer.current) clearInterval(stepTimer.current) }
-  }, [isLoading, runFast])
 
   async function handleEvaluate() {
     if (!idea.trim()) return
@@ -255,9 +222,9 @@ export default function EvaluationDashboardPage() {
         pipeline_result: pipelineResult,
         run_id: pipelineResult?.run_id,
       })
-      setEvalResult(result)
+      if (usePipelineStore.getState().pipelineResult === pipelineResult) setEvalResult(result)
     } catch (err: any) {
-      setEvalError(err?.message ?? 'Evaluation failed')
+      if (usePipelineStore.getState().pipelineResult === pipelineResult) setEvalError(err?.message ?? 'Evaluation failed')
     }
   }
 
@@ -428,25 +395,16 @@ export default function EvaluationDashboardPage() {
               </p>
             </div>
             <motion.p
-              key={stepIdx}
               initial={{ opacity: 0, y: 4 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3 }}
               style={{ fontFamily: 'var(--font-mono)', fontSize: '12.5px', color: 'var(--text-secondary)', marginBottom: 12 }}
             >
-              STEP {stepIdx + 1} / {EVAL_STEPS.length} — {EVAL_STEPS[stepIdx]}
+              Evaluation is running on the server. Detailed stage progress is not available.
             </motion.p>
-            {/* Progress bar */}
-            <div style={{ height: 3, background: 'var(--border-hairline)', borderRadius: 2, overflow: 'hidden' }}>
-              <motion.div
-                animate={{ width: `${((stepIdx + 1) / EVAL_STEPS.length) * 100}%` }}
-                transition={{ duration: 0.6, ease: 'easeOut' }}
-                style={{ height: '100%', background: 'var(--accent-sage)', borderRadius: 2 }}
-              />
-            </div>
             {!runFast && (
               <p className="caption" style={{ marginTop: 10, color: 'var(--text-tertiary)' }}>
-                Full analysis includes reconstruction trials — can take up to 45 seconds.
+                Full analysis includes reconstruction trials and can take longer.
               </p>
             )}
           </div>

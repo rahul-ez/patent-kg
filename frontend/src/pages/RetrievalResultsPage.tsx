@@ -32,6 +32,12 @@ function RelatedPublications({ hit }: { hit: RetrievalHit }) {
   )
 }
 
+function PatentMetadata({ hit }: { hit: RetrievalHit }) {
+  return <p style={{ color: 'var(--text-secondary)', fontSize: 12, marginTop: 10 }}>
+    Jurisdiction: {hit.jurisdiction || 'Unknown'} · Year: {hit.publication_year || 'Unknown'} · Family size: {hit.family_size ?? 'Unknown'} · Outgoing citations: {hit.cites_patent_count ?? 'Unknown'}
+  </p>
+}
+
 // ─── PatentCard (for ranks 2 to 100) ──────────────────────────────────────────
 function PatentCard({ hit, idx }: { hit: RetrievalHit; idx: number }) {
   const [expanded, setExpanded] = useState(false)
@@ -144,6 +150,7 @@ function PatentCard({ hit, idx }: { hit: RetrievalHit; idx: number }) {
             )}
           </div>
         )}
+        <PatentMetadata hit={hit} />
         <RelatedPublications hit={hit} />
       </div>
     </div>
@@ -211,7 +218,7 @@ export default function RetrievalResultsPage() {
           height: 44,
           background: 'transparent',
           borderBottom: '1px solid var(--border-hairline)',
-          display: 'flex', alignItems: 'baseline', justifyUnderline: 'space-between', justifyContent: 'space-between',
+          display: 'flex', alignItems: 'baseline', justifyContent: 'space-between',
           padding: '0 0 12px 0',
           marginBottom: 40,
         }}
@@ -221,7 +228,7 @@ export default function RetrievalResultsPage() {
           {/* Indexed Count */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             <span className="caption" style={{ fontSize: '10.5px', color: 'var(--text-tertiary)' }}>INDEXED COUNT</span>
-            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', color: 'var(--text-primary)' }}>58,428</span>
+            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', color: 'var(--text-primary)' }}>{pipelineResult.indexed_count?.toLocaleString() ?? 'Unknown'}</span>
           </div>
           <div style={{ height: 26, width: 1, background: 'var(--border-hairline)' }} />
 
@@ -357,6 +364,7 @@ export default function RetrievalResultsPage() {
             )}
           </div>
 
+          <PatentMetadata hit={topHit} />
           <RelatedPublications hit={topHit} />
 
           {/* Full Score Breakdown */}

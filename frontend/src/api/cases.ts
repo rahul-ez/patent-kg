@@ -1,4 +1,24 @@
 import client from './client'
+import type { PipelineResponse, EvaluationResult } from '../types/pipeline'
+import type { ImprovementResponse } from '../types/improvement'
+
+export interface SavedAnalysisRun {
+  case_id: string
+  run_id: string
+  case_title: string
+  idea_text: string
+  top_k: number
+  gnn_mode: string
+  started_at: string
+  pipeline_result: PipelineResponse | null
+  evaluation_result: EvaluationResult | null
+  improvement_result: ImprovementResponse | null
+}
+
+export async function getRun(caseId: string, runId: string): Promise<SavedAnalysisRun> {
+  const { data } = await client.get<SavedAnalysisRun>(`/cases/${caseId}/runs/${runId}`)
+  return data
+}
 
 export type CaseStatus = 'draft' | 'active' | 'archived'
 

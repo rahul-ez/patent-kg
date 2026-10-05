@@ -23,6 +23,9 @@ class PipelineResponse(BaseModel):
     case_id: Optional[str] = None
     run_id: Optional[str] = None
     persistence_status: Optional[str] = None
+    persistence_message: Optional[str] = None
+    indexed_count: Optional[int] = None
+    canonical_count: Optional[int] = None
 
 
 class EvaluateRequest(BaseModel):
@@ -36,6 +39,8 @@ class EvaluateRequest(BaseModel):
 
 
 class EvaluateResponse(BaseModel):
+    persistence_status: Optional[str] = None
+    persistence_message: Optional[str] = None
     patentability_score: float
     patentability_raw: float
     verdict: str
@@ -105,3 +110,16 @@ class AnalysisCaseResponse(BaseModel):
 class ReportResponse(BaseModel):
     report: str
     rows: List[Dict[str, Any]]
+
+
+class AnalysisRunResponse(BaseModel):
+    case_id: str
+    run_id: str
+    case_title: str
+    idea_text: str
+    top_k: int
+    gnn_mode: str
+    started_at: Any
+    pipeline_result: Optional[PipelineResponse] = None
+    evaluation_result: Optional[Dict[str, Any]] = None
+    improvement_result: Optional[Dict[str, Any]] = None

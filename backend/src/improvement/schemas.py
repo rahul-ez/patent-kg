@@ -19,6 +19,8 @@ class OverlappingPatentItem(BaseModel):
     similarity: float
 
 class ImprovementResponse(BaseModel):
+    persistence_status: Optional[str] = None
+    persistence_message: Optional[str] = None
     diagnosis: List[str]
     weaknesses: List[str]
     strategies: List[StrategyItem]

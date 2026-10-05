@@ -15,6 +15,7 @@ if str(_SRC) not in sys.path:
     sys.path.insert(0, str(_SRC))
 
 from api.schemas import PipelineRequest, PipelineResponse  # noqa: E402
+from api.persistence import attach_saving_status
 
 router = APIRouter(tags=["pipeline"])
 
@@ -35,17 +36,16 @@ def run_pipeline(req: PipelineRequest) -> PipelineResponse:
     try:
         from integration.pipeline import run_end_to_end
         result = run_end_to_end(req.idea.strip(), top_k=req.top_k, gnn_mode=req.gnn_mode)
-        try:
-            from persistence.analysis_store import persist_pipeline_result
-            result.update(persist_pipeline_result(
+        from persistence.analysis_store import persist_pipeline_result
+        result = attach_saving_status(result, lambda: persist_pipeline_result(
                 idea=req.idea.strip(), top_k=req.top_k, gnn_mode=req.gnn_mode,
                 pipeline_result=result, case_id=req.case_id, case_title=req.case_title,
-            ))
-        except Exception as persistence_exc:
-            if os.getenv("PERSISTENCE_REQUIRED", "false").lower() == "true":
-                raise HTTPException(status_code=503, detail=f"Pipeline completed but MySQL persistence failed: {persistence_exc}") from persistence_exc
-            result["persistence_status"] = "skipped_unavailable"
+        ))
+        if req.case_id and not result.get("case_id"):
+            result["case_id"] = req.case_id
         return PipelineResponse(**result)
+    except HTTPException:
+        raise
     except FileNotFoundError as exc:
         raise HTTPException(
             status_code=503,

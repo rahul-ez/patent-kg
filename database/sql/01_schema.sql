@@ -14,6 +14,9 @@ CREATE TABLE patents (
   abstract TEXT NOT NULL,
   publication_year SMALLINT NULL,
   legal_status VARCHAR(50) NULL,
+  jurisdiction VARCHAR(10) NULL,
+  cites_patent_count INT NULL,
+  family_size INT NULL,
   cited_by_patent_count INT NOT NULL DEFAULT 0,
   url VARCHAR(2048) NULL,
   domain_id INT NULL,
@@ -23,6 +26,16 @@ CREATE TABLE patents (
   CONSTRAINT ck_patent_citations CHECK (cited_by_patent_count >= 0),
   CONSTRAINT fk_patent_domain FOREIGN KEY (domain_id) REFERENCES domains(domain_id),
   INDEX ix_patent_year_domain (publication_year, domain_id)
+) ENGINE=InnoDB;
+
+-- A patent can appear in more than one source collection/domain. patents.domain_id
+-- remains the preferred display domain; this junction preserves every membership.
+CREATE TABLE patent_domains (
+  patent_id VARCHAR(80) NOT NULL,
+  domain_id INT NOT NULL,
+  PRIMARY KEY (patent_id, domain_id),
+  FOREIGN KEY (patent_id) REFERENCES patents(patent_id) ON DELETE CASCADE,
+  FOREIGN KEY (domain_id) REFERENCES domains(domain_id)
 ) ENGINE=InnoDB;
 
 CREATE TABLE assignees (
@@ -127,16 +140,19 @@ CREATE TABLE analysis_cases (
 CREATE TABLE analysis_runs (
   run_id CHAR(36) PRIMARY KEY,
   case_id CHAR(36) NOT NULL,
-  query_id VARCHAR(64) NULL UNIQUE,
+  query_id VARCHAR(64) NULL,
+  idea_text TEXT NULL,
   gnn_mode ENUM('novelty','graph_sim') NOT NULL,
   top_k TINYINT UNSIGNED NOT NULL,
   run_status ENUM('running','completed','failed') NOT NULL DEFAULT 'running',
   started_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   completed_at DATETIME NULL,
   pipeline_payload JSON NULL,
+  improvement_payload JSON NULL,
   CONSTRAINT ck_run_top_k CHECK (top_k BETWEEN 1 AND 100),
   FOREIGN KEY (case_id) REFERENCES analysis_cases(case_id) ON DELETE CASCADE,
-  INDEX ix_run_case_started (case_id, started_at)
+  INDEX ix_run_case_started (case_id, started_at),
+  INDEX ix_run_query (query_id)
 ) ENGINE=InnoDB;
 CREATE TABLE run_patent_results (
   run_id CHAR(36) NOT NULL,

@@ -60,8 +60,9 @@ def score_teaching_away(results: List[ConceptSearchResult]) -> dict:
                 """
                 MATCH (p:Patent)-[:CITES_PAPER]->(paper:Paper)
                 WHERE p.patent_id IN $ids
-                  AND paper.npl_text IS NOT NULL AND paper.npl_text <> ''
-                RETURN paper.npl_text AS text LIMIT 200
+                WITH coalesce(paper.npl_text, paper.title, '') AS text
+                WHERE text <> ''
+                RETURN text LIMIT 200
                 """,
                 ids=all_patent_ids,
             ).data()

@@ -192,7 +192,8 @@ def _load_resources() -> tuple:
 
         expected_cols = [
             "patent_id", "title", "abstract", "domain", "url", 
-            "jurisdiction", "cites_patent_count", "cited_by_patent_count", "family_size"
+            "jurisdiction", "cites_patent_count", "cited_by_patent_count", "family_size",
+            "publication_year", "legal_status",
         ]
 
         mysql_metadata = None
@@ -302,6 +303,10 @@ def faiss_search(query_text: str, top_k: int = 10) -> List[RetrievalHit]:
             "domain":         domain,
             "jurisdiction":   jurisdiction,
             "url":            url,
+            **{field: row.get(field) or None for field in (
+                "publication_year", "legal_status", "cites_patent_count",
+                "cited_by_patent_count", "family_size",
+            )},
         })
 
     logger.info(
@@ -414,7 +419,8 @@ def run_end_to_end(
                 "domain": p["domain"],
                 "jurisdiction": p["jurisdiction"],
                 "url": p["url"],
-                "faiss_rank": -1
+                "faiss_rank": -1,
+                **{field: p.get(field) for field in ("publication_year", "legal_status", "cites_patent_count", "cited_by_patent_count", "family_size")}
             })
             
         # Add CPC siblings
@@ -434,7 +440,8 @@ def run_end_to_end(
                 "domain": p["domain"],
                 "jurisdiction": p["jurisdiction"],
                 "url": p["url"],
-                "faiss_rank": -1
+                "faiss_rank": -1,
+                **{field: p.get(field) for field in ("publication_year", "legal_status", "cites_patent_count", "cited_by_patent_count", "family_size")}
             })
             
         logger.info("KG Expansion added %d patents.", len(expanded_hits))
@@ -469,6 +476,8 @@ def run_end_to_end(
         "results":    all_hits,
         "gnn_status": gnn_status,
         "kg_status":  kg_status,
+        "indexed_count": int(_cached_index.ntotal),
+        "canonical_count": len(_cached_patents_df),
     }
 
     logger.info("=== End-to-End Pipeline COMPLETE: %d results ===", len(all_hits))

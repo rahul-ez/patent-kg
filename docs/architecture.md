@@ -17,12 +17,12 @@ React browser
             ├─ SentenceTransformer encode + FAISS top-k retrieval
             ├─ kg.expander.expand_via_kg() against Neo4j
             ├─ gnn.graph_builder + gnn.inference + gnn.reranker
-            └─ structured pipeline result persisted in the browser Zustand store
+            └─ structured pipeline snapshot saved in MySQL; transient results in Zustand
 
 React evaluation page ─ POST /api/evaluate ─ evaluation.patentability_engine
 React improvement page ─ POST /api/improve ─ improvement.ImprovementAgent
 
-React KG page ─ POST /api/kg/build, POST /api/kg/expand, GET /api/kg/graph
+React KG page ─ GET /api/kg/stats, POST /api/kg/expand, GET /api/kg/graph (read-only)
 ```
 
 The pipeline can degrade when dependencies are absent: failed Neo4j expansion leaves FAISS results intact, and failed GNN inference falls back to semantic order. LLM-backed steps also have local fallback behavior. This makes the prototype usable with a partial setup, but can make apparent feature availability differ from the ideal architecture.
@@ -134,9 +134,11 @@ Browser routes: `/`, `/analyze`, and `/pipeline` are standalone pages. `/results
 | `api/schemas.py` | Pydantic request/response models for pipeline, evaluation, and KG endpoints. Improvement models live separately in `improvement/schemas.py`. |
 | `api/routers/__init__.py` | Package marker. |
 | `api/routers/pipeline.py` | Validates idea/GNN mode and calls `run_end_to_end`. |
-| `api/routers/kg.py` | Builds/expands graph and converts Neo4j responses to React Flow data. |
+| `api/routers/kg.py` | Reads graph-slice statistics, expands candidates, and converts Neo4j responses to React Flow data. The deprecated build alias is read-only. |
 | `api/routers/evaluate.py` | Runs/reuses pipeline results; exposes nested, flattened, and field-reference evaluation routes. |
-| `api/routers/improve.py` | Obtains missing pipeline/evaluation results and invokes `ImprovementAgent`. |
+| `api/routers/improve.py` | Obtains missing pipeline/evaluation results, invokes `ImprovementAgent`, and saves complete improvement output with independent saving status. |
+| `api/persistence.py` | Shared saving-status contract: explicit unsaved output, required-save HTTP 503, and missing-record HTTP 404. |
+| `api/routers/cases.py` | Case CRUD, run history, complete per-run restoration, and relational reports. |
 
 ### Integration, NLP, and retrieval: `backend/src/`
 
@@ -144,7 +146,7 @@ Browser routes: `/`, `/analyze`, and `/pipeline` are standalone pages. `/results
 |---|---|
 | `config/paths.py` | Central path constants from `backend/src` to `data/vector_store` and root processed data. |
 | `integration/__init__.py` | Exposes integration package context. |
-| `integration/pipeline.py` | Production orchestrator. Caches FAISS, metadata CSV and encoder; processes query; retrieves; expands through KG; adds semantic scores to expansion candidates; builds a PyG subgraph; runs GraphSAGE; reranks/falls back. |
+| `integration/pipeline.py` | Production orchestrator. Caches FAISS, MySQL-first metadata (CSV fallback) and encoder; processes query; retrieves; expands through KG; adds semantic scores to expansion candidates; builds a PyG subgraph; runs GraphSAGE; reranks/falls back. |
 | `nlp/pipeline.py` | Hybrid query/patent NLP flow and embedding-input preparation. Combines preprocessing, spaCy analysis, optional LLM output, validation, entities, and keywords. |
 | `nlp/preprocess.py` | Text cleaning/light preprocessing and LLM-output cleanup. |
 | `nlp/llm_processor.py` | Calls the current `google.genai` SDK for structured language analysis when a key is available. |
@@ -254,17 +256,19 @@ Browser routes: `/`, `/analyze`, and `/pipeline` are standalone pages. `/results
 | `src/assets/react.svg` | Vite starter asset; appears unused by product pages. |
 | `src/assets/vite.svg` | Vite starter asset; appears unused by product pages. |
 | `src/assets/PatentIcons.tsx` | Custom animated patent-themed SVG icon components. |
-| `src/layouts/RootLayout.tsx` | Sidebar/navigation shell for result routes; calls store reset for a new analysis. |
+| `src/layouts/RootLayout.tsx` | Result navigation shell; restores the saved case/run pointer from MySQL on refresh, handles restoration errors, and resets state for a new analysis. |
 | `src/api/client.ts` | Axios base URL, JSON headers, timeout and response-error normalization. |
 | `src/api/pipeline.ts` | Typed call to `/pipeline/run`. |
-| `src/api/kg.ts` | Typed calls to KG build, expand and graph routes. |
+| `src/api/kg.ts` | Typed calls to read-only KG statistics, expand and graph routes. |
+| `src/api/cases.ts` | Case CRUD/history and complete saved-run restoration contracts. |
+| `src/components/AnalysisSavingStatus.tsx` | Shows independent save status and graph/GNN fallback warnings. |
 | `src/api/evaluate.ts` | Typed call to `/evaluate` with longer timeout. |
 | `src/api/improve.ts` | Typed call to `/improve` with longer timeout. |
 | `src/hooks/usePipeline.ts` | React Query mutation for main pipeline; controls navigation and store state. |
-| `src/hooks/useKGBuild.ts` | React Query mutation for graph build and store stats. |
+| `src/hooks/useKGStats.ts` | React Query mutation for read-only graph statistics with stale-response protection. |
 | `src/hooks/useKGExpand.ts` | React Query mutation for KG expansion and store state. |
 | `src/hooks/useGNNRerank.ts` | Recalculates browser-side ranking from persisted pipeline hits and user-controlled weights. |
-| `src/store/usePipelineStore.ts` | Zustand state: input, pipeline, KG, GNN-weight, evaluation and improvement state; selectively persisted to localStorage. |
+| `src/store/usePipelineStore.ts` | Zustand state: input, pipeline, KG, GNN-weight, evaluation and improvement state; only input and saved case/run identifiers persist to localStorage. Results are restored from MySQL, and in-flight tokens prevent stale pipeline responses. |
 | `src/types/pipeline.ts` | TypeScript request/result types for the pipeline and evaluation API. |
 | `src/types/kg.ts` | KG statistics, expansion and React Flow types. |
 | `src/types/gnn.ts` | GNN mode, UI weights and ranked-hit types. |
@@ -294,7 +298,7 @@ sets. The Streamlit surface is explicitly retained as an optional legacy demo.
 
 The list below is retained as an audit trail. Items 1-8, 10-11, and the
 Neo4j/automation part of item 14 are resolved. Item 9 (old retrieval scripts),
-item 12 (shared evaluation resources), item 13 (shared graph storage), item 15
+item 12 (shared evaluation resources), item 15
 (frontend decomposition), and the broader documentation refresh in item 16
 remain deliberate follow-up work rather than silent defects in the active
 request path.
@@ -345,3 +349,49 @@ request path.
 - Before running the full API, verify the presence/version alignment of the FAISS index, `metadata_mapping.json`, deduplicated patents CSV, GNN checkpoint, Neo4j database, Python environment (including spaCy model), and `.env` values.
 - The root `data/processed` CSVs are the authoritative reproducible source for rebuilding FAISS and Neo4j; generated vector/graph model artefacts are not in this checkout.
 - Score field names in the active pipeline are `semantic_score`, `graph_score`, `novelty_score`, and `combined_score`; do not reintroduce the retired generic `score` field into production contracts.
+
+
+## Integration hardening — October 5, 2026
+
+The [integration checklist](planning/integration-checklist.md) and
+[verification report](reports/integration-verification.md) record the implemented
+work and real checks. This update supersedes historical descriptions of browser
+result persistence and graph writes below.
+
+- MySQL now retains the original idea and full pipeline/evaluation/improvement
+  snapshot per run. Repeated NLP query IDs do not identify a run; UUID `run_id`
+  does. `GET /api/cases/{case_id}/runs/{run_id}` returns complete saved output.
+- Independent saving status is returned for each output. Missing records are
+  404; required saving failures remain 503; optional saving failures leave
+  available output explicitly marked unsaved.
+- `backend/scripts/database/migrate_integration.py` adds missing columns and
+  backfills jurisdiction, outgoing citations, and source family size without
+  repeating the patent import. `sync_mysql_to_neo4j.py --metadata-only` refreshes
+  Patent properties without rebuilding any relationships.
+- Graph viewing is read-only. Edge IDs identify actual relationships, preserve
+  direction, and avoid duplicate React keys. Statistics count unique relationships in the
+  displayed slice (200-edge cap); the frontend scopes requests to at most
+  100 result IDs. Shared graph storage remains intentional, but ordinary UI
+  viewing no longer mutates it.
+- Browser local storage holds input and a saved-run pointer, never authoritative
+  results. New analyses clear old evaluations/improvements/graph state, and
+  stale async results cannot overwrite another selected analysis.
+- Progress is request-based, not timer-based. Corpus labels distinguish 58,428
+  publication records from 36,353 distinct indexed texts. Identical-text
+  publications remain expandable rather than being erased.
+- GNN fallback encoding has its missing FAISS import fixed; nullable SQL
+  integer metadata stays parseable; NLP responses identify their actual source.
+  Paper citation text can be read from either the legacy `npl_text` property
+  or the MySQL projection's `title` property. API timestamps are UTC-labelled.
+- `backend/tests/test_integration_contract.py` tests save/error/read contracts;
+  `backend/tests/test_runtime_metadata.py` tests metadata and GNN fallback
+  encoding; `tests/test_live_integration.py` is opt-in real-database verification
+  that removes only its own UUID cases; `frontend/tests/pipeline-store.test.mjs`
+  checks state clearing, pointer-only persistence, and restoration.
+- `tests/serve_unsaved_fixture.py` is an explicit manual failure-test server.
+  It never contacts a database or AI provider and is not part of production.
+
+Login/access control, evaluation calibration, dependency security updates,
+batch embedding/latency improvements, and frontend decomposition remain follow-up
+work. The integration checks do not establish legal reliability or production
+multi-user readiness.

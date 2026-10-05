@@ -2,16 +2,12 @@ import { useEffect, useState, useRef } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { usePipelineStore } from '../store/usePipelineStore'
-import { IdeaIcon, FAISSIcon, KGIcon, GNNIcon, NoveltyIcon } from '../assets/PatentIcons'
+import { IdeaIcon, NoveltyIcon } from '../assets/PatentIcons'
 import { T } from '../theme'
 
 const STAGES = [
-  { Icon: IdeaIcon,      name: 'NLP Processing',    description: 'Extracting keywords and entities with Gemini + spaCy' },
-  { Icon: FAISSIcon,     name: 'Semantic Embedding', description: 'Encoding idea with PatentSBERTa (768-dim)' },
-  { Icon: FAISSIcon,     name: 'FAISS Retrieval',    description: 'Searching 58,428 indexed patents' },
-  { Icon: GNNIcon,       name: 'GNN Re-ranking',     description: 'Re-ordering results using live GraphSAGE' },
-  { Icon: KGIcon,        name: 'KG Analysis',        description: 'Building patent knowledge graph in Neo4j' },
-  { Icon: NoveltyIcon,   name: 'Complete',           description: 'Case folder assembly ready' },
+  { Icon: IdeaIcon, name: 'Analysis request', description: 'NLP, retrieval, graph expansion and ranking run on the server' },
+  { Icon: NoveltyIcon, name: 'Response received', description: 'Results, fallback warnings and saving status are confirmed by the API response' },
 ]
 
 type StageStatus = 'pending' | 'running' | 'done'
@@ -29,7 +25,6 @@ function CheckGlyph() {
 export default function PipelineProgressPage() {
   const navigate = useNavigate()
   const { idea, status, error, pipelineResult } = usePipelineStore()
-  const [currentStageIdx, setCurrentStageIdx] = useState(0)
   const [stageStatuses, setStageStatuses] = useState<StageStatus[]>(STAGES.map(() => 'pending'))
   
   // Ref number generation derived from query_id or current date
@@ -46,27 +41,10 @@ export default function PipelineProgressPage() {
   useEffect(() => {
     if (status === 'complete') {
       setStageStatuses(STAGES.map(() => 'done'))
-      setCurrentStageIdx(STAGES.length - 1)
       const t = setTimeout(() => navigate('/results/nlp'), 1000)
       return () => clearTimeout(t)
     }
-    if (status === 'error') return
-
-    const interval = setInterval(() => {
-      setCurrentStageIdx(prev => {
-        const next = Math.min(prev + 1, STAGES.length - 2)
-        setStageStatuses(statuses => {
-          const updated = [...statuses]
-          updated[prev] = 'done'
-          if (next < STAGES.length - 1) updated[next] = 'running'
-          return updated
-        })
-        return next
-      })
-    }, 3000)
-
-    setStageStatuses(s => { const u = [...s]; u[0] = 'running'; return u })
-    return () => clearInterval(interval)
+    setStageStatuses(status === 'running' ? ['running', 'pending'] : ['pending', 'pending'])
   }, [status, navigate])
 
   const truncatedIdea = idea.length > 90 ? idea.slice(0, 90) + '…' : idea

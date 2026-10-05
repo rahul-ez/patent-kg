@@ -5,10 +5,10 @@ import { PatentDocIcon } from '../assets/PatentIcons'
 import { T } from '../theme'
 
 const STATS = [
-  { value: '58,428', label: 'PATENTS INDEXED' },
+  { value: '58,428', label: 'PATENT PUBLICATIONS' },
   { value: '768-dim', label: 'EMBEDDING SPACE' },
   { value: 'GraphSAGE', label: 'GNN ARCHITECTURE' },
-  { value: '< 10s', label: 'FULL PIPELINE' },
+  { value: '36,353', label: 'DISTINCT TEXTS INDEXED' },
 ]
 
 const TECH_STACK = ['Python 3.13', 'Google Gemini', 'spaCy', 'FAISS', 'Neo4j', 'PyTorch Geometric', 'React']
@@ -16,7 +16,7 @@ const TECH_STACK = ['Python 3.13', 'Google Gemini', 'spaCy', 'FAISS', 'Neo4j', '
 const fadeUp = (delay: number) => ({
   initial: { opacity: 0, y: 16 },
   animate: { opacity: 1, y: 0 },
-  transition: { duration: 0.45, delay, ease: [0.25, 1, 0.5, 1] },
+  transition: { duration: 0.45, delay, ease: [0.25, 1, 0.5, 1] as [number, number, number, number] },
 })
 
 export default function LandingPage() {

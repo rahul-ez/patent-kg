@@ -4,8 +4,8 @@ Knowledge Graph Builder — query-time subgraph (top-k patents)
 Takes a list of patent_ids returned by FAISS retrieval and writes a
 Neo4j subgraph covering all five node types and six edge types.
 
-Node types : Patent, Company, Inventor, CPCCode, Paper
-Edge types : OWNS, INVENTED, HAS_CPC,
+Node types : Patent, Domain, Company, Inventor, CPCCode, Paper
+Edge types : IN_DOMAIN, OWNS, INVENTED, HAS_CPC,
              SIMPLE_FAMILY_MEMBER, EXTENDED_FAMILY_MEMBER, CITES_PAPER
 
 Family members that are not in the top-k are written as stub Patent
@@ -46,6 +46,7 @@ from retrieval.classifications import cpc_rows
 # Optional: all others — KG build skips gracefully if they are absent
 _CSV = {
     "patents":         VECTOR_STORE / "patents_deduped.csv",
+    "patent_domains":  PROCESSED_DATA / "patent_domains.csv",
     "assignees":       PROCESSED_DATA / "assignees.csv",
     "inventors":       PROCESSED_DATA / "inventors.csv",
     "classifications": PROCESSED_DATA / "classifications.csv",
@@ -55,7 +56,7 @@ _CSV = {
 }
 
 # CSVs that are truly optional — missing files produce a warning, not a crash.
-_OPTIONAL_CSVS = {"assignees", "inventors", "classifications", "citations", "npl"}
+_OPTIONAL_CSVS = {"patent_domains", "assignees", "inventors", "classifications", "citations", "npl"}
 
 # ── Neo4j connection ───────────────────────────────────────────────────────────
 _NEO4J_URI      = os.getenv("NEO4J_URI",      "bolt://localhost:7687")
@@ -98,6 +99,7 @@ class KGBuilder:
 
         # ── Load and filter CSVs ───────────────────────────────────────────────
         patents         = self._load("patents",         ids)
+        patent_domains  = self._load("patent_domains",  ids)
         assignees       = self._load("assignees",       ids)
         inventors       = self._load("inventors",       ids)
         classifications = self._load("classifications", ids)
@@ -120,7 +122,14 @@ class KGBuilder:
                 WHERE p.patent_id IN $ids
                 DELETE r
             """, ids=list(ids))
+            session.run("""
+                MATCH (p:Patent)-[r:IN_DOMAIN]->(:Domain)
+                WHERE p.patent_id IN $ids
+                DELETE r
+            """, ids=list(ids))
             self._write_patent_nodes(session, patents)
+            if not patent_domains.empty:
+                self._write_domain_nodes(session, patent_domains)
             if not families.empty:
                 self._write_stub_nodes(session, families, ids)
             if not assignees.empty:
@@ -134,6 +143,8 @@ class KGBuilder:
 
             if not assignees.empty:
                 self._write_owns_edges(session, assignees)
+            if not patent_domains.empty:
+                self._write_domain_edges(session, patent_domains)
             if not inventors.empty:
                 self._write_invented_edges(session, inventors)
             if not classifications.empty:
@@ -151,6 +162,7 @@ class KGBuilder:
         """Uniqueness constraints — idempotent, safe to run on every call."""
         statements = [
             "CREATE CONSTRAINT patent_id IF NOT EXISTS FOR (n:Patent)   REQUIRE n.patent_id   IS UNIQUE",
+            "CREATE CONSTRAINT domain_name IF NOT EXISTS FOR (n:Domain) REQUIRE n.name IS UNIQUE",
             "CREATE CONSTRAINT company_id IF NOT EXISTS FOR (n:Company)  REQUIRE n.company_id  IS UNIQUE",
             "CREATE CONSTRAINT inventor_id IF NOT EXISTS FOR (n:Inventor) REQUIRE n.inventor_id IS UNIQUE",
             "CREATE CONSTRAINT cpc_code IF NOT EXISTS FOR (n:CPCCode)   REQUIRE n.code        IS UNIQUE",
@@ -256,6 +268,17 @@ class KGBuilder:
         )
         logger.info("Company nodes: %d written.", len(records))
 
+    def _write_domain_nodes(self, session, df: pd.DataFrame) -> None:
+        records = df[["domain"]].drop_duplicates().to_dict("records")
+        session.run(
+            """
+            UNWIND $rows AS r
+            MERGE (:Domain {name: r.domain})
+            """,
+            rows=records,
+        )
+        logger.info("Domain nodes: %d written.", len(records))
+
     def _write_inventor_nodes(self, session, df: pd.DataFrame) -> None:
         records = (
             df[["inventor_id", "inventor_name"]]
@@ -325,6 +348,19 @@ class KGBuilder:
             rows=records,
         )
         logger.info("OWNS edges: %d written.", len(records))
+
+    def _write_domain_edges(self, session, df: pd.DataFrame) -> None:
+        records = df[["patent_id", "domain"]].drop_duplicates().to_dict("records")
+        session.run(
+            """
+            UNWIND $rows AS r
+            MATCH (p:Patent {patent_id: r.patent_id})
+            MATCH (d:Domain {name: r.domain})
+            MERGE (p)-[:IN_DOMAIN]->(d)
+            """,
+            rows=records,
+        )
+        logger.info("IN_DOMAIN edges: %d written.", len(records))
 
     def _write_invented_edges(self, session, df: pd.DataFrame) -> None:
         records = df[["inventor_id", "patent_id"]].to_dict("records")
@@ -425,6 +461,9 @@ class KGBuilder:
         logger.info("Loading citations_metadata.csv ...")
         citations = pd.read_csv(_CSV["citations"], dtype=str).fillna("")
 
+        logger.info("Loading patent_domains.csv ...")
+        patent_domains = pd.read_csv(_CSV["patent_domains"], dtype=str).fillna("")
+
         logger.info("Loading assignees.csv ...")
         assignees = pd.read_csv(_CSV["assignees"], dtype=str).fillna("")
 
@@ -450,6 +489,7 @@ class KGBuilder:
         with self.driver.session() as session:
             # Full rebuild replaces classification links from the CPC-only source.
             session.run("MATCH (:Patent)-[r:HAS_CPC]->(:CPCCode) DELETE r")
+            session.run("MATCH (:Patent)-[r:IN_DOMAIN]->(:Domain) DELETE r")
             logger.info("Writing Patent nodes (%d) ...", len(patents))
             self._write_in_batches(
                 session, patents.to_dict("records"),
@@ -483,6 +523,17 @@ class KGBuilder:
                 ON CREATE SET p.is_stub = true
                 """,
                 batch_size=batch_size, label="Stub nodes",
+            )
+
+            logger.info("Writing Domain nodes ...")
+            self._write_in_batches(
+                session,
+                patent_domains[["domain"]].drop_duplicates().to_dict("records"),
+                """
+                UNWIND $rows AS r
+                MERGE (:Domain {name: r.domain})
+                """,
+                batch_size=batch_size, label="Domain nodes",
             )
 
             logger.info("Writing Company nodes ...")
@@ -540,6 +591,19 @@ class KGBuilder:
             )
 
             # ── Write all edges ────────────────────────────────────────────────
+            logger.info("Writing IN_DOMAIN edges ...")
+            self._write_in_batches(
+                session,
+                patent_domains[["patent_id", "domain"]].drop_duplicates().to_dict("records"),
+                """
+                UNWIND $rows AS r
+                MATCH (p:Patent {patent_id: r.patent_id})
+                MATCH (d:Domain {name: r.domain})
+                MERGE (p)-[:IN_DOMAIN]->(d)
+                """,
+                batch_size=batch_size, label="IN_DOMAIN edges",
+            )
+
             logger.info("Writing OWNS edges ...")
             self._write_in_batches(
                 session, assignees[["company_id", "patent_id"]].to_dict("records"),
