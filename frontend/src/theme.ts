@@ -14,43 +14,43 @@
  */
 export const T = {
   // Surfaces
-  bgPage:         '#F6F4EE',
-  bgStructural:   '#EDE9DF',
-  bgCard:         '#FBFAF6',
-  bgInset:        '#EFEAE0',
-  bgHoverTint:    'rgba(91, 122, 102, 0.06)',
+  bgPage:         '#F3F5F5',
+  bgStructural:   '#EDF1F1',
+  bgCard:         '#FFFFFF',
+  bgInset:        '#F0F4F4',
+  bgHoverTint:    '#E5EFED',
 
   // Borders
-  borderHairline: '#DEDACE',
-  borderAnchor:   '#23271F',
-  borderTechnical:'#8A8C7E',
+  borderHairline: '#D9E0E2',
+  borderAnchor:   '#899A9F',
+  borderTechnical:'#6F8087',
 
   // Text
-  textPrimary:    '#23271F',
-  textSecondary:  '#5B5F54',
-  textTertiary:   '#8A8C7E',
-  textOnDark:     '#F6F4EE',
+  textPrimary:    '#26343A',
+  textSecondary:  '#5B6870',
+  textTertiary:   '#63737B',
+  textOnDark:     '#FFFFFF',
 
   // Accents
-  accentSage:     '#5B7A66',
-  accentIndigo:   '#3E4D72',
-  accentBrass:    '#A47C3B',
-  accentClay:     '#B5654A',
+  accentSage:     '#11675F',
+  accentIndigo:   '#49616F',
+  accentBrass:    '#88611B',
+  accentClay:     '#AC3F39',
 
   // Solid-ink surfaces
-  surfaceInk:     '#23271F',
-  surfaceInkHover:'#5B7A66',
+  surfaceInk:     '#11675F',
+  surfaceInkHover:'#0C514B',
 
   // Legacy mappings for backwards-compatibility with pages we haven't touched yet
-  paper:          '#F6F4EE',
-  paperRaised:    '#FBFAF6',
-  ink:            '#23271F',
-  inkSoft:        '#5B5F54',
-  line:           '#DEDACE',
-  sage:           '#5B7A66',
-  indigo:         '#3E4D72',
-  brass:          '#A47C3B',
-  clay:           '#B5654A'
+  paper:          '#F3F5F5',
+  paperRaised:    '#FFFFFF',
+  ink:            '#26343A',
+  inkSoft:        '#5B6870',
+  line:           '#D9E0E2',
+  sage:           '#11675F',
+  indigo:         '#49616F',
+  brass:          '#88611B',
+  clay:           '#AC3F39'
 } as const
 
 export type ThemeKey = keyof typeof T

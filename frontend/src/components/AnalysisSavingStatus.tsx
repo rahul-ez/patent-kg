@@ -7,10 +7,10 @@ export default function AnalysisSavingStatus() {
     ['Analysis', pipelineResult], ['Evaluation', evaluationResult], ['Improvements', improvementResult],
   ] as const
   return (
-    <section aria-label="Analysis saving status" role="status" style={{ marginBottom: 20, padding: '12px 16px', border: '1px solid var(--border-hairline)', borderRadius: 'var(--radius-card)' }}>
+    <section aria-label="Analysis saving status" role="status" className="saving-status">
       {outputs.map(([label, result]) => result && (
-        <p key={label} style={{ margin: '4px 0', fontSize: 13, color: result.persistence_status === 'persisted' ? 'var(--accent-sage)' : 'var(--accent-clay)' }}>
-          {label}: {result.persistence_status === 'persisted' ? 'Saved to MySQL' : 'Not saved to MySQL'}
+        <p key={label} data-state={result.persistence_status}>
+          {label}: {result.persistence_status === 'persisted' ? 'Saved' : 'Not saved'}
           {result.persistence_message && ` — ${result.persistence_message}`}
         </p>
       ))}

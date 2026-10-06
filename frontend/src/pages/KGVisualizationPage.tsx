@@ -1,4 +1,6 @@
-import { useEffect, useCallback, useState, useRef, useMemo } from 'react'
+import PageHeading from '../components/PageHeading'
+import EmptyAnalysis from '../components/EmptyAnalysis'
+import { useEffect, useState, useRef, useMemo } from 'react'
 import ReactFlow, {
   Background,
   Controls,
@@ -11,7 +13,6 @@ import ReactFlow, {
 } from 'reactflow'
 import 'reactflow/dist/style.css'
 import { motion } from 'framer-motion'
-import { Link } from 'react-router-dom'
 import { usePipelineStore } from '../store/usePipelineStore'
 import { useKGStats } from '../hooks/useKGStats'
 import { useKGExpand } from '../hooks/useKGExpand'
@@ -57,7 +58,7 @@ function ExpansionCard({ patent, accentColor }: { patent: PatentExpanded; accent
   const abstract = patent.abstract ? patent.abstract.slice(0, 240) + (patent.abstract.length > 240 ? '…' : '') : 'No abstract available.'
   return (
     <motion.div
-      initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}
+      initial={false} animate={{ opacity: 1, y: 0 }}
       className="sheet-sm"
       style={{ display: 'flex', flexDirection: 'column', gap: 6, borderLeft: `3px solid ${accentColor}`, marginBottom: 12 }}
     >
@@ -100,8 +101,6 @@ export default function KGVisualizationPage() {
   const [nodes, setNodes, onNodesChange] = useNodesState([])
   const [edges, setEdges, onEdgesChange] = useEdgesState([])
 
-  const [familyOpen,   setFamilyOpen]   = useState(true)
-  const [siblingsOpen, setSiblingsOpen] = useState(true)
   const [graphError,   setGraphError]   = useState<string | null>(null)
 
   const patentIds = useMemo(() => {
@@ -155,16 +154,18 @@ export default function KGVisualizationPage() {
       return {
         id: n.id,
         position: n.position,
-        data: { label: n.data.label.slice(0, 20) },
+        data: { label: n.data.label, _nodeType: n.data.nodeType },
         style: {
           background: style.bg,
           border: `1.5px solid ${style.border}`,
           borderRadius: 'var(--radius-card)',
           color: style.color,
-          fontSize: 11,
-          fontFamily: 'var(--font-mono)',
+          fontSize: 12,
+          fontFamily: 'var(--font-body)',
+          overflowWrap: 'anywhere',
           padding: '6px 10px',
           minWidth: 90,
+          maxWidth: 180,
           boxShadow: 'var(--shadow-l2)',
         },
       }
@@ -184,37 +185,18 @@ export default function KGVisualizationPage() {
   const statsStatus = statsMutation.isPending ? 'loading' : statsMutation.isError ? 'error' : kgStats ? 'done' : 'idle'
   const { nodeCount, edgeCount } = kgStats ? StatStrip({ kgStats }) : { nodeCount: 0, edgeCount: 0 }
 
-  if (!pipelineResult) {
-    return (
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', gap: 20, textAlign: 'center', padding: 24 }}>
-        <KGIcon size={40} color={T.borderHairline} animate={false} />
-        <h2 style={{ fontFamily: 'var(--font-display)', color: 'var(--text-primary)', fontSize: '20px', fontWeight: 600 }}>No Case File Selected</h2>
-        <p style={{ color: 'var(--text-secondary)', fontSize: '14px' }}>Submit an invention idea or reopen a saved analysis to explore its graph.</p>
-        <Link to="/analyze" className="btn-primary" style={{ textDecoration: 'none', marginTop: 4 }}>New Analysis →</Link>
-      </div>
-    )
-  }
+  if (!pipelineResult) return <EmptyAnalysis />
 
   return (
-    <div style={{ maxWidth: 960, fontFamily: 'var(--font-body)' }}>
+    <div className="result-page">
 
-      {/* ─── Page Title Block ─── */}
-      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}
-        style={{ marginBottom: 16 }}
-      >
-        <p className="caption" style={{ color: 'var(--text-tertiary)', marginBottom: 6 }}>
-          §03 — KNOWLEDGE GRAPH EXPANSION
-        </p>
-        <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '44px', fontWeight: 600, color: 'var(--text-primary)', margin: 0 }}>
-          Knowledge Graph
-        </h1>
-      </motion.div>
+      <PageHeading title="Patent relationships" description="Explore family connections and shared classifications around the retrieved patents." />
 
       {/* ─── Metadata Strip ─── */}
       <motion.div
-        initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.05 }}
+        initial={false} animate={{ opacity: 1 }} transition={{ delay: 0.05 }}
+        className="result-metadata"
         style={{
-          height: 44,
           background: 'transparent',
           borderBottom: '1px solid var(--border-hairline)',
           display: 'flex', alignItems: 'baseline', justifyContent: 'space-between',
@@ -226,21 +208,21 @@ export default function KGVisualizationPage() {
         <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
           {/* Nodes */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            <span className="caption" style={{ fontSize: '10.5px', color: 'var(--text-tertiary)' }}>VISIBLE NODES</span>
+            <span className="caption" style={{ fontSize: '12px', color: 'var(--text-tertiary)' }}>Visible nodes</span>
             <span style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', color: 'var(--text-primary)' }}>{nodeCount}</span>
           </div>
           <div style={{ height: 26, width: 1, background: 'var(--border-hairline)' }} />
 
           {/* Edges */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            <span className="caption" style={{ fontSize: '10.5px', color: 'var(--text-tertiary)' }}>VISIBLE EDGES</span>
+            <span className="caption" style={{ fontSize: '12px', color: 'var(--text-tertiary)' }}>Visible edges</span>
             <span style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', color: 'var(--text-primary)' }}>{edgeCount}</span>
           </div>
           <div style={{ height: 26, width: 1, background: 'var(--border-hairline)' }} />
 
           {/* Status */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            <span className="caption" style={{ fontSize: '10.5px', color: 'var(--text-tertiary)' }}>STATUS</span>
+            <span className="caption" style={{ fontSize: '12px', color: 'var(--text-tertiary)' }}>Status</span>
             <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', fontWeight: 600, color: statsStatus === 'done' ? 'var(--accent-sage)' : 'var(--text-secondary)' }}>
               {statsStatus.toUpperCase()}
             </span>
@@ -249,7 +231,7 @@ export default function KGVisualizationPage() {
 
           {/* Expanded */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            <span className="caption" style={{ fontSize: '10.5px', color: 'var(--text-tertiary)' }}>EXPANDED</span>
+            <span className="caption" style={{ fontSize: '12px', color: 'var(--text-tertiary)' }}>Added patents</span>
             <span style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', color: 'var(--text-primary)' }}>{kgExpansion?.total_added ?? 0}</span>
           </div>
         </div>
@@ -262,16 +244,15 @@ export default function KGVisualizationPage() {
 
       {/* ─── Anchor Card (§1 Knowledge Graph Canvas) ─── */}
       <motion.div
-        initial={{ opacity: 0, scale: 0.99 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.35, delay: 0.1 }}
-        className="sheet-primary"
-        style={{ marginBottom: 24, padding: '32px' }}
+        initial={false} animate={{ opacity: 1 }}
+        className="graph-panel"
+        style={{ marginBottom: 24 }}
       >
         <h2 className="section-header" style={{ marginBottom: 16 }}>
           <span className="section-clause-num">§1</span>Knowledge Graph Visualization
         </h2>
 
-        <div style={{
-          height: 520,
+        <div className="graph-canvas" style={{
           border: '1.5px solid var(--border-anchor)',
           borderRadius: 'var(--radius-card)',
           overflow: 'hidden',
@@ -324,7 +305,7 @@ export default function KGVisualizationPage() {
                   const nodeType = (n as any).data?._nodeType ?? 'patent'
                   return getNodeStyle(nodeType).border
                 }}
-                maskColor="rgba(246,244,238,0.85)"
+                maskColor="rgba(243,245,245,0.85)"
               />
             </ReactFlow>
           )}
@@ -332,10 +313,10 @@ export default function KGVisualizationPage() {
       </motion.div>
 
       {/* ─── Legend (§2 Graph Legend) ─── */}
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.15 }}
+      <motion.div initial={false} animate={{ opacity: 1 }} transition={{ delay: 0.15 }}
         style={{ display: 'flex', gap: 20, flexWrap: 'wrap', marginBottom: 32, alignItems: 'center' }}
       >
-        <span className="caption" style={{ color: 'var(--text-secondary)' }}>§2 LEGEND:</span>
+        <span className="caption" style={{ color: 'var(--text-secondary)' }}>Node types</span>
         {Object.entries(NODE_STYLE).map(([type, { border }]) => (
           <div key={type} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             <div style={{ width: 10, height: 10, borderRadius: 2, border: `1.5px solid ${border}`, background: 'var(--bg-card)' }} />
@@ -354,7 +335,7 @@ export default function KGVisualizationPage() {
 
       {/* ─── Expansion Results (§3, §4, §5) ─── */}
       {kgExpansion && (
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
+        <motion.div initial={false} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
           
           {/* §3 Expansion Summary */}
           <div className="sheet-secondary" style={{ marginBottom: 24 }}>
@@ -367,7 +348,7 @@ export default function KGVisualizationPage() {
               and{' '}
               <strong style={{ color: 'var(--accent-brass)', fontWeight: 600 }}>{kgExpansion.cpc_siblings.length} CPC siblings</strong>{' '}
               not in original FAISS top-K. A total of{' '}
-              <strong style={{ color: 'var(--text-primary)', fontWeight: 600 }}>{kgExpansion.total_added} patents</strong> added to the docket.
+              <strong style={{ color: 'var(--text-primary)', fontWeight: 600 }}>{kgExpansion.total_added} patents</strong> added to the analysis.
             </p>
           </div>
 
@@ -380,13 +361,11 @@ export default function KGVisualizationPage() {
                 </h2>
                 <span className="mono-tag">{kgExpansion.family.length}</span>
               </div>
-              {familyOpen && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginTop: 12 }}>
                   {kgExpansion.family.map((p) => (
                     <ExpansionCard key={p.patent_id} patent={p} accentColor={T.accentIndigo} />
                   ))}
                 </div>
-              )}
             </div>
           )}
 
@@ -399,13 +378,11 @@ export default function KGVisualizationPage() {
                 </h2>
                 <span className="mono-tag">{kgExpansion.cpc_siblings.length}</span>
               </div>
-              {siblingsOpen && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginTop: 12 }}>
                   {kgExpansion.cpc_siblings.map((p) => (
                     <ExpansionCard key={p.patent_id} patent={p} accentColor={T.accentBrass} />
                   ))}
                 </div>
-              )}
             </div>
           )}
         </motion.div>

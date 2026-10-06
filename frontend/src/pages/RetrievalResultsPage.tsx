@@ -1,5 +1,7 @@
+import PageHeading from '../components/PageHeading'
+import EmptyAnalysis from '../components/EmptyAnalysis'
 import { useState, useRef } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { usePipelineStore } from '../store/usePipelineStore'
 import type { RetrievalHit } from '../types/pipeline'
@@ -136,16 +138,16 @@ function PatentCard({ hit, idx }: { hit: RetrievalHit; idx: number }) {
         {hasGNN && (
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 10, borderTop: '1px solid var(--border-hairline)', paddingTop: 10 }}>
             <span className="mono-tag" style={{ borderColor: 'var(--accent-sage)', color: 'var(--accent-sage)' }}>
-              SEMANTIC: {score.toFixed(4)}
+              Semantic: {score.toFixed(4)}
             </span>
             {hit.novelty_score != null && (
               <span className="mono-tag" style={{ borderColor: 'var(--accent-brass)', color: 'var(--accent-brass)' }}>
-                GNN NOVELTY: {hit.novelty_score.toFixed(4)}
+                GNN novelty: {hit.novelty_score.toFixed(4)}
               </span>
             )}
             {hit.combined_score != null && (
               <span className="mono-tag" style={{ borderColor: 'var(--text-secondary)', color: 'var(--text-secondary)' }}>
-                COMBINED: {hit.combined_score.toFixed(4)}
+                Combined: {hit.combined_score.toFixed(4)}
               </span>
             )}
           </div>
@@ -175,16 +177,7 @@ export default function RetrievalResultsPage() {
     refNum.current = `PI-${yyyy}-${mm}${dd}-${hash}`
   }
 
-  if (!pipelineResult) {
-    return (
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', gap: 20, textAlign: 'center', padding: 24 }}>
-        <FAISSIcon size={40} color={T.borderHairline} animate={false} />
-        <h2 style={{ fontFamily: 'var(--font-display)', color: 'var(--text-primary)', fontSize: '20px', fontWeight: 600 }}>No Case File Selected</h2>
-        <p style={{ color: 'var(--text-secondary)', fontSize: '14px' }}>Please submit an innovation idea first to retrieve prior art.</p>
-        <Link to="/analyze" className="btn-primary" style={{ textDecoration: 'none', marginTop: 4 }}>New Analysis →</Link>
-      </div>
-    )
-  }
+  if (!pipelineResult) return <EmptyAnalysis />
 
   const hits: RetrievalHit[] = pipelineResult.results ?? []
   const hasGNN = hits.some(h => h.novelty_score != null || h.combined_score != null)
@@ -197,25 +190,15 @@ export default function RetrievalResultsPage() {
   const topHit = sortedHits[0]
 
   return (
-    <div style={{ maxWidth: 960, fontFamily: 'var(--font-body)' }}>
+    <div className="result-page">
 
-      {/* ─── Page Title Block ─── */}
-      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}
-        style={{ marginBottom: 16 }}
-      >
-        <p className="caption" style={{ color: 'var(--text-tertiary)', marginBottom: 6 }}>
-          §02 — SEMANTIC RETRIEVAL
-        </p>
-        <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '44px', fontWeight: 600, color: 'var(--text-primary)', margin: 0 }}>
-          Patent Retrieval Results
-        </h1>
-      </motion.div>
+      <PageHeading title="Related patents" description="Compare source publications, similarity scores and grouped versions of the same text." />
 
       {/* ─── Metadata Strip ─── */}
       <motion.div
-        initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.05 }}
+        initial={false} animate={{ opacity: 1 }} transition={{ delay: 0.05 }}
+        className="result-metadata"
         style={{
-          height: 44,
           background: 'transparent',
           borderBottom: '1px solid var(--border-hairline)',
           display: 'flex', alignItems: 'baseline', justifyContent: 'space-between',
@@ -227,14 +210,14 @@ export default function RetrievalResultsPage() {
         <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
           {/* Indexed Count */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            <span className="caption" style={{ fontSize: '10.5px', color: 'var(--text-tertiary)' }}>INDEXED COUNT</span>
+            <span className="caption" style={{ fontSize: '12px', color: 'var(--text-tertiary)' }}>Indexed texts</span>
             <span style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', color: 'var(--text-primary)' }}>{pipelineResult.indexed_count?.toLocaleString() ?? 'Unknown'}</span>
           </div>
           <div style={{ height: 26, width: 1, background: 'var(--border-hairline)' }} />
 
           {/* Top Score */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            <span className="caption" style={{ fontSize: '10.5px', color: 'var(--text-tertiary)' }}>TOP SCORE</span>
+            <span className="caption" style={{ fontSize: '12px', color: 'var(--text-tertiary)' }}>Top score</span>
             <span style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', color: 'var(--text-primary)' }}>
               {topHit && topHit.semantic_score !== null ? topHit.semantic_score.toFixed(4) : '—'}
             </span>
@@ -243,7 +226,7 @@ export default function RetrievalResultsPage() {
 
           {/* Results Returned */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            <span className="caption" style={{ fontSize: '10.5px', color: 'var(--text-tertiary)' }}>RESULTS RETURNED</span>
+            <span className="caption" style={{ fontSize: '12px', color: 'var(--text-tertiary)' }}>Results</span>
             <span style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', color: 'var(--text-primary)' }}>{hits.length}</span>
           </div>
         </div>
@@ -255,10 +238,10 @@ export default function RetrievalResultsPage() {
       </motion.div>
 
       {/* ─── Sort toggle (Segmented Pattern) ─── */}
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}
+      <motion.div initial={false} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}
         style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 32 }}
       >
-        <span className="caption" style={{ color: 'var(--text-secondary)' }}>SORT BY:</span>
+        <span className="caption" style={{ color: 'var(--text-secondary)' }}>Sort by</span>
         <div style={{
           display: 'flex',
           background: 'var(--bg-structural)',
@@ -267,8 +250,8 @@ export default function RetrievalResultsPage() {
           overflow: 'hidden',
         }}>
           {[
-            { value: 'faiss', label: 'FAISS Order' },
-            { value: 'gnn', label: 'GNN Order' }
+            { value: 'faiss', label: 'Semantic similarity' },
+            { value: 'gnn', label: 'Graph ranking' }
           ].map(opt => {
             const active = sortMode === opt.value
             const disabled = opt.value === 'gnn' && !hasGNN
@@ -276,6 +259,7 @@ export default function RetrievalResultsPage() {
               <button
                 key={opt.value}
                 id={`sort-${opt.value}`}
+                aria-pressed={active}
                 onClick={() => setSortMode(opt.value as 'faiss' | 'gnn')}
                 disabled={disabled}
                 style={{
@@ -283,36 +267,36 @@ export default function RetrievalResultsPage() {
                   border: 'none',
                   background: active ? 'var(--surface-ink)' : 'transparent',
                   color: active ? 'var(--text-on-dark)' : disabled ? 'var(--text-tertiary)' : 'var(--text-secondary)',
-                  fontSize: '11.5px',
-                  fontFamily: 'var(--font-mono)',
+                  fontSize: '13px',
+                  fontFamily: 'var(--font-body)',
                   fontWeight: 600,
                   cursor: disabled ? 'not-allowed' : 'pointer',
                   transition: 'background 120ms, color 120ms',
                 }}
               >
-                {opt.label.toUpperCase()}{opt.value === 'gnn' && !hasGNN && ' (N/A)'}
+                {opt.label}{opt.value === 'gnn' && !hasGNN && ' (N/A)'}
               </button>
             )
           })}
         </div>
         {sortMode === 'gnn' && hasGNN && (
           <span className="mono-tag" style={{ borderColor: 'var(--accent-sage)', color: 'var(--accent-sage)' }}>
-            RE-RANKED BY GRAPHSAGE LIVE INFERENCE
+            Sorted by combined graph score
           </span>
         )}
       </motion.div>
 
-      {/* ─── Anchor Card (§1 Primary Exhibit: Rank #1 Hit) ─── */}
+      {/* ─── Anchor Card (§1 Highest-ranked match: Rank #1 Hit) ─── */}
       {topHit && (
-        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15, duration: 0.35 }}
+        <motion.div initial={false} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15, duration: 0.35 }}
           className="sheet-primary" style={{ marginBottom: 40 }}
         >
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 14 }}>
             <h2 className="section-header" style={{ margin: 0 }}>
-              <span className="section-clause-num">§1</span>Primary Exhibit
+              Highest-ranked match
             </h2>
             <span className="mono-tag" style={{ borderColor: 'var(--accent-clay)', color: 'var(--accent-clay)' }}>
-              RANK #1 HIT
+              Rank 1
             </span>
           </div>
 
@@ -370,7 +354,7 @@ export default function RetrievalResultsPage() {
           {/* Full Score Breakdown */}
           <div style={{ borderTop: '1px solid var(--border-hairline)', paddingTop: 20 }}>
             <p className="caption" style={{ color: 'var(--text-secondary)', marginBottom: 14 }}>Full Score Breakdown</p>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 20 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 200px), 1fr))', gap: 20 }}>
               {/* Semantic Score */}
               <div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
@@ -412,13 +396,13 @@ export default function RetrievalResultsPage() {
         </motion.div>
       )}
 
-      {/* ─── Remaining hits (§2 Prior Art Candidates) ─── */}
+      {/* ─── Remaining hits (§2 More related patents) ─── */}
       {sortedHits.length > 1 && (
-        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2, duration: 0.35 }}
+        <motion.div initial={false} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2, duration: 0.35 }}
           style={{ marginBottom: 48 }}
         >
           <h2 className="section-header" style={{ marginBottom: 20 }}>
-            <span className="section-clause-num">§2</span>Prior Art Candidates
+            More related patents
           </h2>
           <div>
             {sortedHits.slice(1).map((hit, i) => (
@@ -432,12 +416,12 @@ export default function RetrievalResultsPage() {
       {sortedHits.length === 0 && (
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--text-tertiary)', fontSize: '13px', fontStyle: 'italic', padding: '32px 0' }}>
           <FAISSIcon size={14} color={T.textTertiary} animate={false} />
-          No prior art candidates detected for this query.
+          No related patents were returned. Try a more specific technical description.
         </div>
       )}
 
       {/* ─── CTA Banner ─── */}
-      <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25, duration: 0.35 }}
+      <motion.div initial={false} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25, duration: 0.35 }}
         style={{
           display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12,
           padding: '24px 0 0 0',

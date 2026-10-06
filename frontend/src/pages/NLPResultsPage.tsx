@@ -1,8 +1,10 @@
+import PageHeading from '../components/PageHeading'
+import EmptyAnalysis from '../components/EmptyAnalysis'
 import { useState, useRef } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { usePipelineStore } from '../store/usePipelineStore'
-import { IdeaIcon, FAISSIcon } from '../assets/PatentIcons'
+import { IdeaIcon } from '../assets/PatentIcons'
 import { T } from '../theme'
 
 export default function NLPResultsPage() {
@@ -21,45 +23,22 @@ export default function NLPResultsPage() {
     refNum.current = `PI-${yyyy}-${mm}${dd}-${hash}`
   }
 
-  if (!pipelineResult) {
-    return (
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', gap: 20, textAlign: 'center', padding: 24 }}>
-        <IdeaIcon size={40} color={T.borderHairline} animate={false} />
-        <h2 style={{ fontFamily: 'var(--font-display)', color: 'var(--text-primary)', fontSize: '20px', fontWeight: 600 }}>No Case File Selected</h2>
-        <p style={{ color: 'var(--text-secondary)', fontSize: '14px' }}>Please submit an innovation idea first to generate case logs.</p>
-        <Link to="/analyze" className="btn-primary" style={{ textDecoration: 'none', marginTop: 4 }}>New Analysis →</Link>
-      </div>
-    )
-  }
+  if (!pipelineResult) return <EmptyAnalysis />
 
   const { nlp_result, model } = pipelineResult
   const { clean_text, keywords, entities, source } = nlp_result
   const isGemini = source === 'gemini' || source?.toLowerCase().includes('gemini')
 
   return (
-    <div style={{ maxWidth: 960, fontFamily: 'var(--font-body)' }}>
+    <div className="result-page">
 
-      {/* ─── Page Title Block ─── */}
-      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}
-        style={{ marginBottom: 16 }}
-      >
-        <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between' }}>
-          <div>
-            <p className="caption" style={{ color: 'var(--text-tertiary)', marginBottom: 6 }}>
-              §01 — LANGUAGE PROCESSING
-            </p>
-            <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '44px', fontWeight: 600, color: 'var(--text-primary)', margin: 0 }}>
-              NLP Analysis
-            </h1>
-          </div>
-        </div>
-      </motion.div>
+      <PageHeading title="Concepts in your invention" description="Review the language and technical terms used to find related patents." />
 
       {/* ─── Metadata Strip ─── */}
       <motion.div
-        initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.05 }}
+        initial={false} animate={{ opacity: 1 }} transition={{ delay: 0.05 }}
+        className="result-metadata"
         style={{
-          height: 44,
           background: 'transparent',
           borderBottom: '1px solid var(--border-hairline)',
           display: 'flex', alignItems: 'baseline', justifyContent: 'space-between',
@@ -71,28 +50,28 @@ export default function NLPResultsPage() {
         <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
           {/* Model */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            <span className="caption" style={{ fontSize: '10.5px', color: 'var(--text-tertiary)' }}>MODEL</span>
+            <span className="caption" style={{ fontSize: '12px', color: 'var(--text-tertiary)' }}>Model</span>
             <span style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', color: 'var(--text-primary)' }}>{model || 'PatentSBERTa'}</span>
           </div>
           <div style={{ height: 26, width: 1, background: 'var(--border-hairline)' }} />
           
           {/* Source */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            <span className="caption" style={{ fontSize: '10.5px', color: 'var(--text-tertiary)' }}>SOURCE</span>
+            <span className="caption" style={{ fontSize: '12px', color: 'var(--text-tertiary)' }}>Source</span>
             <span style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', color: 'var(--text-primary)' }}>{isGemini ? 'Gemini LLM' : source === 'spacy' ? 'spaCy' : source ?? 'Unknown'}</span>
           </div>
           <div style={{ height: 26, width: 1, background: 'var(--border-hairline)' }} />
           
           {/* Keywords count */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            <span className="caption" style={{ fontSize: '10.5px', color: 'var(--text-tertiary)' }}>KEYWORDS</span>
+            <span className="caption" style={{ fontSize: '12px', color: 'var(--text-tertiary)' }}>Keywords</span>
             <span style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', color: 'var(--text-primary)' }}>{keywords?.length || 0}</span>
           </div>
           <div style={{ height: 26, width: 1, background: 'var(--border-hairline)' }} />
           
           {/* Entities count */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            <span className="caption" style={{ fontSize: '10.5px', color: 'var(--text-tertiary)' }}>ENTITIES</span>
+            <span className="caption" style={{ fontSize: '12px', color: 'var(--text-tertiary)' }}>Entities</span>
             <span style={{
               fontFamily: 'var(--font-mono)',
               fontSize: '13px',
@@ -110,7 +89,7 @@ export default function NLPResultsPage() {
       </motion.div>
 
       {/* ─── Anchor Card (§1 Preprocessed Text) ─── */}
-      <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1, duration: 0.35 }}
+      <motion.div initial={false} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1, duration: 0.35 }}
         className="sheet-primary" style={{ marginBottom: 32 }}
       >
         <h2 className="section-header" style={{ marginBottom: 14 }}>
@@ -120,7 +99,7 @@ export default function NLPResultsPage() {
           fontFamily: 'var(--font-display)',
           fontSize: '18px',
           fontWeight: 500,
-          fontStyle: 'italic',
+          fontStyle: 'normal',
           color: 'var(--text-secondary)',
           lineHeight: 1.6,
           margin: 0,
@@ -130,8 +109,8 @@ export default function NLPResultsPage() {
       </motion.div>
 
       {/* ─── Keywords + Entities (65/35 Split Row) ─── */}
-      <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.16, duration: 0.35 }}
-        style={{ display: 'grid', gridTemplateColumns: '65% 35%', gap: 32, alignItems: 'start', marginBottom: 32 }}
+      <motion.div initial={false} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.16, duration: 0.35 }}
+        className="concept-grid"
       >
         {/* Keywords */}
         <div className="sheet-secondary">
@@ -185,10 +164,11 @@ export default function NLPResultsPage() {
       </motion.div>
 
       {/* ─── Technical Card: FAISS Query Text ─── */}
-      <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.22, duration: 0.35 }}
+      <motion.div initial={false} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.22, duration: 0.35 }}
         className="sheet-technical" style={{ marginBottom: 48, padding: 0, overflow: 'hidden' }}
       >
         <button
+          aria-expanded={queryOpen}
           onClick={() => setQueryOpen(o => !o)}
           style={{
             width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
@@ -197,7 +177,7 @@ export default function NLPResultsPage() {
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--text-secondary)' }}>
             <span style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', fontWeight: 600, letterSpacing: '0.1em' }}>
-              {queryOpen ? '▼' : '▶'} §4 FAISS QUERY TEXT
+              {queryOpen ? '▼' : '▶'} Search query text
             </span>
           </div>
         </button>
@@ -217,7 +197,7 @@ export default function NLPResultsPage() {
       </motion.div>
 
       {/* ─── CTA Banner ─── */}
-      <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.28, duration: 0.35 }}
+      <motion.div initial={false} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.28, duration: 0.35 }}
         style={{
           display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12,
           padding: '24px 0 0 0',

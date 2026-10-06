@@ -1,3 +1,5 @@
+import PageHeading from '../components/PageHeading'
+import EmptyAnalysis from '../components/EmptyAnalysis'
 import { useMemo, useRef } from 'react'
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, Legend,
@@ -7,9 +9,8 @@ import { motion } from 'framer-motion'
 import { usePipelineStore } from '../store/usePipelineStore'
 import { useGNNRerank } from '../hooks/useGNNRerank'
 import type { RankedHit } from '../types/gnn'
-import { GNNIcon, NoveltyIcon } from '../assets/PatentIcons'
+import { NoveltyIcon } from '../assets/PatentIcons'
 import { T } from '../theme'
-import { Link } from 'react-router-dom'
 
 // ── Score color — semantic palette ────────────────────────────────────────
 function scoreColor(val: number): string {
@@ -111,37 +112,18 @@ export default function GNNAnalysisPage() {
     return (total / rerankedHits.length).toFixed(1)
   }, [rerankedHits])
 
-  if (!pipelineResult) {
-    return (
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', gap: 20, textAlign: 'center', padding: 24 }}>
-        <GNNIcon size={40} color={T.borderHairline} animate={false} />
-        <h2 style={{ fontFamily: 'var(--font-display)', color: 'var(--text-primary)', fontSize: '20px', fontWeight: 600 }}>No Case File Selected</h2>
-        <p style={{ color: 'var(--text-secondary)', fontSize: '14px' }}>Please submit an innovation idea first to run GNN analysis.</p>
-        <Link to="/analyze" className="btn-primary" style={{ textDecoration: 'none', marginTop: 4 }}>New Analysis →</Link>
-      </div>
-    )
-  }
+  if (!pipelineResult) return <EmptyAnalysis />
 
   return (
-    <div style={{ maxWidth: 960, fontFamily: 'var(--font-body)' }}>
+    <div className="result-page">
 
-      {/* ─── Page Title Block ─── */}
-      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}
-        style={{ marginBottom: 16 }}
-      >
-        <p className="caption" style={{ color: 'var(--text-tertiary)', marginBottom: 6 }}>
-          §04 — GRAPH-BASED RE-RANKING
-        </p>
-        <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '44px', fontWeight: 600, color: 'var(--text-primary)', margin: 0 }}>
-          GNN Intelligence Layer
-        </h1>
-      </motion.div>
+      <PageHeading title="Review the ranking" description="Compare semantic similarity with graph context. Weight changes are preview-only." />
 
       {/* ─── Metadata Strip ─── */}
       <motion.div
-        initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.05 }}
+        initial={false} animate={{ opacity: 1 }} transition={{ delay: 0.05 }}
+        className="result-metadata"
         style={{
-          height: 44,
           background: 'transparent',
           borderBottom: '1px solid var(--border-hairline)',
           display: 'flex', alignItems: 'baseline', justifyContent: 'space-between',
@@ -153,7 +135,7 @@ export default function GNNAnalysisPage() {
         <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
           {/* GNN Mode */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            <span className="caption" style={{ fontSize: '10.5px', color: 'var(--text-tertiary)' }}>GNN MODE</span>
+            <span className="caption" style={{ fontSize: '12px', color: 'var(--text-tertiary)' }}>Ranking mode</span>
             <span style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', color: 'var(--text-primary)' }}>
               {activeMode === 'novelty' ? 'Novelty Scoring' : 'Graph Similarity'}
             </span>
@@ -162,14 +144,14 @@ export default function GNNAnalysisPage() {
 
           {/* Patents Reranked */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            <span className="caption" style={{ fontSize: '10.5px', color: 'var(--text-tertiary)' }}>PATENTS RERANKED</span>
+            <span className="caption" style={{ fontSize: '12px', color: 'var(--text-tertiary)' }}>Ranked patents</span>
             <span style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', color: 'var(--text-primary)' }}>{rerankedHits.length}</span>
           </div>
           <div style={{ height: 26, width: 1, background: 'var(--border-hairline)' }} />
 
           {/* Avg Delta */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            <span className="caption" style={{ fontSize: '10.5px', color: 'var(--text-tertiary)' }}>AVG. DELTA</span>
+            <span className="caption" style={{ fontSize: '12px', color: 'var(--text-tertiary)' }}>Average movement</span>
             <span style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', color: 'var(--text-primary)' }}>±{avgDelta} positions</span>
           </div>
         </div>
@@ -182,7 +164,7 @@ export default function GNNAnalysisPage() {
 
       {/* ─── Anchor Card (§1 Biggest GNN Boost) ─── */}
       {biggestBoost && biggestBoost.delta > 0 && (
-        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1, duration: 0.35 }}
+        <motion.div initial={false} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1, duration: 0.35 }}
           className="sheet-primary" style={{ marginBottom: 32 }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
@@ -205,23 +187,23 @@ export default function GNNAnalysisPage() {
       )}
 
       {/* ─── Sliders & Validation (§2 Scoring Weights) ─── */}
-      <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}
+      <motion.div initial={false} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}
         className="sheet-secondary" style={{ marginBottom: 32 }}
       >
         <h2 className="section-header" style={{ marginBottom: 16 }}>
           <span className="section-clause-num">§2</span>Scoring Weights
         </h2>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 24, marginBottom: 16 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))', gap: 24, marginBottom: 16 }}>
           {/* Semantic Slider */}
           <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
-              <label style={{ fontSize: '13px', color: 'var(--accent-sage)', fontWeight: 600 }}>Semantic Weight (FAISS)</label>
+              <label htmlFor="semantic-weight" style={{ fontSize: '13px', color: 'var(--accent-sage)', fontWeight: 600 }}>Semantic weight (FAISS)</label>
               <span style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', color: 'var(--text-primary)', fontWeight: 700 }}>
                 {(gnnWeights.semantic * 100).toFixed(0)}%
               </span>
             </div>
             <input
-              type="range" min={0} max={1} step={0.05}
+              id="semantic-weight" type="range" min={0} max={1} step={0.05}
               value={gnnWeights.semantic}
               onChange={(e) => setSemanticWeight(+e.target.value)}
               style={{ width: '100%', accentColor: T.accentSage, cursor: 'pointer' }}
@@ -231,13 +213,13 @@ export default function GNNAnalysisPage() {
           {/* GNN Slider */}
           <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
-              <label style={{ fontSize: '13px', color: 'var(--accent-brass)', fontWeight: 600 }}>GNN Weight (Novelty)</label>
+              <label htmlFor="graph-weight" style={{ fontSize: '13px', color: 'var(--accent-brass)', fontWeight: 600 }}>Graph weight (novelty)</label>
               <span style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', color: 'var(--text-primary)', fontWeight: 700 }}>
                 {(gnnWeights.gnn * 100).toFixed(0)}%
               </span>
             </div>
             <input
-              type="range" min={0} max={1} step={0.05}
+              id="graph-weight" type="range" min={0} max={1} step={0.05}
               value={gnnWeights.gnn}
               onChange={(e) => setGNNWeight(+e.target.value)}
               style={{ width: '100%', accentColor: T.accentBrass, cursor: 'pointer' }}
@@ -261,7 +243,7 @@ export default function GNNAnalysisPage() {
 
       {/* No GNN Notice */}
       {!hasGNN && (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+        <motion.div initial={false} animate={{ opacity: 1 }}
           className="sheet-secondary" style={{ marginBottom: 32, borderLeft: `3px solid var(--accent-brass)` }}
         >
           <p style={{ color: 'var(--text-primary)', fontWeight: 600, marginBottom: 6 }}>GNN Scoring Unavailable</p>
@@ -273,7 +255,7 @@ export default function GNNAnalysisPage() {
 
       {/* ─── Score Distribution Chart (§3 Score Distribution) ─── */}
       {hasGNN && (
-        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
+        <motion.div initial={false} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
           className="sheet-secondary" style={{ marginBottom: 32 }}
         >
           <h2 className="section-header" style={{ marginBottom: 16 }}>
@@ -305,7 +287,7 @@ export default function GNNAnalysisPage() {
 
       {/* ─── Re-ranking Table (§4 Re-ranking Table) ─── */}
       {hasGNN && (
-        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}
+        <motion.div initial={false} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}
           style={{ marginBottom: 40 }}
         >
           <h2 className="section-header" style={{ marginBottom: 16 }}>
@@ -317,12 +299,12 @@ export default function GNNAnalysisPage() {
               <table style={{ width: '100%', borderCollapse: 'collapse', fontFamily: 'var(--font-mono)', fontSize: '13px', textAlign: 'right' }}>
                 <thead>
                   <tr style={{ borderBottom: '1px solid var(--border-hairline)', background: 'rgba(35, 39, 31, 0.03)' }}>
-                    <th style={{ padding: '12px 14px', fontSize: '10.5px', fontWeight: 600, color: 'var(--text-tertiary)', textTransform: 'uppercase', textAlign: 'center', width: 60 }}>Rank</th>
-                    <th style={{ padding: '12px 14px', fontSize: '10.5px', fontWeight: 600, color: 'var(--text-tertiary)', textTransform: 'uppercase', textAlign: 'left' }}>Patent Candidates</th>
-                    <th style={{ padding: '12px 14px', fontSize: '10.5px', fontWeight: 600, color: 'var(--text-tertiary)', textTransform: 'uppercase', width: 90 }}>Semantic</th>
-                    <th style={{ padding: '12px 14px', fontSize: '10.5px', fontWeight: 600, color: 'var(--text-tertiary)', textTransform: 'uppercase', width: 90 }}>GNN</th>
-                    <th style={{ padding: '12px 14px', fontSize: '10.5px', fontWeight: 600, color: 'var(--text-tertiary)', textTransform: 'uppercase', width: 90 }}>Combined</th>
-                    <th style={{ padding: '12px 14px', fontSize: '10.5px', fontWeight: 600, color: 'var(--text-tertiary)', textTransform: 'uppercase', width: 80, textAlign: 'center' }}>Δ Rank</th>
+                    <th style={{ padding: '12px 14px', fontSize: '12px', fontWeight: 600, color: 'var(--text-tertiary)', textTransform: 'none', textAlign: 'center', width: 60 }}>Rank</th>
+                    <th style={{ padding: '12px 14px', fontSize: '12px', fontWeight: 600, color: 'var(--text-tertiary)', textTransform: 'none', textAlign: 'left' }}>Patent Candidates</th>
+                    <th style={{ padding: '12px 14px', fontSize: '12px', fontWeight: 600, color: 'var(--text-tertiary)', textTransform: 'none', width: 90 }}>Semantic</th>
+                    <th style={{ padding: '12px 14px', fontSize: '12px', fontWeight: 600, color: 'var(--text-tertiary)', textTransform: 'none', width: 90 }}>GNN</th>
+                    <th style={{ padding: '12px 14px', fontSize: '12px', fontWeight: 600, color: 'var(--text-tertiary)', textTransform: 'none', width: 90 }}>Combined</th>
+                    <th style={{ padding: '12px 14px', fontSize: '12px', fontWeight: 600, color: 'var(--text-tertiary)', textTransform: 'none', width: 80, textAlign: 'center' }}>Δ Rank</th>
                   </tr>
                 </thead>
                 <tbody>

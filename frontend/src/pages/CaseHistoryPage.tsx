@@ -1,3 +1,4 @@
+import PageHeading from '../components/PageHeading'
 import { FormEvent, useEffect, useState } from 'react'
 import { createCase, deleteCase, listCases, getRun, type AnalysisCase } from '../api/cases'
 import { useNavigate } from 'react-router-dom'
@@ -67,45 +68,35 @@ export default function CaseHistoryPage() {
   }
 
   return (
-    <section style={{ maxWidth: 960, margin: '0 auto' }}>
-      <p className="caption">Relational database</p>
-      <h1 style={{ margin: '6px 0 10px' }}>Saved analysis cases</h1>
-      <p style={{ color: 'var(--text-secondary)', marginBottom: 28 }}>
-        Open a saved analysis or create another run in the same case. Saved results are loaded from MySQL.
-      </p>
-
-      <form onSubmit={submit} style={{ display: 'grid', gap: 10, padding: 20, background: 'var(--bg-card)', borderRadius: 'var(--radius-card)', marginBottom: 24 }}>
-        <input value={title} onChange={(event) => setTitle(event.target.value)} placeholder="Case title" aria-label="Case title" />
-        <textarea value={ideaText} onChange={(event) => setIdeaText(event.target.value)} placeholder="Invention idea" aria-label="Invention idea" rows={4} />
-        <div style={{ display: 'flex', gap: 10 }}>
-          <button type="submit" className="btn-primary">Save draft</button>
-          {currentIdea && <button type="button" onClick={() => setIdeaText(currentIdea)}>Use current idea</button>}
-        </div>
-      </form>
-
-      {error && <div style={{ color: 'var(--accent-clay)', marginBottom: 16 }}><p>{error}</p><button type="button" onClick={() => void refresh()}>Retry loading history</button></div>}
-      {loading ? <p>Loading saved cases…</p> : error && cases.length === 0 ? null : cases.length === 0 ? <p>No saved cases yet.</p> : (
-        <div style={{ display: 'grid', gap: 12 }}>
-          {cases.map((analysisCase) => (
-            <article key={analysisCase.case_id} style={{ padding: 18, background: 'var(--bg-card)', borderRadius: 'var(--radius-card)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16 }}>
-                <div>
-                  <h2 style={{ fontSize: 18, margin: 0 }}>{analysisCase.title}</h2>
-                  <p style={{ color: 'var(--text-secondary)', margin: '8px 0' }}>{analysisCase.idea_text}</p>
-                  <small>{analysisCase.status} · {analysisCase.runs.length} stored run{analysisCase.runs.length === 1 ? '' : 's'}</small>
-                  <div style={{ display: 'grid', gap: 8, marginTop: 12 }}>
-                    {analysisCase.runs.map(run => (
-                      <button key={run.run_id} type="button" disabled={opening !== null} onClick={() => void open(analysisCase.case_id, run.run_id)}>
-                        {opening === run.run_id ? 'Opening…' : `Open analysis · ${new Date(run.started_at).toLocaleString()}`}
-                      </button>
-                    ))}
-                    <button type="button" onClick={() => { selectCase(analysisCase.case_id, analysisCase.idea_text); navigate('/analyze') }}>
-                      {analysisCase.runs.length ? 'New run in this case' : 'Analyse this draft'}
-                    </button>
-                  </div>
-                </div>
-                <button type="button" onClick={() => void remove(analysisCase.case_id)}>Delete</button>
+    <section className="result-page cases-page">
+      <PageHeading title="Saved cases" description="Reopen an analysis, revise an invention or keep several runs together in one case." />
+      <details className="draft-composer">
+        <summary>Create a case draft</summary>
+        <form onSubmit={submit} className="draft-form">
+          <div><label htmlFor="case-title">Case title</label><input id="case-title" value={title} onChange={event => setTitle(event.target.value)} placeholder="A name for this research" required /></div>
+          <div><label htmlFor="case-idea">Invention description</label><textarea id="case-idea" value={ideaText} onChange={event => setIdeaText(event.target.value)} placeholder="Describe the mechanism and application" rows={4} required /></div>
+          <div className="draft-actions"><button type="submit" className="btn-primary">Save draft</button>
+            {currentIdea && <button type="button" className="text-button" onClick={() => setIdeaText(currentIdea)}>Use current idea</button>}
+          </div>
+        </form>
+      </details>
+      <div className="cases-list-heading"><h2>Your cases</h2><button className="text-button" type="button" disabled={loading} onClick={() => void refresh()}>Refresh</button></div>
+      {error && <div className="error-notice" role="alert"><p>{error}</p><button type="button" className="text-button" onClick={() => void refresh()}>Retry loading history</button></div>}
+      {loading ? <p role="status" className="empty-list">Loading saved cases…</p> : error && cases.length === 0 ? null : cases.length === 0 ? <p className="empty-list">No saved cases yet. Create a draft above or run a new analysis.</p> : (
+        <div className="case-list">
+          {cases.map(analysisCase => (
+            <article key={analysisCase.case_id} className="case-row">
+              <div className="case-row-heading"><h2>{analysisCase.title}</h2><button className="delete-button" type="button" onClick={() => void remove(analysisCase.case_id)}>Delete</button></div>
+              <p className="case-description">{analysisCase.idea_text}</p>
+              <p className="case-meta"><span>{analysisCase.status}</span><span>{analysisCase.runs.length} saved run{analysisCase.runs.length === 1 ? '' : 's'}</span></p>
+              <div className="case-runs">
+                {analysisCase.runs.map(run => <button key={run.run_id} className="run-link" type="button" disabled={opening !== null} onClick={() => void open(analysisCase.case_id, run.run_id)}>
+                  <span>{opening === run.run_id ? 'Opening…' : 'Open analysis'}</span><time dateTime={run.started_at}>{new Date(run.started_at).toLocaleString()}</time>
+                </button>)}
               </div>
+              <button className="btn-secondary" type="button" onClick={() => { selectCase(analysisCase.case_id, analysisCase.idea_text); navigate('/analyze') }}>
+                {analysisCase.runs.length ? 'New run in this case' : 'Analyze this draft'}
+              </button>
             </article>
           ))}
         </div>

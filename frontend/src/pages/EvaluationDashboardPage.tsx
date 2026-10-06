@@ -1,3 +1,5 @@
+import PageHeading from '../components/PageHeading'
+import EmptyAnalysis from '../components/EmptyAnalysis'
 import { useState, useRef } from 'react'
 import {
   RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis,
@@ -6,10 +8,8 @@ import {
 import { motion, AnimatePresence } from 'framer-motion'
 import { usePipelineStore } from '../store/usePipelineStore'
 import { runEvaluation } from '../api/evaluate'
-import { NoveltyIcon } from '../assets/PatentIcons'
 import { T } from '../theme'
-import type { EvaluationResult, IndiaFlag } from '../types/pipeline'
-import { Link } from 'react-router-dom'
+import type { IndiaFlag } from '../types/pipeline'
 
 // ── Radar tooltip ────────────────────────────────────────────────────────────
 function RadarTooltip({ active, payload }: any) {
@@ -36,16 +36,16 @@ function BreakdownCard({ label, value, explanation, delay = 0 }: {
   const barColor = value >= 60 ? 'var(--accent-sage)' : value >= 40 ? 'var(--accent-brass)' : 'var(--accent-clay)'
   return (
     <motion.div
-      initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay }}
+      initial={false} animate={{ opacity: 1, y: 0 }} transition={{ delay }}
       className="sheet-secondary" style={{ flex: 1, minWidth: 0 }}
     >
-      <p className="caption" style={{ textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8, color: 'var(--text-tertiary)' }}>{label}</p>
+      <p className="caption" style={{ textTransform: 'none', letterSpacing: '0.05em', marginBottom: 8, color: 'var(--text-tertiary)' }}>{label}</p>
       <p style={{ fontFamily: 'var(--font-mono)', fontSize: '24px', fontWeight: 600, color: barColor, marginBottom: 8 }}>
         {Math.round(value)}<span style={{ fontSize: '13px', fontWeight: 400, color: 'var(--text-secondary)', fontFamily: 'var(--font-body)' }}>/100</span>
       </p>
       <div className="score-track" style={{ marginBottom: 10 }}>
         <motion.div
-          initial={{ width: 0 }}
+          initial={false}
           animate={{ width: `${value}%` }}
           transition={{ duration: 0.7, delay: delay + 0.2 }}
           style={{ height: '100%', background: barColor, borderRadius: 2 }}
@@ -88,11 +88,9 @@ function SkeletonBlock() {
 
 // ── India flag chip ──────────────────────────────────────────────────────────
 function IndiaFlagCard({ flag }: { flag: IndiaFlag }) {
-  const [open, setOpen] = useState(false)
   const borderColor = flag.severity === 'HIGH' ? 'var(--accent-clay)' : flag.severity === 'MEDIUM' ? 'var(--accent-brass)' : 'var(--text-secondary)'
   return (
-    <div
-      onClick={() => setOpen(o => !o)}
+    <details
       style={{
         cursor: 'pointer',
         border: `1px solid ${borderColor}`,
@@ -103,29 +101,23 @@ function IndiaFlagCard({ flag }: { flag: IndiaFlag }) {
         marginBottom: 8,
       }}
     >
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <summary style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
         <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
           <span style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', fontWeight: 700, color: borderColor }}>
             §{flag.section}
           </span>
           <span style={{ fontWeight: 600, fontSize: '13.5px', color: 'var(--text-primary)' }}>{flag.title}</span>
         </div>
-        <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: borderColor, fontWeight: 700 }}>
-          {flag.severity} {open ? '▲' : '▼'}
+        <span style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: borderColor, fontWeight: 500 }}>
+          {flag.severity.toLowerCase()} · Details
         </span>
-      </div>
-      <AnimatePresence>
-        {open && (
-          <motion.p
-            initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }}
+      </summary>
+          <p
             style={{ marginTop: 8, lineHeight: 1.65, overflow: 'hidden', color: 'var(--text-secondary)', fontSize: '13px', fontFamily: 'var(--font-body)' }}
           >
             {flag.explanation}
-          </motion.p>
-        )}
-      </AnimatePresence>
-    </div>
+          </p>
+    </details>
   )
 }
 
@@ -137,8 +129,8 @@ function NOSubRow({ label, score, weight, type = 'base', delay = 0 }: {
   const pct   = Math.round(score * 100)
   return (
     <motion.div
-      initial={{ opacity: 0, x: -6 }} animate={{ opacity: 1, x: 0 }} transition={{ delay }}
-      style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 7 }}
+      initial={false} animate={{ opacity: 1, x: 0 }} transition={{ delay }}
+      className="factor-row"
     >
       <span style={{ width: 180, fontSize: '13px', color: 'var(--text-secondary)', flexShrink: 0 }}>
         {label}
@@ -146,7 +138,7 @@ function NOSubRow({ label, score, weight, type = 'base', delay = 0 }: {
       </span>
       <div style={{ flex: 1, height: 6, background: 'var(--border-hairline)', borderRadius: 3, overflow: 'hidden' }}>
         <motion.div
-          initial={{ width: 0 }}
+          initial={false}
           animate={{ width: `${pct}%` }}
           transition={{ duration: 0.6, delay: delay + 0.1 }}
           style={{ height: '100%', background: color, borderRadius: 3 }}
@@ -253,37 +245,18 @@ export default function EvaluationDashboardPage() {
     eval_.timing.score
   ) : 0
 
-  if (!pipelineResult) {
-    return (
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', gap: 20, textAlign: 'center', padding: 24 }}>
-        <NoveltyIcon size={40} color={T.borderHairline} animate={false} />
-        <h2 style={{ fontFamily: 'var(--font-display)', color: 'var(--text-primary)', fontSize: '20px', fontWeight: 600 }}>No Case File Selected</h2>
-        <p style={{ color: 'var(--text-secondary)', fontSize: '14px' }}>Please submit an innovation idea first to run evaluation.</p>
-        <Link to="/analyze" className="btn-primary" style={{ textDecoration: 'none', marginTop: 4 }}>New Analysis →</Link>
-      </div>
-    )
-  }
+  if (!pipelineResult) return <EmptyAnalysis />
 
   return (
-    <div style={{ maxWidth: 960, fontFamily: 'var(--font-body)' }}>
+    <div className="result-page">
 
-      {/* ─── Page Title Block ─── */}
-      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}
-        style={{ marginBottom: 16 }}
-      >
-        <p className="caption" style={{ color: 'var(--text-tertiary)', marginBottom: 6 }}>
-          §05 — PATENT EVALUATION
-        </p>
-        <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '44px', fontWeight: 600, color: 'var(--text-primary)', margin: 0 }}>
-          Evaluation Dashboard
-        </h1>
-      </motion.div>
+      <PageHeading title="Evaluate the evidence" description="Review advisory scores and their explanations before refining the invention." />
 
       {/* ─── Metadata Strip ─── */}
       <motion.div
-        initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.05 }}
+        initial={false} animate={{ opacity: 1 }} transition={{ delay: 0.05 }}
+        className="result-metadata"
         style={{
-          height: 44,
           background: 'transparent',
           borderBottom: '1px solid var(--border-hairline)',
           display: 'flex', alignItems: 'baseline', justifyContent: 'space-between',
@@ -295,7 +268,7 @@ export default function EvaluationDashboardPage() {
         <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
           {/* Avg Score */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            <span className="caption" style={{ fontSize: '10.5px', color: 'var(--text-tertiary)' }}>AVG. SCORE</span>
+            <span className="caption" style={{ fontSize: '12px', color: 'var(--text-tertiary)' }}>Overall score</span>
             <span style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', color: 'var(--text-primary)' }}>
               {eval_ ? `${eval_.patentability_score}/100` : '—'}
             </span>
@@ -304,7 +277,7 @@ export default function EvaluationDashboardPage() {
 
           {/* Top Score */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            <span className="caption" style={{ fontSize: '10.5px', color: 'var(--text-tertiary)' }}>TOP SCORE</span>
+            <span className="caption" style={{ fontSize: '12px', color: 'var(--text-tertiary)' }}>Top score</span>
             <span style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', color: 'var(--text-primary)' }}>
               {eval_ ? `${Math.round(topDimensionScore)}/100` : '—'}
             </span>
@@ -313,7 +286,7 @@ export default function EvaluationDashboardPage() {
 
           {/* Risk Level */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            <span className="caption" style={{ fontSize: '10.5px', color: 'var(--text-tertiary)' }}>RISK LEVEL</span>
+            <span className="caption" style={{ fontSize: '12px', color: 'var(--text-tertiary)' }}>Risk</span>
             <span style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', color: riskColor, fontWeight: 600 }}>
               {eval_ ? eval_.risk.toUpperCase() : '—'}
             </span>
@@ -328,7 +301,7 @@ export default function EvaluationDashboardPage() {
 
       {/* Evaluate Trigger Card */}
       {!eval_ && (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ marginBottom: 32 }}>
+        <motion.div initial={false} animate={{ opacity: 1 }} style={{ marginBottom: 32 }}>
           <div className="sheet-secondary" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 14 }}>
             <div>
               <p style={{ fontWeight: 600, marginBottom: 4, color: 'var(--text-primary)' }}>Case Evaluation Pending</p>
@@ -358,7 +331,7 @@ export default function EvaluationDashboardPage() {
 
       {/* Re-run controls (post-evaluation) */}
       {eval_ && (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ marginBottom: 24 }}>
+        <motion.div initial={false} animate={{ opacity: 1 }} style={{ marginBottom: 24 }}>
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12, alignItems: 'center' }}>
             <label style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer' }}>
               <input
@@ -395,7 +368,7 @@ export default function EvaluationDashboardPage() {
               </p>
             </div>
             <motion.p
-              initial={{ opacity: 0, y: 4 }}
+              initial={false}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3 }}
               style={{ fontFamily: 'var(--font-mono)', fontSize: '12.5px', color: 'var(--text-secondary)', marginBottom: 12 }}
@@ -413,7 +386,7 @@ export default function EvaluationDashboardPage() {
 
       {/* Error state */}
       {evalStatus === 'error' && evalError && (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+        <motion.div initial={false} animate={{ opacity: 1 }}
           className="sheet-technical" style={{ marginBottom: 32, borderLeftColor: 'var(--accent-clay)', color: 'var(--accent-clay)' }}
         >
           <p style={{ fontWeight: 600, marginBottom: 4 }}>EVALUATION EXCEPTION</p>
@@ -425,7 +398,7 @@ export default function EvaluationDashboardPage() {
       {eval_ && !isLoading && (
         <>
           {/* ─── Anchor Card (§1 Radar Chart) ─── */}
-          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
+          <motion.div initial={false} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
             className="sheet-primary" style={{ marginBottom: 24 }}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
@@ -461,13 +434,13 @@ export default function EvaluationDashboardPage() {
             {/* Verdict statement */}
             <div style={{ marginTop: 24, borderTop: '1px solid var(--border-hairline)', paddingTop: 16 }}>
               <p style={{ fontSize: '14.5px', lineHeight: 1.65, color: 'var(--text-primary)', margin: 0 }}>
-                <strong style={{ fontWeight: 600 }}>Examiner Verdict:</strong> {eval_.verdict}
+                <strong style={{ fontWeight: 600 }}>Assessment:</strong> {eval_.verdict}
               </p>
             </div>
           </motion.div>
 
           {/* 5-dimension breakdown card list (Grid layout of 3 columns) */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 16, marginBottom: 24 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))', gap: 16, marginBottom: 24 }}>
             <BreakdownCard label="Novelty"           value={eval_.novelty.score}           explanation={eval_.novelty.interpretation}         delay={0.15} />
             <BreakdownCard label="Non-Obviousness"   value={eval_.non_obviousness.score}   explanation={eval_.non_obviousness.interpretation} delay={0.18} />
             <BreakdownCard label="Landscape Room"    value={eval_.landscape.score_100}     explanation={eval_.landscape.interpretation}       delay={0.21} />
@@ -476,7 +449,7 @@ export default function EvaluationDashboardPage() {
           </div>
 
           {/* ─── §2 Technical Depth ─── */}
-          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
+          <motion.div initial={false} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
             className="sheet-secondary" style={{ marginBottom: 24 }}
           >
             <h2 className="section-header" style={{ marginBottom: 14 }}>
@@ -491,7 +464,7 @@ export default function EvaluationDashboardPage() {
           </motion.div>
 
           {/* ─── §3 India Patent Act Eligibility ─── */}
-          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }}
+          <motion.div initial={false} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }}
             className="sheet-secondary" style={{ marginBottom: 24 }}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
@@ -529,10 +502,11 @@ export default function EvaluationDashboardPage() {
 
           {/* ─── §4 Non-Obviousness Sub-Factors (Collapsible) ─── */}
           {nob && (
-            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}
+            <motion.div initial={false} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}
               className="sheet-secondary" style={{ marginBottom: 24 }}
             >
               <button
+                aria-expanded={showNOBreak}
                 onClick={() => setShowNOBreak(o => !o)}
                 style={{
                   background: 'none', border: 'none', cursor: 'pointer', padding: 0,
@@ -574,7 +548,7 @@ export default function EvaluationDashboardPage() {
 
           {/* ─── §5 Extracted Concepts ─── */}
           {eval_.concepts.length > 0 && (
-            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.45 }}
+            <motion.div initial={false} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.45 }}
               className="sheet-secondary" style={{ marginBottom: 32 }}
             >
               <h2 className="section-header" style={{ marginBottom: 14 }}>
@@ -598,7 +572,7 @@ export default function EvaluationDashboardPage() {
           )}
 
           {/* ─── Legal Disclaimer (Technical treatment) ─── */}
-          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}
+          <motion.div initial={false} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}
             className="sheet-technical" style={{ padding: '12px 16px', textAlign: 'center', marginBottom: 40 }}
           >
             <span style={{ fontSize: '11px', letterSpacing: '0.08em', color: 'var(--text-secondary)', fontWeight: 600 }}>
