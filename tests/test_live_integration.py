@@ -19,16 +19,26 @@ class LiveIntegrationTests(unittest.TestCase):
         load_dotenv(ROOT / ".env")
         from persistence.database import get_engine
         cls.engine = get_engine()
+        from uuid import uuid4
+        cls.owner = str(uuid4())
+        with cls.engine.begin() as connection:
+            connection.execute(text("INSERT INTO app_users(user_id,email,display_name) VALUES (:id,:email,'Temporary integration owner')"), {'id': cls.owner, 'email': cls.owner + '@example.com'})
         with cls.engine.connect() as connection:
             cls.patent_id = connection.execute(text("SELECT patent_id FROM patents LIMIT 1")).scalar_one()
+
+    @classmethod
+    def tearDownClass(cls):
+        from sqlalchemy import text
+        with cls.engine.begin() as connection:
+            connection.execute(text("DELETE FROM app_users WHERE user_id=:id"), {'id': cls.owner})
 
     def setUp(self):
         from persistence import analysis_store as store
         self.store = store
-        self.case = store.create_case("Integration check (temporary)", "Original sensor idea")
+        self.case = store.create_case("Integration check (temporary)", "Original sensor idea", owner_user_id=self.owner)
 
     def tearDown(self):
-        self.store.delete_case(self.case["case_id"])
+        self.store.delete_case(self.case["case_id"], owner_user_id=self.owner)
 
     def pipeline(self):
         return {"query_id": "repeated-query-for-integration-check", "query_text": "sensor idea", "model": "fixture",
@@ -38,23 +48,23 @@ class LiveIntegrationTests(unittest.TestCase):
                      "title": "Sensor α", "abstract": "A test disclosure", "related_publications": [{"patent_id": "publication-variant"}]}]}
 
     def test_complete_snapshot_and_repeated_runs(self):
-        first = self.store.persist_pipeline_result("Original sensor idea", 1, "novelty", self.pipeline(), self.case["case_id"])
-        second = self.store.persist_pipeline_result("Revised sensor idea", 1, "novelty", self.pipeline(), self.case["case_id"])
+        first = self.store.persist_pipeline_result("Original sensor idea", 1, "novelty", self.pipeline(), self.case["case_id"], owner_user_id=self.owner)
+        second = self.store.persist_pipeline_result("Revised sensor idea", 1, "novelty", self.pipeline(), self.case["case_id"], owner_user_id=self.owner)
         evaluation = {"patentability_score": 61.5, "risk": "Medium", "verdict": "Investigate", "novelty": {"score": 50}}
         improvement = {"diagnosis": ["overlap"], "weaknesses": ["scope"], "strategies": [{"strategy": "Change sensor architecture", "impact": "high", "reason": "Reduce overlap"}],
                        "alternative_directions": ["Low-power monitoring"], "recommendations": "Full explanation α", "overlapping_patents": []}
-        self.store.persist_evaluation(first["run_id"], evaluation)
-        self.store.persist_improvements(first["run_id"], improvement)
-        saved = self.store.get_run(self.case["case_id"], first["run_id"])
+        self.store.persist_evaluation(first["run_id"], evaluation, owner_user_id=self.owner)
+        self.store.persist_improvements(first["run_id"], improvement, owner_user_id=self.owner)
+        saved = self.store.get_run(self.case["case_id"], first["run_id"], owner_user_id=self.owner)
         self.assertEqual(saved["idea_text"], "Original sensor idea")
         self.assertEqual(saved["pipeline_result"]["results"], self.pipeline()["results"])
         self.assertEqual(saved["evaluation_result"]["novelty"], evaluation["novelty"])
         self.assertEqual(saved["improvement_result"]["recommendations"], "Full explanation α")
         self.assertNotEqual(first["run_id"], second["run_id"])
-        self.assertEqual(len(self.store.get_case(self.case["case_id"])["runs"]), 2)
-        self.assertEqual(self.store.get_run(self.case["case_id"], second["run_id"])["idea_text"], "Revised sensor idea")
-        self.assertIsNone(self.store.get_run("wrong-case", first["run_id"]))
-        listed = next(c for c in self.store.list_cases() if c["case_id"] == self.case["case_id"])
+        self.assertEqual(len(self.store.get_case(self.case["case_id"], owner_user_id=self.owner)["runs"]), 2)
+        self.assertEqual(self.store.get_run(self.case["case_id"], second["run_id"], owner_user_id=self.owner)["idea_text"], "Revised sensor idea")
+        self.assertIsNone(self.store.get_run("wrong-case", first["run_id"], owner_user_id=self.owner))
+        listed = next(c for c in self.store.list_cases(owner_user_id=self.owner) if c["case_id"] == self.case["case_id"])
         self.assertEqual(len(listed["runs"]), 2)
         self.assertEqual(listed["status"], "active")
 
@@ -63,11 +73,11 @@ class LiveIntegrationTests(unittest.TestCase):
         bad = self.pipeline()
         bad["results"][0]["source"] = "invalid-source"
         with self.assertRaises(Exception):
-            self.store.persist_pipeline_result("Broken run", 1, "novelty", bad, self.case["case_id"])
+            self.store.persist_pipeline_result("Broken run", 1, "novelty", bad, self.case["case_id"], owner_user_id=self.owner)
         with self.engine.connect() as connection:
             count = connection.execute(text("SELECT COUNT(*) FROM analysis_runs WHERE case_id=:id"), {"id": self.case["case_id"]}).scalar_one()
         self.assertEqual(count, 0)
-        self.assertEqual(self.store.get_case(self.case["case_id"])["status"], "draft")
+        self.assertEqual(self.store.get_case(self.case["case_id"], owner_user_id=self.owner)["status"], "draft")
 
     def test_graph_views_are_read_only_and_metadata_is_real(self):
         from fastapi import FastAPI
@@ -81,6 +91,9 @@ class LiveIntegrationTests(unittest.TestCase):
                     return (session.run("MATCH (n) RETURN count(n) AS c").single()["c"], session.run("MATCH ()-[r]->() RETURN count(r) AS c").single()["c"])
             before = counts()
             app = FastAPI()
+            from api.auth import require_user, Principal
+            from datetime import datetime, timezone, timedelta
+            app.dependency_overrides[require_user] = lambda: Principal(self.owner, 'test@example.com', 'Test', 'csrf', datetime.now(timezone.utc) + timedelta(hours=1))
             app.include_router(router, prefix="/api")
             client = TestClient(app)
             self.assertEqual(client.get("/api/kg/stats", params={"patent_ids": self.patent_id}).status_code, 200)

@@ -391,7 +391,91 @@ result persistence and graph writes below.
 - `tests/serve_unsaved_fixture.py` is an explicit manual failure-test server.
   It never contacts a database or AI provider and is not part of production.
 
-Login/access control, evaluation calibration, dependency security updates,
-batch embedding/latency improvements, and frontend decomposition remain follow-up
+Login/access control was added October 18 (see below). Evaluation calibration, dependency security updates,
+graph-query latency improvements, and frontend decomposition remain follow-up
 work. The integration checks do not establish legal reliability or production
 multi-user readiness.
+
+## Authentication and ownership — October 18, 2026
+
+The [authentication guide](authentication.md) supersedes earlier descriptions
+of anonymous case/report access. The [auth checklist](planning/auth-checklist.md)
+and [verification report](reports/auth-verification.md) record the implementation.
+
+- `backend/api/routers/auth.py`: signup/login/me/logout, input validation,
+  Argon2id password verification/upgrades, cookie issuance, and auth throttling.
+- `backend/api/auth.py`: the authenticated principal, session/expiry/active-user
+  checks, CSRF/origin validation, and owned-run validation. Saved-run work uses
+  server-side snapshots, not user-supplied replacements.
+- `backend/src/persistence/auth_store.py`: account/password-hash queries,
+  hashed opaque sessions, revocation/expiry, and atomic shared throttle counters.
+- `backend/src/persistence/analysis_store.py`: every private read/write requires
+  an owner ID and filters in SQL; saving checks ownership inside the transaction.
+  Public patent reports remain shared; case-risk rows are owner-filtered.
+- `database/sql/05_auth.sql`, `backend/scripts/database/migrate_auth.py`:
+  additive session/rate-limit tables and nullable password hashes, preserving
+  existing users and ownerless cases. Fresh Compose initialization mounts SQL 05.
+- `backend/scripts/database/assign_case_owner.py`: trusted local operator lists
+  ownerless cases and explicitly assigns one to a registered account. There is
+  no automatic first-user assignment or API claim endpoint.
+- `frontend/src/auth/AuthProvider.tsx`: restores sessions, handles account
+  boundaries/expiry, clears caches and private state, and synchronizes tabs.
+- `frontend/src/auth/RequireAuth.tsx`: protects intake, progress, and results.
+- `frontend/src/auth/session.ts`: in-memory CSRF, request epoch invalidation,
+  and allowlisted internal post-login return paths.
+- `frontend/src/api/auth.ts` and `frontend/src/api/client.ts`: cookie-aware
+  requests, CSRF headers, 401 expiry handling, stale-session response rejection,
+  and structured errors. Cookies/passwords are never persisted in local storage.
+- `frontend/src/pages/AuthPage.tsx`: signup/sign-in forms; shared `AppHeader`
+  displays the account and signs out. New forms reuse current workspace tokens.
+- `backend/tests/test_auth_contract.py`, `tests/test_live_auth.py`, and
+  `frontend/tests/auth-session.test.mjs`: boundary, real database two-account,
+  and client state/return-path regression coverage.
+
+Application access follows cookie session → principal → owner-filtered case/run
+queries. MySQL remains authoritative. Neo4j/FAISS are shared public patent
+projections, not stores for users' private ideas. The browser's saved pointer
+is bound to a user ID; logout/expiry/account changes clear it and invalidate
+in-flight responses. Migration does not retroactively assign old research.
+
+Password recovery, email verification, MFA, and administrative user-management
+screens are outside this implementation. Local HTTP cookies need HTTPS-only
+configuration before deployment; dependency security and further graph-query
+optimization remain separate work.
+
+## Shared patent embeddings and timings — October 30, 2026
+
+See [performance](performance.md) for operation/invalidation and
+[verification](reports/performance-verification.md) for measurements.
+
+- `backend/src/retrieval/patent_embeddings.py` owns a shared public-patent vector
+  resolver: FAISS ID/exact-text lookup, bounded memory LRU, versioned bounded
+  SQLite cache under ignored `data/cache/`, and batch encoding of misses.
+  Canonical public rows alone populate shared caches. Private input and unknown
+  records stay request-local; copies protect vectors from scoring mutations.
+- `backend/src/integration/pipeline.py` initializes the store with the cached
+  corpus/model, encodes each query once, passes its vector to FAISS and expansion
+  scoring, and includes stage timings in the response and saved run snapshot.
+  Resource initialization is protected against concurrent request threads.
+- `backend/src/gnn/scorer.py` passes the same vector store to
+  `backend/src/gnn/graph_builder.py`. Graph nodes retain individual IDs and
+  structural features; GNN inference still uses the current subgraph.
+- `backend/src/evaluation/per_concept_search.py` shares the model/metadata lookup
+  and batches all concept embeddings and FAISS searches in one call.
+- `backend/api/schemas.py` and `frontend/src/types/pipeline.ts` carry optional
+  `stage_timings` in seconds; old snapshots remain compatible.
+- `backend/scripts/evaluation/benchmark_pipeline.py` measures real retrieval and
+  graph/GNN processing with fixed NLP by default, with optional live NLP.
+- `backend/tests/test_performance.py` verifies embedding reuse, normalization,
+  output order, raw-text distinctions, invalidation, bounds, concurrency,
+  failure fallback, private-data exclusion, and distinct GNN publication nodes.
+- `tests/test_live_performance.py` is opt-in real model/database verification:
+  authenticated repeated analyses create separate owned saved runs with timings.
+  It removes only its temporary account and cases.
+
+`PATENT_EMBEDDING_DISK_CACHE` defaults to true; `PATENT_EMBEDDING_REVISION` must
+change with encoder weights/preprocessing. Cache namespaces fingerprint FAISS
+artifacts. Restart workers after corpus/index/model updates. Existing auth and
+owner-filtered saving remain authoritative; private analysis results are not
+shared through this cache. Graph pooling/lookup caching, user-scoped result
+caching, and background jobs are future phases described in the performance guide.

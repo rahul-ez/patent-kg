@@ -14,7 +14,7 @@ from pathlib import Path
 from typing import List
 
 from dotenv import load_dotenv
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 
 load_dotenv(Path(__file__).resolve().parents[3] / ".env")
 
@@ -28,7 +28,9 @@ from api.schemas import (
     KGGraphResponse,
 )
 
-router = APIRouter(tags=["kg"])
+from api.auth import require_user
+
+router = APIRouter(tags=["kg"], dependencies=[Depends(require_user)])
 
 _GRAPH_EDGE_LIMIT = 200
 _SCOPED_GRAPH_QUERY = """

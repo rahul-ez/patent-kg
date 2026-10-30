@@ -26,6 +26,7 @@ class PipelineResponse(BaseModel):
     persistence_message: Optional[str] = None
     indexed_count: Optional[int] = None
     canonical_count: Optional[int] = None
+    stage_timings: Dict[str, float] = Field(default_factory=dict)
 
 
 class EvaluateRequest(BaseModel):

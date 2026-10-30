@@ -16,6 +16,8 @@ from pathlib import Path
 from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
 
 # ── Load .env before anything else ───────────────────────────────────────────
 # Searches upward from backend/ — finds patent-kg/.env
@@ -52,19 +54,30 @@ app = FastAPI(
 )
 
 # ── CORS — allow Vite dev server ──────────────────────────────────────────────
+from api.auth import allowed_origins
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",
-        "http://127.0.0.1:5173",
-        "http://localhost:5174",
-        "http://127.0.0.1:5174",
-        "http://localhost:3000",
-    ],
+    allow_origins=allowed_origins(),
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
+    allow_headers=["Content-Type", "X-CSRF-Token", "X-Requested-With"],
 )
+
+
+@app.exception_handler(RequestValidationError)
+async def safe_validation_errors(request, exc):
+    # Pydantic's default error includes the rejected input (possibly a password).
+    errors = [{key: error[key] for key in ('loc', 'msg', 'type') if key in error} for error in exc.errors()]
+    return JSONResponse(status_code=422, content={'detail': errors}, headers={'Cache-Control': 'no-store'})
+
+
+@app.middleware('http')
+async def private_response_cache_policy(request, call_next):
+    response = await call_next(request)
+    if request.url.path.startswith('/api/'):
+        response.headers['Cache-Control'] = 'no-store'
+    return response
 
 # ── Routers ───────────────────────────────────────────────────────────────────
 from api.routers import pipeline as pipeline_router    # noqa: E402
@@ -72,12 +85,14 @@ from api.routers import kg as kg_router                # noqa: E402
 from api.routers import evaluate as evaluate_router    # noqa: E402
 from api.routers import improve as improve_router      # noqa: E402
 from api.routers import cases as cases_router          # noqa: E402
+from api.routers import auth as auth_router
 
 app.include_router(pipeline_router.router, prefix="/api")
 app.include_router(kg_router.router, prefix="/api")
 app.include_router(evaluate_router.router, prefix="/api")
 app.include_router(improve_router.router, prefix="/api")
 app.include_router(cases_router.router, prefix="/api")
+app.include_router(auth_router.router, prefix="/api")
 
 
 

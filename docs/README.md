@@ -7,6 +7,8 @@ compete with the primary guide.
 | Area | Document | Purpose |
 |---|---|---|
 | Architecture | [architecture.md](architecture.md) | Current implementation map, dependencies, cleanup status, and follow-up work. |
+| Accounts | [authentication.md](authentication.md) | Sign-in, secure sessions, per-user ownership, migration, and legacy-case assignment. |
+| Performance | [performance.md](performance.md) | Shared patent embeddings, cache boundaries/invalidation, timings, and repeatable benchmarks. |
 | Guides | [evaluation.md](guides/evaluation.md) | Evaluation-engine API and scoring details. |
 | Guides | [legacy-streamlit.md](guides/legacy-streamlit.md) | Optional legacy Streamlit demo only. |
 | Reference | [knowledge-graph.md](reference/knowledge-graph.md) | Neo4j model, build process, and graph operations. |

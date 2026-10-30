@@ -61,6 +61,6 @@ behaviour is reflected in [architecture](../architecture.md).
 ## Follow-up work outside this checklist's scope
 
 - [ ] Address the 17 npm audit advisories with compatible dependency upgrades.
-- [ ] Add login and enforce per-user case/report ownership before multi-user deployment.
-- [ ] Batch/cache structural embeddings and reduce the observed CPU pipeline latency.
+- [x] Add login and enforce per-user case/report ownership — implemented October 18; see [auth checklist](auth-checklist.md).
+- [x] Batch/cache structural embeddings and reduce CPU pipeline latency — first pass October 30; see [performance verification](../reports/performance-verification.md).
 - [ ] Evaluate model/retrieval quality and exercise full reconstruction mode.

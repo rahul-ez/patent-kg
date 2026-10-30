@@ -36,23 +36,23 @@ def _case_payload(row: dict) -> dict:
     return _utc_dates({key: row[key] for key in ("case_id", "title", "idea_text", "status", "created_at", "updated_at")})
 
 
-def create_case(title: str, idea_text: str, owner_user_id: str | None = None) -> dict:
+def create_case(title: str, idea_text: str, owner_user_id: str) -> dict:
     case_id = str(uuid4())
     with session_scope() as session:
         session.execute(_text("""
             INSERT INTO analysis_cases(case_id, owner_user_id, title, idea_text, status)
             VALUES (:case_id, :owner_user_id, :title, :idea_text, 'draft')
         """), {"case_id": case_id, "owner_user_id": owner_user_id, "title": title, "idea_text": idea_text})
-        row = session.execute(_text("SELECT * FROM analysis_cases WHERE case_id=:case_id"), {"case_id": case_id}).mappings().one()
+        row = session.execute(_text("SELECT * FROM analysis_cases WHERE case_id=:case_id AND owner_user_id=:owner"), {"case_id": case_id, "owner": owner_user_id}).mappings().one()
         return _case_payload(row)
 
 
-def list_cases(limit: int = 50, offset: int = 0) -> list[dict]:
+def list_cases(limit: int = 50, offset: int = 0, *, owner_user_id: str) -> list[dict]:
     with session_scope() as session:
         rows = session.execute(_text("""
             SELECT case_id, title, idea_text, status, created_at, updated_at
-            FROM analysis_cases ORDER BY updated_at DESC LIMIT :limit OFFSET :offset
-        """), {"limit": limit, "offset": offset}).mappings()
+            FROM analysis_cases WHERE owner_user_id=:owner ORDER BY updated_at DESC, case_id LIMIT :limit OFFSET :offset
+        """), {"limit": limit, "offset": offset, "owner": owner_user_id}).mappings()
         cases = [_case_payload(row) for row in rows]
         by_id = {case["case_id"]: case for case in cases}
         for case in cases:
@@ -61,20 +61,20 @@ def list_cases(limit: int = 50, offset: int = 0) -> list[dict]:
             SELECT r.run_id, r.case_id, r.query_id, r.gnn_mode, r.top_k,
                    r.run_status, r.started_at, r.completed_at
             FROM analysis_runs r JOIN (
-                SELECT case_id FROM analysis_cases
-                ORDER BY updated_at DESC LIMIT :limit OFFSET :offset
+                SELECT case_id FROM analysis_cases WHERE owner_user_id=:owner
+                ORDER BY updated_at DESC, case_id LIMIT :limit OFFSET :offset
             ) selected ON selected.case_id=r.case_id
             ORDER BY r.started_at DESC, r.run_id DESC
-        """), {"limit": limit, "offset": offset}).mappings()
+        """), {"limit": limit, "offset": offset, "owner": owner_user_id}).mappings()
         for run in runs:
             if run["case_id"] in by_id:
                 by_id[run["case_id"]]["runs"].append(_utc_dates(dict(run)))
         return cases
 
 
-def get_case(case_id: str) -> dict | None:
+def get_case(case_id: str, *, owner_user_id: str) -> dict | None:
     with session_scope() as session:
-        row = session.execute(_text("SELECT * FROM analysis_cases WHERE case_id=:case_id"), {"case_id": case_id}).mappings().first()
+        row = session.execute(_text("SELECT * FROM analysis_cases WHERE case_id=:case_id AND owner_user_id=:owner"), {"case_id": case_id, "owner": owner_user_id}).mappings().first()
         if row is None:
             return None
         case = _case_payload(row)
@@ -86,14 +86,14 @@ def get_case(case_id: str) -> dict | None:
         return case
 
 
-def get_run(case_id: str, run_id: str) -> dict | None:
+def get_run(case_id: str, run_id: str, *, owner_user_id: str) -> dict | None:
     """Restore an immutable run snapshot, not the browser's last local state."""
     with session_scope() as session:
         row = session.execute(_text("""
             SELECT r.*, c.title AS case_title, c.idea_text AS case_idea
             FROM analysis_runs r JOIN analysis_cases c ON c.case_id=r.case_id
-            WHERE r.case_id=:case_id AND r.run_id=:run_id
-        """), {"case_id": case_id, "run_id": run_id}).mappings().first()
+            WHERE r.case_id=:case_id AND r.run_id=:run_id AND c.owner_user_id=:owner
+        """), {"case_id": case_id, "run_id": run_id, "owner": owner_user_id}).mappings().first()
         if row is None:
             return None
         pipeline = _decode_payload(row["pipeline_payload"])
@@ -116,36 +116,36 @@ def get_run(case_id: str, run_id: str) -> dict | None:
         }
 
 
-def update_case(case_id: str, title: str | None, idea_text: str | None, status: str | None) -> dict | None:
+def update_case(case_id: str, title: str | None, idea_text: str | None, status: str | None, *, owner_user_id: str) -> dict | None:
     changes = {key: value for key, value in {"title": title, "idea_text": idea_text, "status": status}.items() if value is not None}
     if not changes:
-        return get_case(case_id)
+        return get_case(case_id, owner_user_id=owner_user_id)
     assignments = ", ".join(f"{column}=:{column}" for column in changes)
     with session_scope() as session:
-        result = session.execute(_text(f"UPDATE analysis_cases SET {assignments} WHERE case_id=:case_id"), {**changes, "case_id": case_id})
+        result = session.execute(_text(f"UPDATE analysis_cases SET {assignments} WHERE case_id=:case_id AND owner_user_id=:owner"), {**changes, "case_id": case_id, "owner": owner_user_id})
         if result.rowcount == 0:
             return None
-    return get_case(case_id)
+    return get_case(case_id, owner_user_id=owner_user_id)
 
 
-def delete_case(case_id: str) -> bool:
+def delete_case(case_id: str, *, owner_user_id: str) -> bool:
     with session_scope() as session:
-        return session.execute(_text("DELETE FROM analysis_cases WHERE case_id=:case_id"), {"case_id": case_id}).rowcount > 0
+        return session.execute(_text("DELETE FROM analysis_cases WHERE case_id=:case_id AND owner_user_id=:owner"), {"case_id": case_id, "owner": owner_user_id}).rowcount > 0
 
 
 def persist_pipeline_result(
-    idea: str, top_k: int, gnn_mode: str, pipeline_result: dict, case_id: str | None = None, case_title: str | None = None,
+    idea: str, top_k: int, gnn_mode: str, pipeline_result: dict, case_id: str | None = None, case_title: str | None = None, *, owner_user_id: str,
 ) -> dict:
     """Persist a completed pipeline run and its result rows in one transaction."""
     with session_scope() as session:
         if case_id is None:
             case_id = str(uuid4())
             session.execute(_text("""
-                INSERT INTO analysis_cases(case_id, title, idea_text, status)
-                VALUES (:case_id, :title, :idea_text, 'active')
-            """), {"case_id": case_id, "title": case_title or idea[:250], "idea_text": idea})
+                INSERT INTO analysis_cases(case_id, owner_user_id, title, idea_text, status)
+                VALUES (:case_id, :owner, :title, :idea_text, 'active')
+            """), {"case_id": case_id, "title": case_title or idea[:250], "idea_text": idea, "owner": owner_user_id})
         else:
-            exists = session.execute(_text("SELECT 1 FROM analysis_cases WHERE case_id=:case_id"), {"case_id": case_id}).first()
+            exists = session.execute(_text("SELECT 1 FROM analysis_cases WHERE case_id=:case_id AND owner_user_id=:owner FOR UPDATE"), {"case_id": case_id, "owner": owner_user_id}).first()
             if not exists:
                 raise ValueError(f"Analysis case '{case_id}' does not exist.")
 
@@ -183,9 +183,9 @@ def persist_pipeline_result(
         return {"case_id": case_id, "run_id": run_id, "persistence_status": "persisted"}
 
 
-def persist_evaluation(run_id: str, evaluation: dict) -> None:
+def persist_evaluation(run_id: str, evaluation: dict, *, owner_user_id: str) -> None:
     with session_scope() as session:
-        if session.execute(_text("SELECT 1 FROM analysis_runs WHERE run_id=:run_id"), {"run_id": run_id}).first() is None:
+        if session.execute(_text("SELECT 1 FROM analysis_runs r JOIN analysis_cases c ON c.case_id=r.case_id WHERE r.run_id=:run_id AND c.owner_user_id=:owner FOR UPDATE"), {"run_id": run_id, "owner": owner_user_id}).first() is None:
             raise ValueError("Analysis run does not exist.")
         session.execute(_json_text("""
             INSERT INTO evaluation_metrics(run_id, patentability_score, risk, verdict, payload)
@@ -196,11 +196,11 @@ def persist_evaluation(run_id: str, evaluation: dict) -> None:
                  "verdict": evaluation["verdict"], "payload": evaluation})
 
 
-def persist_improvements(run_id: str, improvement: dict) -> None:
+def persist_improvements(run_id: str, improvement: dict, *, owner_user_id: str) -> None:
     """Replace stored recommendation rows with the current agent output."""
     strategies = improvement.get("strategies", [])
     with session_scope() as session:
-        exists = session.execute(_text("SELECT 1 FROM analysis_runs WHERE run_id=:run_id"), {"run_id": run_id}).first()
+        exists = session.execute(_text("SELECT 1 FROM analysis_runs r JOIN analysis_cases c ON c.case_id=r.case_id WHERE r.run_id=:run_id AND c.owner_user_id=:owner FOR UPDATE"), {"run_id": run_id, "owner": owner_user_id}).first()
         if not exists:
             raise ValueError("Analysis run does not exist.")
         session.execute(_json_text("""
@@ -218,7 +218,7 @@ def persist_improvements(run_id: str, improvement: dict) -> None:
             })
 
 
-def report_rows(report: str, limit: int = 20) -> list[dict]:
+def report_rows(report: str, limit: int = 20, *, owner_user_id: str) -> list[dict]:
     queries = {
         "domain_year": "SELECT * FROM vw_domain_year_counts ORDER BY publication_year DESC, patent_count DESC LIMIT :limit",
         "top_assignees": """
@@ -233,9 +233,19 @@ def report_rows(report: str, limit: int = 20) -> list[dict]:
         """,
         "cpc_distribution": "SELECT section, COUNT(*) AS patent_cpc_count FROM cpc_codes c JOIN patent_cpc_codes pc ON pc.cpc_code=c.cpc_code GROUP BY section ORDER BY patent_cpc_count DESC",
         "family_sizes": "SELECT patent_id, COUNT(*) AS family_size FROM patent_families GROUP BY patent_id HAVING COUNT(*) > 1 ORDER BY family_size DESC LIMIT :limit",
-        "case_risk": "SELECT * FROM vw_case_risk_summary ORDER BY started_at DESC LIMIT :limit",
+        "case_risk": "SELECT v.* FROM vw_case_risk_summary v JOIN analysis_cases c ON c.case_id=v.case_id WHERE c.owner_user_id=:owner ORDER BY v.started_at DESC LIMIT :limit",
     }
     if report not in queries:
         raise ValueError(f"Unknown report '{report}'.")
     with session_scope() as session:
-        return [dict(row) for row in session.execute(_text(queries[report]), {"limit": limit}).mappings()]
+        return [dict(row) for row in session.execute(_text(queries[report]), {"limit": limit, "owner": owner_user_id}).mappings()]
+
+
+
+def get_owned_run(run_id: str, *, owner_user_id: str) -> dict | None:
+    with session_scope() as session:
+        case_id = session.execute(_text("""
+            SELECT r.case_id FROM analysis_runs r JOIN analysis_cases c ON c.case_id=r.case_id
+            WHERE r.run_id=:run_id AND c.owner_user_id=:owner
+        """), {"run_id": run_id, "owner": owner_user_id}).scalar()
+    return get_run(case_id, run_id, owner_user_id=owner_user_id) if case_id else None

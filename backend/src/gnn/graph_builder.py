@@ -1,11 +1,12 @@
 import os
 import logging
-import faiss
 import numpy as np
 import torch
 import pandas as pd
 from torch_geometric.data import Data
 from neo4j import GraphDatabase
+from time import perf_counter
+from retrieval.patent_embeddings import PatentEmbeddings
 
 logger = logging.getLogger(__name__)
 
@@ -98,7 +99,8 @@ def fetch_subgraph_edges(patent_ids: list) -> list:
             driver.close()
     return edges
 
-def build_subgraph_data(hits: list, patents_df: pd.DataFrame, metadata_mapping: dict, faiss_index, st_model) -> tuple:
+def build_subgraph_data(hits: list, patents_df: pd.DataFrame, metadata_mapping: dict, faiss_index, st_model,
+                        *, embedding_store=None, timings=None) -> tuple:
     """
     Main entry point to assemble retrieved and expanded patents into a PyTorch Geometric Data graph object.
     
@@ -106,10 +108,13 @@ def build_subgraph_data(hits: list, patents_df: pd.DataFrame, metadata_mapping: 
         (Data, dict): The constructed Data object, and a mapping of patent_id -> node_index.
     """
     # 1. Gather seed candidate patent IDs from retrieval and KG expansion
-    candidate_ids = [hit["patent_id"] for hit in hits if hit.get("patent_id")]
+    candidate_ids = list(dict.fromkeys(hit["patent_id"] for hit in hits if hit.get("patent_id")))
     
     # 2. Fetch structural neighbors to target 500-800 total nodes
+    started = perf_counter()
     neighbor_ids = fetch_subgraph_neighbors(candidate_ids)
+    if timings is not None:
+        timings["gnn_neighbors"] = perf_counter() - started
     
     # Combined deduplicated set of nodes
     all_pids = list(candidate_ids)
@@ -117,6 +122,7 @@ def build_subgraph_data(hits: list, patents_df: pd.DataFrame, metadata_mapping: 
     for pid in neighbor_ids:
         if pid not in candidate_set:
             all_pids.append(pid)
+            candidate_set.add(pid)
             
     N = len(all_pids)
     logger.info("Building GNN subgraph: %d candidates + %d structural neighbors = %d total nodes", 
@@ -126,85 +132,27 @@ def build_subgraph_data(hits: list, patents_df: pd.DataFrame, metadata_mapping: 
     pid_to_idx = {pid: i for i, pid in enumerate(all_pids)}
     
     # 3. Build node features matrix x of shape [N, 780]
-    # We will build features in parallel
     x_features = []
-    
-    # Pre-index patents_df for fast O(1) lookups
-    # (Checking if 'patent_id' index exists or indexing temporarily)
-    if not isinstance(patents_df.index, pd.Index) or patents_df.index.name != 'patent_id':
-        patents_lookup = patents_df.set_index('patent_id')
-    else:
-        patents_lookup = patents_df
-        
-    faiss_row_by_patent = {
-        patent_id: int(row_index)
-        for row_index, patent_id in metadata_mapping.items()
-        if str(row_index).isdigit()
-    }
+    started = perf_counter()
+    if embedding_store is None:
+        # Legacy/offline callers still get batching, without a shared disk cache.
+        rows = (patents_df.drop_duplicates(subset="patent_id").set_index("patent_id").to_dict("index")
+                if patents_df.index.name != "patent_id" else patents_df.to_dict("index"))
+        embedding_store = PatentEmbeddings(faiss_index, metadata_mapping, rows, st_model)
+    rows = embedding_store.patent_rows
+    hits_by_id = {hit["patent_id"]: hit for hit in hits if hit.get("patent_id")}
+    vectors = embedding_store.get_many([hits_by_id.get(pid, {"patent_id": pid}) for pid in all_pids])
+    if timings is not None:
+        timings["gnn_embeddings"] = perf_counter() - started
 
-    for pid in all_pids:
-        # A. SBERTa embedding (768-dim) lookup with SentenceTransformer fallback
-        emb = None
-        row_idx = faiss_row_by_patent.get(pid)
-
-        if row_idx is not None:
-            try:
-                emb = faiss_index.reconstruct(row_idx)
-            except Exception:
-                pass
-                
-        if emb is None:
-            # Fallback to SentenceTransformer encoding
-            title = ""
-            abstract = ""
-            if pid in patents_lookup.index:
-                row = patents_lookup.loc[pid]
-                if isinstance(row, pd.Series):
-                    title = str(row.get("title", ""))
-                    abstract = str(row.get("abstract", ""))
-                elif isinstance(row, pd.DataFrame):
-                    # Multi-match safety
-                    title = str(row.iloc[0].get("title", ""))
-                    abstract = str(row.iloc[0].get("abstract", ""))
-            
-            # If still empty, check hits list as a backup
-            if not title and not abstract:
-                for hit in hits:
-                    if hit.get("patent_id") == pid:
-                        title = hit.get("title", "")
-                        abstract = hit.get("abstract", "")
-                        break
-                        
-            text = f"{title}. {abstract}".strip()
-            if text and text != ".":
-                emb = st_model.encode([text], convert_to_numpy=True).astype(np.float32)
-                faiss.normalize_L2(emb)
-                emb = emb[0]
-            else:
-                # Absolute baseline zero embedding
-                emb = np.zeros(faiss_index.d, dtype=np.float32)
-                
-        # B. Load structural and categorical metadata from patents_deduped.csv
-        cites = 0.0
-        cited = 0.0
-        fam = 1.0
-        jurisdiction = ""
-        domain = ""
-        
-        if pid in patents_lookup.index:
-            row = patents_lookup.loc[pid]
-            if isinstance(row, pd.Series):
-                cites = float(row.get("cites_patent_count", 0) or 0)
-                cited = float(row.get("cited_by_patent_count", 0) or 0)
-                fam = float(row.get("family_size", 1) or 1)
-                jurisdiction = str(row.get("jurisdiction", ""))
-                domain = str(row.get("domain", ""))
-            elif isinstance(row, pd.DataFrame):
-                cites = float(row.iloc[0].get("cites_patent_count", 0) or 0)
-                cited = float(row.iloc[0].get("cited_by_patent_count", 0) or 0)
-                fam = float(row.iloc[0].get("family_size", 1) or 1)
-                jurisdiction = str(row.iloc[0].get("jurisdiction", ""))
-                domain = str(row.iloc[0].get("domain", ""))
+    for pid, emb in zip(all_pids, vectors):
+        # B. Load structural and categorical metadata from canonical public rows.
+        row = rows.get(pid, {})
+        cites = float(row.get("cites_patent_count", 0) or 0)
+        cited = float(row.get("cited_by_patent_count", 0) or 0)
+        fam = float(row.get("family_size", 1) or 1)
+        jurisdiction = str(row.get("jurisdiction", ""))
+        domain = str(row.get("domain", ""))
                 
         # Log-transform scalar properties (log1p damping)
         cites_val = np.log1p(cites)
@@ -232,10 +180,13 @@ def build_subgraph_data(hits: list, patents_df: pd.DataFrame, metadata_mapping: 
         ])
         x_features.append(node_feat)
         
-    x_tensor = torch.tensor(np.array(x_features), dtype=torch.float)
+    x_tensor = torch.tensor(np.array(x_features).reshape(N, faiss_index.d + 12), dtype=torch.float)
     
     # 4. Fetch subgraph edges and convert to PyG edge_index format
+    started = perf_counter()
     edges = fetch_subgraph_edges(all_pids)
+    if timings is not None:
+        timings["gnn_edges"] = perf_counter() - started
     
     sources = []
     targets = []

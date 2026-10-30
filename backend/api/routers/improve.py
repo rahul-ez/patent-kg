@@ -3,7 +3,7 @@ from __future__ import annotations
 import logging
 import sys
 from pathlib import Path
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 
 _SRC = Path(__file__).resolve().parents[2] / "src"
 if str(_SRC) not in sys.path:
@@ -12,12 +12,14 @@ if str(_SRC) not in sys.path:
 from improvement.schemas import ImprovementRequest, ImprovementResponse
 from improvement.agent import ImprovementAgent
 from api.persistence import attach_saving_status
+from api.auth import Principal, require_user, owned_run_input
 
 logger = logging.getLogger("api.routers.improve")
 router = APIRouter(tags=["improvement"])
 
 @router.post("/improve", response_model=ImprovementResponse)
-def improve_idea(req: ImprovementRequest):
+def improve_idea(req: ImprovementRequest, user: Principal = Depends(require_user)):
+    owned_run_input(req, user)
     """
     Generate structured patent improvement recommendations.
     
@@ -66,7 +68,7 @@ def improve_idea(req: ImprovementRequest):
         )
         if req.run_id:
             from persistence.analysis_store import persist_improvements
-            attach_saving_status(output, lambda: persist_improvements(req.run_id, output))
+            attach_saving_status(output, lambda: persist_improvements(req.run_id, output, owner_user_id=user.user_id))
         else:
             output["persistence_status"] = "not_requested"
         return output

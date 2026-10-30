@@ -19,6 +19,16 @@ from api.routers import pipeline, kg, cases
 from persistence import analysis_store as store
 
 
+from api.auth import require_user, Principal
+from datetime import datetime, timezone, timedelta
+
+
+def authenticated_test_app():
+    app = FastAPI()
+    app.dependency_overrides[require_user] = lambda: Principal('unit-owner', 'unit@example.com', 'Unit', 'csrf', datetime.now(timezone.utc) + timedelta(hours=1))
+    return app
+
+
 class IntegrationContractTests(unittest.TestCase):
     def test_graph_view_preserves_direction_and_unique_parallel_edge_ids(self):
         class Node(dict):
@@ -31,7 +41,7 @@ class IntegrationContractTests(unittest.TestCase):
         first = types.SimpleNamespace(type='OWNS', element_id='r1', start_node=company, end_node=patent)
         second = types.SimpleNamespace(type='OWNS', element_id='r2', start_node=company, end_node=patent)
         rows = [{'n': patent, 'm': company, 'r': first}, {'n': patent, 'm': company, 'r': first}, {'n': patent, 'm': company, 'r': second}]
-        app = FastAPI()
+        app = authenticated_test_app()
         app.include_router(kg.router, prefix='/api')
         with patch.object(kg, '_scoped_graph_rows', return_value=rows):
             result = TestClient(app).get('/api/kg/graph', params={'patent_ids': 'patent1'}).json()
@@ -68,7 +78,7 @@ class IntegrationContractTests(unittest.TestCase):
         self.assertNotIn("private", output["persistence_message"])
 
     def test_required_failure_preserves_503_through_router(self):
-        app = FastAPI()
+        app = authenticated_test_app()
         app.include_router(pipeline.router, prefix="/api")
         result = {"query_id": "q", "query_text": "idea", "nlp_result": {}, "model": "fixture", "top_k": 1, "results": []}
         fake = types.ModuleType("integration.pipeline")
@@ -83,7 +93,7 @@ class IntegrationContractTests(unittest.TestCase):
         self.assertEqual(context.exception.status_code, 404)
 
     def test_graph_stats_and_legacy_build_only_read(self):
-        app = FastAPI()
+        app = authenticated_test_app()
         app.include_router(kg.router, prefix="/api")
         with patch.object(kg, "_scoped_graph_rows", return_value=[]) as read:
             client = TestClient(app)
@@ -92,7 +102,7 @@ class IntegrationContractTests(unittest.TestCase):
             self.assertEqual(read.call_count, 2)
 
     def test_missing_run_is_404(self):
-        app = FastAPI()
+        app = authenticated_test_app()
         app.include_router(cases.router, prefix="/api")
         with patch.object(store, "get_run", return_value=None):
             response = TestClient(app).get("/api/cases/wrong/runs/missing")

@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import logging
 from typing import Callable
+from time import perf_counter
 
 logger = logging.getLogger(__name__)
 
@@ -12,6 +13,8 @@ def run_live_gnn_rerank(
     mode: str = "novelty",
     semantic_weight: float = 0.7,
     novelty_weight: float = 0.3,
+    *,
+    timings: dict | None = None,
 ) -> list[dict]:
     """Build the query graph, execute GraphSAGE, and return reranked hits.
 
@@ -24,16 +27,20 @@ def run_live_gnn_rerank(
         return hits
 
     # Local imports avoid the integration/scoring import cycle.
-    from integration.pipeline import _get_model, _load_resources
+    from integration.pipeline import _get_model, _load_resources, _get_patent_embeddings
     from gnn.graph_builder import build_subgraph_data
     from gnn.inference import run_gnn_inference
     from gnn.reranker import rerank_hits
 
     faiss_index, metadata_mapping, patents_df = _load_resources()
     graph_data, pid_to_idx = build_subgraph_data(
-        hits, patents_df, metadata_mapping, faiss_index, _get_model()
+        hits, patents_df, metadata_mapping, faiss_index, _get_model(),
+        embedding_store=_get_patent_embeddings(), timings=timings,
     )
+    started = perf_counter()
     embeddings, predictions = run_gnn_inference(graph_data)
+    if timings is not None:
+        timings["gnn_inference"] = perf_counter() - started
     return rerank_hits(
         hits=hits,
         embeddings=embeddings,

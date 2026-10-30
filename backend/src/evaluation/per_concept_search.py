@@ -164,9 +164,6 @@ _st_model = None
 
 def _get_model(index_dim: int = 384):
     global _st_model
-    if _st_model is not None:
-        return _st_model
-
     model_name = _DIM_TO_MODEL.get(index_dim)
     if model_name is None:
         raise ValueError(
@@ -176,17 +173,17 @@ def _get_model(index_dim: int = 384):
 
     # Try to reuse the already-loaded pipeline model (same dim = same model)
     try:
-        from integration.pipeline import _get_model as _pipeline_model, _st_model as _pm
-        if _pm is not None:
-            _st_model = _pm
-            logger.info("Reusing pipeline SentenceTransformer (%s).", model_name)
-            return _st_model
+        from integration.pipeline import _get_model as _pipeline_model, _MODEL_NAME
+        if _MODEL_NAME == model_name:
+            return _pipeline_model()
     except Exception:
         pass
 
     from sentence_transformers import SentenceTransformer
-    logger.info("Loading SentenceTransformer '%s' ...", model_name)
-    _st_model = SentenceTransformer(model_name)
+    if _st_model is None or getattr(_st_model, "_loaded_name", None) != model_name:
+        logger.info("Loading SentenceTransformer '%s' ...", model_name)
+        _st_model = SentenceTransformer(model_name)
+        _st_model._loaded_name = model_name
     return _st_model
 
 
@@ -259,26 +256,21 @@ def search_per_concept(
     index, metadata, patents_df = _load_faiss_resources()
     model = _get_model(index_dim=index.d)
 
-    # Build a lookup for fast metadata access
-    patent_lookup = (
-        patents_df.set_index("patent_id").to_dict("index")
-        if not patents_df.empty
-        else {}
-    )
+    from integration.pipeline import patent_rows_for
+    patent_lookup = patent_rows_for(patents_df)
 
     results: List[ConceptSearchResult] = []
 
-    for concept in concepts:
-        query_text = f"{concept.label}. {concept.description}"
+    # Concept/query text remains request-local; batch encode/search once.
+    queries = [f"{concept.label}. {concept.description}" for concept in concepts]
+    vectors = np.ascontiguousarray(model.encode(
+        queries, batch_size=32, convert_to_numpy=True, show_progress_bar=False,
+    ), dtype=np.float32)
+    faiss_lib.normalize_L2(vectors)
+    all_distances, all_indices = index.search(vectors, top_k)
+
+    for concept, distances, indices in zip(concepts, all_distances, all_indices):
         logger.info("Searching FAISS for concept: '%s'", concept.label)
-
-        # Embed and L2-normalise (must match how the index was built)
-        vec = model.encode([query_text], convert_to_numpy=True).astype("float32")
-        faiss_lib.normalize_L2(vec)
-
-        distances, indices = index.search(vec, top_k)
-        distances = distances[0]
-        indices   = indices[0]
 
         hits: List[ConceptHit] = []
         for idx, score in zip(indices, distances):

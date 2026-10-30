@@ -10,7 +10,28 @@ globalThis.localStorage = {
 }
 const { usePipelineStore: store } = await import('../src/store/usePipelineStore.ts')
 const pipeline = { query_id: 'same-query', results: [], top_k: 5, nlp_result: {}, model: 'fixture', query_text: 'sensor', case_id: 'c1', run_id: 'r1', persistence_status: 'persisted' }
-beforeEach(() => store.getState().reset())
+beforeEach(() => store.getState().clearUser())
+
+test('switching accounts clears every saved pointer and private draft', () => {
+  store.getState().bindUser('account-a')
+  store.getState().setIdea('Private A invention')
+  store.getState().setPipelineResult(pipeline)
+  store.getState().bindUser('account-b')
+  assert.equal(store.getState().ownerUserId, 'account-b')
+  assert.equal(store.getState().idea, '')
+  assert.equal(store.getState().savedRun, null)
+  assert.equal(store.getState().pipelineResult, null)
+})
+
+test('same-account refresh keeps the saved pointer; logout removes it', () => {
+  store.getState().bindUser('account-a')
+  store.getState().setPipelineResult(pipeline)
+  store.getState().bindUser('account-a')
+  assert.deepEqual(store.getState().savedRun, { caseId: 'c1', runId: 'r1' })
+  store.getState().clearUser()
+  assert.equal(store.getState().ownerUserId, null)
+  assert.equal(store.getState().savedRun, null)
+})
 
 test('beginning an analysis clears every old output but preserves its case', () => {
   store.setState({ pipelineResult: pipeline, evaluationResult: {}, improvementResult: {}, kgStats: {}, kgGraphData: {}, kgExpansion: {} })

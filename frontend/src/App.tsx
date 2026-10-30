@@ -2,6 +2,8 @@ import { Routes, Route } from 'react-router-dom'
 import { Suspense, lazy } from 'react'
 import { MotionConfig } from 'framer-motion'
 import RootLayout from './layouts/RootLayout'
+import RequireAuth from './auth/RequireAuth'
+const AuthPage = lazy(() => import('./pages/AuthPage'))
 
 const LandingPage             = lazy(() => import('./pages/LandingPage'))
 const IdeaInputPage           = lazy(() => import('./pages/IdeaInputPage'))
@@ -28,6 +30,9 @@ export default function App() {
     <Suspense fallback={<LoadingFallback />}>
       <Routes>
         <Route path="/"         element={<LandingPage />} />
+        <Route path="/login" element={<AuthPage key="login" />} />
+        <Route path="/signup" element={<AuthPage key="signup" signup />} />
+        <Route element={<RequireAuth />}>
         <Route path="/analyze"  element={<IdeaInputPage />} />
         <Route path="/pipeline" element={<PipelineProgressPage />} />
         <Route element={<RootLayout />}>
@@ -38,6 +43,7 @@ export default function App() {
           <Route path="/results/evaluation"   element={<EvaluationDashboardPage />} />
           <Route path="/results/improvements" element={<ImprovementAgentPage />} />
           <Route path="/results/cases"        element={<CaseHistoryPage />} />
+        </Route>
         </Route>
       </Routes>
     </Suspense>

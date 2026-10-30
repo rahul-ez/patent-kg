@@ -11,7 +11,7 @@ import sys
 from pathlib import Path
 from typing import Any, Dict
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 
 _SRC = Path(__file__).resolve().parents[2] / "src"
 if str(_SRC) not in sys.path:
@@ -19,13 +19,14 @@ if str(_SRC) not in sys.path:
 
 from api.schemas import EvaluateRequest, EvaluateResponse  # noqa: E402
 from api.persistence import attach_saving_status
+from api.auth import Principal, require_user, owned_run_input
 
-router = APIRouter(tags=["evaluation"])
+router = APIRouter(tags=["evaluation"], dependencies=[Depends(require_user)])
 
 
 # ── Shared helper ─────────────────────────────────────────────────────────────
 
-def _run(req: EvaluateRequest) -> dict:
+def _run(req: EvaluateRequest, user: Principal) -> dict:
     """Run evaluation engine, reusing pre-existing pipeline hits when available."""
     # If the caller already ran the pipeline, reuse those hits — no double search.
     if req.pipeline_result and req.pipeline_result.get("results"):
@@ -45,7 +46,7 @@ def _run(req: EvaluateRequest) -> dict:
     )
     if req.run_id:
         from persistence.analysis_store import persist_evaluation
-        attach_saving_status(result, lambda: persist_evaluation(req.run_id, result))
+        attach_saving_status(result, lambda: persist_evaluation(req.run_id, result, owner_user_id=user.user_id))
     else:
         result["persistence_status"] = "not_requested"
     return result
@@ -334,7 +335,7 @@ _FIELDS = [
 # ── Routes ────────────────────────────────────────────────────────────────────
 
 @router.post("/evaluate", response_model=EvaluateResponse)
-def evaluate_idea(req: EvaluateRequest) -> EvaluateResponse:
+def evaluate_idea(req: EvaluateRequest, user: Principal = Depends(require_user)) -> EvaluateResponse:
     """
     Full patentability evaluation — nested JSON used by the React dashboard.
 
@@ -348,7 +349,8 @@ def evaluate_idea(req: EvaluateRequest) -> EvaluateResponse:
     if req.gnn_mode not in ("novelty", "graph_sim"):
         raise HTTPException(status_code=422, detail="gnn_mode must be 'novelty' or 'graph_sim'.")
     try:
-        return EvaluateResponse(**_run(req))
+        owned_run_input(req, user)
+        return EvaluateResponse(**_run(req, user))
     except HTTPException:
         raise
     except FileNotFoundError as exc:
@@ -358,7 +360,7 @@ def evaluate_idea(req: EvaluateRequest) -> EvaluateResponse:
 
 
 @router.post("/evaluate/full")
-def evaluate_idea_flat(req: EvaluateRequest) -> Dict[str, Any]:
+def evaluate_idea_flat(req: EvaluateRequest, user: Principal = Depends(require_user)) -> Dict[str, Any]:
     """
     Full patentability evaluation — **flat single-level JSON**.
 
@@ -375,7 +377,8 @@ def evaluate_idea_flat(req: EvaluateRequest) -> Dict[str, Any]:
     if req.gnn_mode not in ("novelty", "graph_sim"):
         raise HTTPException(status_code=422, detail="gnn_mode must be 'novelty' or 'graph_sim'.")
     try:
-        raw = _run(req)
+        owned_run_input(req, user)
+        raw = _run(req, user)
         return {**_flatten(raw), "persistence_status": raw.get("persistence_status"),
                 "persistence_message": raw.get("persistence_message")}
     except HTTPException:

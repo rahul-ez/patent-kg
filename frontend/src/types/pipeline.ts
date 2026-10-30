@@ -52,6 +52,7 @@ export interface PipelineResponse {
   persistence_message?: string | null
   indexed_count?: number
   canonical_count?: number
+  stage_timings?: Record<string, number>
 }
 
 export interface PipelineRequest {

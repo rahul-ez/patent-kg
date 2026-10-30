@@ -23,10 +23,13 @@ Usage:
 """
 
 import json
+import hashlib
 import logging
 import os
 import sys
 from pathlib import Path
+from threading import RLock
+from time import perf_counter
 from typing import Any, Dict, List, Optional
 
 # ── Import path setup ──────────────────────────────────────────────────────────
@@ -45,6 +48,7 @@ from gnn.scorer import run_live_gnn_rerank
 
 from nlp.pipeline import process_user_query       # NLP layer (your code)
 from retrieval.result_grouping import group_identical_publications
+from retrieval.patent_embeddings import PatentEmbeddings
 
 # ── Logging ───────────────────────────────────────────────────────────────────
 logging.basicConfig(
@@ -54,7 +58,7 @@ logging.basicConfig(
 logger = logging.getLogger("integration.pipeline")
 
 # ── Configuration ─────────────────────────────────────────────────────────────
-from config.paths import VECTOR_STORE, PROCESSED_DATA
+from config.paths import VECTOR_STORE, PROCESSED_DATA, DATA_DIR
 
 # All runtime artefacts (index, metadata, csv) live in data/vector_store/
 # — this is where build_faiss_index.py writes them.
@@ -114,11 +118,18 @@ def prepare_retrieval_query(nlp_result: NLPResult) -> str:
 _cached_index: Optional[faiss.Index] = None
 _cached_metadata: Optional[Dict[str, str]] = None
 _cached_patents_df: Optional[pd.DataFrame] = None
-_cached_faiss_row_by_patent: Optional[Dict[str, int]] = None
 _cached_patent_rows: Optional[Dict[str, Dict[str, str]]] = None
+_patent_embeddings: Optional[PatentEmbeddings] = None
+_resource_lock = RLock()
 
 
 def _load_resources() -> tuple:
+    # FastAPI executes analyses in multiple threads; initialize one shared corpus.
+    with _resource_lock:
+        return _load_resources_unlocked()
+
+
+def _load_resources_unlocked() -> tuple:
     """
     Load and cache the FAISS index, patent_id metadata mapping, and patents DataFrame.
 
@@ -130,7 +141,7 @@ def _load_resources() -> tuple:
             Run `python scripts/indexing/build_faiss_index.py` first.
     """
     global _cached_index, _cached_metadata, _cached_patents_df
-    global _cached_faiss_row_by_patent, _cached_patent_rows
+    global _cached_patent_rows
 
     if _cached_index is None:
         if not _FAISS_INDEX.exists():
@@ -175,11 +186,6 @@ def _load_resources() -> tuple:
         else:
             with open(_METADATA_FILE, "r", encoding="utf-8") as f:
                 _cached_metadata = json.load(f)   # {"0": "US-12345-B2", ...}
-        _cached_faiss_row_by_patent = {
-            patent_id: int(row_index)
-            for row_index, patent_id in _cached_metadata.items()
-            if str(row_index).isdigit()
-        }
 
     if _cached_patents_df is None:
         from config.paths import ROOT
@@ -248,14 +254,55 @@ _st_model: Optional[SentenceTransformer] = None
 def _get_model() -> SentenceTransformer:
     """Return cached SentenceTransformer model. Reloads if _MODEL_NAME changed after index detection."""
     global _st_model
-    if _st_model is None or getattr(_st_model, "_loaded_name", None) != _MODEL_NAME:
-        logger.info("Loading SentenceTransformer '%s' ...", _MODEL_NAME)
-        _st_model = SentenceTransformer(_MODEL_NAME)
-        _st_model._loaded_name = _MODEL_NAME  # type: ignore[attr-defined]
+    with _resource_lock:
+        if _st_model is None or getattr(_st_model, "_loaded_name", None) != _MODEL_NAME:
+            logger.info("Loading SentenceTransformer '%s' ...", _MODEL_NAME)
+            _st_model = SentenceTransformer(_MODEL_NAME)
+            _st_model._loaded_name = _MODEL_NAME  # type: ignore[attr-defined]
     return _st_model
 
 
-def faiss_search(query_text: str, top_k: int = 10) -> List[RetrievalHit]:
+def patent_rows_for(frame: pd.DataFrame) -> dict:
+    """Reuse the canonical lookup; tolerate independent evaluation/test frames."""
+    if frame is _cached_patents_df and _cached_patent_rows is not None:
+        return _cached_patent_rows
+    if frame.empty:
+        return {}
+    return frame.drop_duplicates(subset="patent_id").set_index("patent_id").to_dict("index")
+
+
+def _get_patent_embeddings() -> PatentEmbeddings:
+    global _patent_embeddings
+    with _resource_lock:
+        index, metadata, frame = _load_resources()
+        model = _get_model()
+        if _patent_embeddings is None or _patent_embeddings.index is not index or _patent_embeddings.model is not model:
+            # Content fingerprints prevent reuse after rebuilding the index/map.
+            digests = []
+            for path in (_FAISS_INDEX, _METADATA_FILE):
+                if path.exists():
+                    with path.open("rb") as handle:
+                        digests.append(hashlib.file_digest(handle, "sha256").hexdigest())
+            revision = os.getenv("PATENT_EMBEDDING_REVISION", "1")
+            _patent_embeddings = PatentEmbeddings(
+                index, metadata, patent_rows_for(frame), model,
+                namespace=f"{_MODEL_NAME}:{revision}:{':'.join(digests)}",
+                cache_path=(DATA_DIR / "cache" / "patent_embeddings.sqlite3")
+                    if os.getenv("PATENT_EMBEDDING_DISK_CACHE", "true").lower() == "true" else None,
+            )
+        return _patent_embeddings
+
+
+def _encode_query(query_text: str) -> np.ndarray:
+    # Private query vectors are request-local and never passed to the patent cache.
+    vector = np.ascontiguousarray(_get_model().encode(
+        [query_text], convert_to_numpy=True, show_progress_bar=False,
+    ), dtype=np.float32)
+    faiss.normalize_L2(vector)
+    return vector
+
+
+def faiss_search(query_text: str, top_k: int = 10, *, query_vector=None) -> List[RetrievalHit]:
     """
     Embed query_text and retrieve top-k similar patents from the FAISS index.
 
@@ -268,11 +315,7 @@ def faiss_search(query_text: str, top_k: int = 10) -> List[RetrievalHit]:
             rank, patent_id, semantic_score, title, abstract, domain, url
     """
     index, metadata, patents_df = _load_resources()
-    model = _get_model()
-
-    # Embed query — must match normalization used during indexing
-    query_vec: np.ndarray = model.encode([query_text], convert_to_numpy=True)
-    faiss.normalize_L2(query_vec)   # Matches faiss.normalize_L2 in build_faiss_index.py
+    query_vec = _encode_query(query_text) if query_vector is None else query_vector
 
     distances, indices = index.search(query_vec, top_k)   # shape (1, top_k)
     distances = distances[0]   # (top_k,) — inner product = cosine sim after L2 norm
@@ -338,10 +381,14 @@ def run_end_to_end(
     logger.info("=== End-to-End Pipeline START ===")
     logger.info("User idea: '%s'", user_idea[:80])
     logger.info("GNN mode: '%s'", gnn_mode)
+    started = perf_counter()
+    stage_started = started
+    timings = {}
 
     # ── Step 1: NLP Preprocessing ──────────────────────────────────────────
     logger.info("Step 1 — Running NLP pipeline ...")
     nlp_result: NLPResult = process_user_query(user_idea)
+    timings["nlp"] = perf_counter() - stage_started
     logger.info(
         "NLP result: %d keywords, %d entities, clean_text_len=%d",
         len(nlp_result.get("keywords", [])),
@@ -356,7 +403,17 @@ def run_end_to_end(
 
     # ── Step 3: FAISS Retrieval ────────────────────────────────────────────
     logger.info("Step 3 — Running FAISS search (top_k=%d) ...", top_k)
-    hits = faiss_search(query_text, top_k=top_k)
+    stage_started = perf_counter()
+    _load_resources()
+    _get_model()
+    embeddings = _get_patent_embeddings()
+    timings["resources"] = perf_counter() - stage_started
+    stage_started = perf_counter()
+    query_vector = _encode_query(query_text)
+    timings["query_embedding"] = perf_counter() - stage_started
+    stage_started = perf_counter()
+    hits = faiss_search(query_text, top_k=top_k, query_vector=query_vector)
+    timings["faiss_search"] = perf_counter() - stage_started
 
     # Stamp each hit with its pre-GNN FAISS rank, expansion type, source, and score fields
     for hit in hits:
@@ -372,40 +429,20 @@ def run_end_to_end(
     
     kg_status = "success"
     expanded_hits = []
+    stage_started = perf_counter()
     try:
         from kg.expander import expand_via_kg
         expansion_result = expand_via_kg(patent_ids)
-        
-        # Get query embedding for semantic scoring of expanded hits
-        model = _get_model()
-        query_vec = model.encode([query_text], convert_to_numpy=True)
-        faiss.normalize_L2(query_vec)
-        query_vec = query_vec[0]
-        
-        faiss_row_by_patent = _cached_faiss_row_by_patent or {}
-
-        def get_patent_emb(pid, p_title, p_abstract):
-            emb = None
-            row_idx = faiss_row_by_patent.get(pid)
-            if row_idx is not None:
-                try:
-                    emb = _cached_index.reconstruct(row_idx)
-                except Exception:
-                    pass
-            if emb is None:
-                text = f"{p_title}. {p_abstract}".strip()
-                if text and text != ".":
-                    emb = model.encode([text], convert_to_numpy=True).astype(np.float32)
-                    faiss.normalize_L2(emb)
-                    emb = emb[0]
-                else:
-                    emb = np.zeros(_cached_index.d, dtype=np.float32)
-            return emb
+        timings["kg_lookup"] = perf_counter() - stage_started
+        stage_started = perf_counter()
+        family = expansion_result.get("family", [])
+        siblings = expansion_result.get("cpc_siblings", [])
+        expanded_vectors = embeddings.get_many(family + siblings)
+        timings["expanded_embeddings"] = perf_counter() - stage_started
         
         # Add family members
-        for p in expansion_result.get("family", []):
-            p_emb = get_patent_emb(p["patent_id"], p["title"], p["abstract"])
-            sem_score = float(np.dot(query_vec, p_emb))
+        for p, p_emb in zip(family, expanded_vectors[:len(family)]):
+            sem_score = float(np.dot(query_vector[0], p_emb))
             expanded_hits.append({
                 "rank": -1,
                 "patent_id": p["patent_id"],
@@ -424,9 +461,8 @@ def run_end_to_end(
             })
             
         # Add CPC siblings
-        for p in expansion_result.get("cpc_siblings", []):
-            p_emb = get_patent_emb(p["patent_id"], p["title"], p["abstract"])
-            sem_score = float(np.dot(query_vec, p_emb))
+        for p, p_emb in zip(siblings, expanded_vectors[len(family):]):
+            sem_score = float(np.dot(query_vector[0], p_emb))
             expanded_hits.append({
                 "rank": -1,
                 "patent_id": p["patent_id"],
@@ -448,14 +484,16 @@ def run_end_to_end(
     except Exception as exc:
         logger.warning("KG Expansion skipped due to database connection issue: %s", exc)
         kg_status = "skipped_database_offline"
+        timings.setdefault("kg_lookup", perf_counter() - stage_started)
 
     all_hits = hits + expanded_hits
 
     # ── Step 5: GNN Scoring ───────────────────────────────────────────────
     logger.info("Step 5 — Running GNN Scoring ...")
+    stage_started = perf_counter()
     gnn_status = "success"
     try:
-        all_hits = run_live_gnn_rerank(all_hits, mode=gnn_mode)
+        all_hits = run_live_gnn_rerank(all_hits, mode=gnn_mode, timings=timings)
     except FileNotFoundError as exc:
         logger.warning("GNN scorer unavailable (%s) — skipping.", exc)
         gnn_status = "skipped_missing_embeddings"
@@ -465,7 +503,13 @@ def run_end_to_end(
         gnn_status = "failed"
         _apply_fallback_scores(all_hits, gnn_mode)
 
+    timings["gnn_total"] = perf_counter() - stage_started
+    stage_started = perf_counter()
     all_hits = group_identical_publications(all_hits)
+    timings["grouping"] = perf_counter() - stage_started
+    timings["total"] = perf_counter() - started
+    timings = {name: round(seconds, 4) for name, seconds in timings.items()}
+    logger.info("Pipeline stage timings (seconds): %s", json.dumps(timings))
 
     response: RetrievalResponse = {
         "query_id":   nlp_result.get("patent_id", "user_query"),
@@ -478,6 +522,7 @@ def run_end_to_end(
         "kg_status":  kg_status,
         "indexed_count": int(_cached_index.ntotal),
         "canonical_count": len(_cached_patents_df),
+        "stage_timings": timings,
     }
 
     logger.info("=== End-to-End Pipeline COMPLETE: %d results ===", len(all_hits))

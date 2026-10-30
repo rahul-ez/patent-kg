@@ -4,6 +4,8 @@
 
 ```mermaid
 erDiagram
+  APP_USERS ||--o{ AUTH_SESSIONS : signs_in_with
+  APP_USERS o|--o{ ANALYSIS_CASES : owns
   DOMAINS ||--o{ PATENT_DOMAINS : contains
   PATENTS ||--|{ PATENT_DOMAINS : belongs_to
   PATENTS ||--o{ PATENT_ASSIGNEES : has
@@ -26,6 +28,9 @@ erDiagram
 - `assignee_id → name`, `inventor_id → name`, and `cpc_code → section, description`.
 - Composite junction keys determine no non-key attributes: `(patent_id, assignee_id)`, `(patent_id, inventor_id)`, and `(patent_id, cpc_code)`.
 - `case_id → owner_user_id, title, idea_text, status`; `run_id → case_id, query_id, gnn_mode, top_k, status, timestamps`.
+- `user_id → email, display_name, password_hash, is_active`; email is also unique.
+- `token_hash → user_id, expires_at, created_at` identifies an opaque authentication session. Raw session tokens are not stored.
+- `bucket_key → attempts, window_started` identifies a pseudonymous authentication throttle bucket.
 
 Each relation has atomic values (1NF), every non-key attribute depends on its
 whole key (2NF), and descriptive facts are separated into their own entity

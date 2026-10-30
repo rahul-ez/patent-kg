@@ -8,6 +8,9 @@ import type { SavedAnalysisRun } from '../api/cases'
 import type { PipelineRequest } from '../types/pipeline'
 
 interface PipelineState {
+  ownerUserId: string | null
+  bindUser: (userId: string) => void
+  clearUser: () => void
   requestId: string | null
   activeCaseId: string | null
   savedRun: { caseId: string; runId: string } | null
@@ -56,6 +59,7 @@ interface PipelineState {
 }
 
 const DEFAULTS = {
+  ownerUserId: null as string | null,
   requestId: null as string | null,
   activeCaseId: null as string | null,
   savedRun: null as { caseId: string; runId: string } | null,
@@ -80,16 +84,18 @@ const DEFAULTS = {
 
 export const usePipelineStore = create<PipelineState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       ...DEFAULTS,
+      bindUser: (userId) => { if (get().ownerUserId !== userId) set({ ...DEFAULTS, ownerUserId: userId }) },
+      clearUser: () => set(DEFAULTS),
       startAnalysis: (request) => {
         const requestId = crypto.randomUUID()
-        set({ ...DEFAULTS, requestId, idea: request.idea, topK: request.top_k, gnnMode: request.gnn_mode, activeCaseId: request.case_id ?? null, status: 'running' })
+        set({ ...DEFAULTS, ownerUserId: get().ownerUserId, requestId, idea: request.idea, topK: request.top_k, gnnMode: request.gnn_mode, activeCaseId: request.case_id ?? null, status: 'running' })
         return requestId
       },
-      selectCase: (caseId, idea) => set({ ...DEFAULTS, activeCaseId: caseId, idea }),
+      selectCase: (caseId, idea) => set({ ...DEFAULTS, ownerUserId: get().ownerUserId, activeCaseId: caseId, idea }),
       restoreRun: (run) => set({
-        ...DEFAULTS, activeCaseId: run.case_id, savedRun: { caseId: run.case_id, runId: run.run_id },
+        ...DEFAULTS, ownerUserId: get().ownerUserId, activeCaseId: run.case_id, savedRun: { caseId: run.case_id, runId: run.run_id },
         idea: run.idea_text, topK: run.top_k, gnnMode: run.gnn_mode,
         pipelineResult: run.pipeline_result, status: run.pipeline_result ? 'complete' : 'idle',
         evaluationResult: run.evaluation_result, evalStatus: run.evaluation_result ? 'complete' : 'idle',
@@ -115,15 +121,16 @@ export const usePipelineStore = create<PipelineState>()(
       setImprovementResult:(improvementResult)=> set({ improvementResult, improvementStatus: 'complete' }),
       setImprovementStatus:(improvementStatus)=> set({ improvementStatus }),
       setImprovementError: (improvementError) => set({ improvementError, improvementStatus: 'error' }),
-      reset:               ()                 => set(DEFAULTS),
+      reset:               ()                 => set({ ...DEFAULTS, ownerUserId: get().ownerUserId }),
     }),
     {
       name: 'patent-intelligence-store',
       storage: createJSONStorage(() => localStorage),
       // Saved results are restored from MySQL; local storage keeps only a pointer.
-      version: 1,
+      version: 2,
       migrate: () => ({}),
       partialize: (state) => ({
+        ownerUserId: state.ownerUserId,
         idea:             state.idea,
         topK:             state.topK,
         gnnMode:          state.gnnMode,

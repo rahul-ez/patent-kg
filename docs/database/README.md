@@ -25,8 +25,9 @@ attributes, and underlined key attributes. The earlier
 5. Export and rebuild FAISS from MySQL: `python scripts/database/export_mysql_retrieval.py`, then
    `python scripts/indexing/build_faiss_index.py --input ../data/vector_store/mysql_retrieval_export.csv`.
    Run the React/FastAPI analysis afterward.
-6. Create a saved analysis through `POST /api/cases` or attach `case_id` to
-   `POST /api/pipeline/run`; inspect persisted history and `/api/reports/*`.
+6. Apply `python scripts/database/migrate_auth.py`, then sign up/sign in through
+   the frontend. Case, pipeline, graph, and report endpoints require a session;
+   writes also require CSRF. See [authentication](../authentication.md).
 
 ## Updating an already-populated database
 
@@ -34,6 +35,7 @@ Run from the repository root with the project's Python environment active:
 
 ```powershell
 python backend/scripts/database/migrate_integration.py
+python backend/scripts/database/migrate_auth.py
 python backend/scripts/database/sync_mysql_to_neo4j.py --metadata-only
 ```
 

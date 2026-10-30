@@ -2,6 +2,19 @@
 
 This is a full-stack AI platform that evaluates innovation ideas, analyzes patent citation relationships, and provides actionable design improvement guidance.
 
+## Accounts and private research
+
+Sign up at `/signup`, then sign in at `/login` to manage your own cases and runs.
+For an existing database, first run
+`python backend/scripts/database/migrate_auth.py` with the project environment
+active. The migration preserves older cases without assigning them automatically.
+See [authentication and ownership](docs/authentication.md) for session setup,
+HTTPS configuration, and explicit legacy-case assignment.
+
+Public patent vectors are shared across retrieval and GNN construction, with
+batched encoding, a bounded local cache, and per-stage timings. See
+[performance](docs/performance.md) for cache invalidation, benchmarks, and next steps.
+
 ## Repository layout
 
 - `backend/` — FastAPI API, production services, and operational scripts.
@@ -37,7 +50,7 @@ FAISS Semantic Search (PatentSBERTa embeddings similarity)
        ↓
 Knowledge Graph Expansion (Neo4j subgraph family + CPC traversal)
        ↓
-GNN Re-ranking Hook (Future GraphSAGE scoring)
+GNN Re-ranking (live GraphSAGE scoring)
        ↓
 FastAPI Response
        ↓
@@ -53,8 +66,8 @@ During the final backend cleanup pass, the following integration refactors were 
 1. **Provenance Tracking**: Added the `source` field to all returned patents (`"faiss" | "kg_family" | "kg_cpc"`) alongside `expansion_type` to track each document's origin.
 2. **Global CPC Expansion Cap**: Sibling patent expansion is capped at **100 patents maximum globally**. The Cypher query in `expander.py` has been optimized to sort and slice the top candidates *directly inside Neo4j*, reducing runtime query and network latency by **over 13x**.
 3. **Structured Scoring Schema**: The legacy `score` field has been completely removed across the backend search, integration, GNN, and React components. Every patent now conforms to:
-   - `semantic_score`: Float cosine similarity for FAISS results, `null` for KG matches.
-   - `graph_score`: Placeholder (`null`) prepared for future structural embeddings.
+   - `semantic_score`: Float cosine similarity for FAISS and KG results.
+   - `graph_score`: Structural score from live GNN inference, `null` when unavailable.
    - `combined_score`: The blended similarity value when GNN is active, `null` otherwise.
 
 ---

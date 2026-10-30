@@ -8,6 +8,7 @@ No database is contacted and no test record is created.
 import os
 import sys
 import types
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from unittest.mock import patch
 
@@ -18,6 +19,7 @@ sys.path.insert(0, str(ROOT / 'backend/src'))
 from fastapi import FastAPI
 import uvicorn
 from api.routers import pipeline
+from api.auth import Principal, require_user
 from persistence import analysis_store
 from persistence.database import DatabaseUnavailable
 
@@ -38,8 +40,19 @@ def fixture(idea, top_k=5, gnn_mode='novelty'):
 
 if __name__ == '__main__':
     app = FastAPI(title='Unsaved UI verification fixture')
+    # This isolated test server has a synthetic account, no real credentials,
+    # and no database access. Never mount it into the production application.
+    expiry = datetime.now(timezone.utc) + timedelta(hours=1)
+    principal = Principal('fixture-only', 'fixture@example.com', 'UI failure fixture', 'fixture-csrf', expiry)
+    app.dependency_overrides[require_user] = lambda: principal
+
+    @app.get('/api/auth/me')
+    def fixture_account():
+        return {'user': {'user_id': principal.user_id, 'email': principal.email, 'display_name': principal.display_name},
+                'csrf_token': principal.csrf_token, 'expires_at': expiry}
+
     app.include_router(pipeline.router, prefix='/api')
     module = types.ModuleType('integration.pipeline')
     module.run_end_to_end = fixture
-    with patch.dict(sys.modules, {'integration.pipeline': module}), patch.dict(os.environ, {'PERSISTENCE_REQUIRED': 'false'}), patch.object(analysis_store, 'persist_pipeline_result', side_effect=offline):
+    with patch.dict(sys.modules, {'integration.pipeline': module}), patch.dict(os.environ, {'PERSISTENCE_REQUIRED': 'false'}), patch.object(analysis_store, 'persist_pipeline_result', side_effect=offline), patch.object(analysis_store, 'get_case', return_value=None):
         uvicorn.run(app, host='127.0.0.1', port=8000)
