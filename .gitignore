@@ -10,12 +10,18 @@ venv/
 htmlcov/
 *.log
 
+# --- Local scratch work and development-service logs ---
+/tmp/
+/output/logs/
+
 # --- Node / Frontend (safety net — also in frontend/.gitignore) ---
 node_modules/
 dist/
 
 # --- Environment Variables (Security Risk!) ---
 .env
+.env.*
+!.env.example
 keys.txt
 
 # --- Data & Databases (Too big for GitHub) ---

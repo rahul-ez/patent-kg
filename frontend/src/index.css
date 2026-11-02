@@ -240,6 +240,33 @@
 .result-page td { font-variant-numeric: tabular-nums; }
 .result-page button { min-height: 32px; }
 .result-page .btn-primary, .result-page .btn-secondary { min-height: 44px; }
+.recommendation-markdown { max-width: 82ch; min-width: 0; color: var(--text-primary); font-family: var(--font-body); font-size: 15px; line-height: 1.8; overflow-wrap: anywhere; }
+.recommendation-markdown p { margin: 0 0 1em; }
+.recommendation-markdown h3 { margin: 1.8em 0 .65em; font-size: 19px; line-height: 1.4; }
+.recommendation-markdown h4 { margin: 1.5em 0 .55em; font-size: 16px; line-height: 1.5; }
+.recommendation-markdown ul, .recommendation-markdown ol { margin: .7em 0 1.2em; padding-inline-start: 1.65em; }
+.recommendation-markdown ul { list-style-type: disc; }
+.recommendation-markdown ol { list-style-type: decimal; }
+.recommendation-markdown ul ul { list-style-type: circle; }
+.recommendation-markdown li { margin: .5em 0; padding-inline-start: .2em; }
+.recommendation-markdown li > p { margin: .45em 0; }
+.recommendation-markdown li > ul, .recommendation-markdown li > ol { margin: .4em 0 .7em; }
+.recommendation-markdown strong { font-weight: 600; }
+.recommendation-markdown em { font-style: italic; }
+.recommendation-markdown a { text-decoration: underline; text-underline-offset: 3px; }
+.recommendation-markdown blockquote { margin: 1.2em 0; padding: .25em 1em; border-left: 3px solid var(--accent-sage); color: var(--text-secondary); }
+.recommendation-markdown code { padding: .15em .35em; border-radius: 4px; background: var(--bg-inset); font-family: var(--font-mono); font-size: .88em; }
+.recommendation-markdown pre { max-width: 100%; margin: 1em 0; padding: 16px; overflow-x: auto; border: 1px solid var(--border-hairline); border-radius: 6px; background: var(--bg-inset); }
+.recommendation-markdown pre code { padding: 0; background: transparent; overflow-wrap: normal; white-space: pre; }
+.recommendation-markdown hr { margin: 1.5em 0; border: 0; border-top: 1px solid var(--border-hairline); }
+.recommendation-table { max-width: 100%; margin: 1.2em 0; overflow-x: auto; }
+.recommendation-table table { width: 100%; border-collapse: collapse; font-size: 14px; line-height: 1.6; }
+.recommendation-table th, .recommendation-table td { padding: 10px 12px; border: 1px solid var(--border-hairline); text-align: left; vertical-align: top; }
+.recommendation-table th { background: var(--bg-inset); font-weight: 600; }
+.recommendation-markdown .task-list-item { list-style: none; }
+.recommendation-markdown .task-list-item input { margin-inline: -1.4em .5em; }
+.recommendation-markdown > :first-child { margin-top: 0; }
+.recommendation-markdown > :last-child, .recommendation-markdown blockquote > :last-child { margin-bottom: 0; }
 .concept-grid { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 32px; align-items: start; margin-bottom: 32px; }
 .factor-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
 .factor-row > span:first-child { width: 180px; font-size: 13px; color: var(--text-secondary); flex-shrink: 0; }

@@ -1,0 +1,169 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="2100" viewBox="0 0 1800 2100" role="img">
+<title>Level 1 - Application processes and data stores</title>
+<rect x="0" y="0" width="1800" height="2100" rx="0" fill="#ffffff" stroke="none" stroke-width="1.7"/>
+<text x="60" y="62" font-family="Arial, Helvetica, sans-serif" font-size="30" font-weight="700" fill="#202b3b" text-anchor="start">PATENT INTELLIGENCE PLATFORM</text>
+<text x="60" y="105" font-family="Arial, Helvetica, sans-serif" font-size="23" font-weight="700" fill="#202b3b" text-anchor="start">Level 1 - Application processes and data stores</text>
+<text x="60" y="136" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="400" fill="#596777" text-anchor="start">MySQL is authoritative. Neo4j and FAISS are derived projections; the embedding cache contains public patent vectors only.</text>
+<path d="M 350 235.0 L 742.5403330758517 235.0" fill="none" stroke="#526274" stroke-width="1.9"/>
+<polygon points="742.5403330758517,235.0 732.5403330758517,231.0 732.5403330758517,239.0" fill="#526274"/>
+<path d="M 744.0065792321467 280.0 L 350 280.0" fill="none" stroke="#526274" stroke-width="1.9"/>
+<polygon points="350,280.0 360.0,284.0 360.0,276.0" fill="#526274"/>
+<path d="M 1340 235.0 L 897.4596669241483 235.0" fill="none" stroke="#526274" stroke-width="1.9"/>
+<polygon points="897.4596669241483,235.0 907.4596669241483,239.0 907.4596669241483,231.0" fill="#526274"/>
+<path d="M 895.9934207678533 280.0 L 1340 280.0" fill="none" stroke="#526274" stroke-width="1.9"/>
+<polygon points="1340,280.0 1330.0,276.0 1330.0,284.0" fill="#526274"/>
+<path d="M 820.0 335.0 L 820.0 505.0" fill="none" stroke="#526274" stroke-width="1.9"/>
+<polygon points="820.0,505.0 824.0,495.0 816.0,495.0" fill="#526274"/>
+<path d="M 350 565.0 L 742.5403330758517 565.0" fill="none" stroke="#526274" stroke-width="1.9"/>
+<polygon points="742.5403330758517,565.0 732.5403330758517,561.0 732.5403330758517,569.0" fill="#526274"/>
+<path d="M 744.0065792321467 610.0 L 350 610.0" fill="none" stroke="#526274" stroke-width="1.9"/>
+<polygon points="350,610.0 360.0,614.0 360.0,606.0" fill="#526274"/>
+<path d="M 1340 565.0 L 897.4596669241483 565.0" fill="none" stroke="#526274" stroke-width="1.9"/>
+<polygon points="897.4596669241483,565.0 907.4596669241483,569.0 907.4596669241483,561.0" fill="#526274"/>
+<path d="M 895.9934207678533 610.0 L 1340 610.0" fill="none" stroke="#526274" stroke-width="1.9"/>
+<polygon points="1340,610.0 1330.0,606.0 1330.0,614.0" fill="#526274"/>
+<path d="M 780.0 654.282032302755 L 780.0 797.8349364905389 L 777.5 797.8349364905389 L 777.5 941.3878406783227" fill="none" stroke="#526274" stroke-width="1.9"/>
+<polygon points="777.5,941.3878406783227 781.5,931.3878406783227 773.5,931.3878406783227" fill="#526274"/>
+<path d="M 862.5 941.3878406783227 L 862.5 797.8349364905389 L 860.0 797.8349364905389 L 860.0 654.282032302755" fill="none" stroke="#526274" stroke-width="1.9"/>
+<polygon points="860.0,654.282032302755 856.0,664.282032302755 864.0,664.282032302755" fill="#526274"/>
+<path d="M 738.7596159536404 990.0 L 350 990.0" fill="none" stroke="#526274" stroke-width="1.9"/>
+<polygon points="350,990.0 360.0,994.0 360.0,986.0" fill="#526274"/>
+<path d="M 350 1040.0 L 738.7596159536404 1040.0" fill="none" stroke="#526274" stroke-width="1.9"/>
+<polygon points="738.7596159536404,1040.0 728.7596159536404,1036.0 728.7596159536404,1044.0" fill="#526274"/>
+<path d="M 1190 855.0 L 1080 855 L 1080 980 L 897.4596669241483 980.0" fill="none" stroke="#526274" stroke-width="1.9"/>
+<polygon points="897.4596669241483,980.0 907.4596669241483,984.0 907.4596669241483,976.0" fill="#526274"/>
+<path d="M 1190 1015.0 L 905.0 1015.0" fill="none" stroke="#526274" stroke-width="1.9"/>
+<polygon points="905.0,1015.0 915.0,1019.0 915.0,1011.0" fill="#526274"/>
+<path d="M 1190 1175.0 L 1050 1175 L 1050 1050 L 897.4596669241483 1050.0" fill="none" stroke="#526274" stroke-width="1.9"/>
+<polygon points="897.4596669241483,1050.0 907.4596669241483,1054.0 907.4596669241483,1046.0" fill="#526274"/>
+<path d="M 1190 1320.0 L 1043.2 1320.0 C 1043.2 1315.2 1036.8 1315.2 1036.8 1320.0 L 1010 1320 L 1010 1120 L 830.625 1120 L 830.625 1099.3333230401838" fill="none" stroke="#526274" stroke-width="1.9"/>
+<polygon points="830.625,1099.3333230401838 826.625,1109.3333230401838 834.625,1109.3333230401838" fill="#526274"/>
+<path d="M 873.125 1081.353103732983 L 873.125 1100 L 1040 1100 L 1040 1360 L 1190 1360.0" fill="none" stroke="#526274" stroke-width="1.9"/>
+<polygon points="1190,1360.0 1180.0,1356.0 1180.0,1364.0" fill="#526274"/>
+<path d="M 350 1705.0 L 740.4701313970656 1705.0" fill="none" stroke="#526274" stroke-width="1.9"/>
+<polygon points="740.4701313970656,1705.0 730.4701313970656,1701.0 730.4701313970656,1709.0" fill="#526274"/>
+<path d="M 740.4701313970656 1765.0 L 350 1765.0" fill="none" stroke="#526274" stroke-width="1.9"/>
+<polygon points="350,1765.0 360.0,1769.0 360.0,1761.0" fill="#526274"/>
+<path d="M 897.4596669241483 1700.0 L 1076.8 1700.0 C 1076.8 1695.2 1083.2 1695.2 1083.2 1700.0 L 1120 1700 L 1120 1580 L 1340 1580.0" fill="none" stroke="#526274" stroke-width="1.9"/>
+<polygon points="1340,1580.0 1330.0,1576.0 1330.0,1584.0" fill="#526274"/>
+<path d="M 1340 1610.0 L 1123.2 1610.0 C 1123.2 1605.2 1116.8 1605.2 1116.8 1610.0 L 1080 1610 L 1080 1740 L 904.8528137423857 1740.0" fill="none" stroke="#526274" stroke-width="1.9"/>
+<polygon points="904.8528137423857,1740.0 914.8528137423857,1744.0 914.8528137423857,1736.0" fill="#526274"/>
+<path d="M 899.5298686029344 1765.0 L 1340 1765.0" fill="none" stroke="#526274" stroke-width="1.9"/>
+<polygon points="1340,1765.0 1330.0,1761.0 1330.0,1769.0" fill="#526274"/>
+<path d="M 820.0 1820.0 L 820.0 1930 L 1340 1930.0" fill="none" stroke="#526274" stroke-width="1.9"/>
+<polygon points="1340,1930.0 1330.0,1926.0 1330.0,1934.0" fill="#526274"/>
+<rect x="70" y="200" width="280" height="110" rx="0" fill="#ffffff" stroke="#202b3b" stroke-width="1.7"/>
+<text x="210.0" y="228" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="700" fill="#202b3b" text-anchor="middle">E1</text>
+<text x="210.0" y="267" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="400" fill="#202b3b" text-anchor="middle">Researcher / analyst</text>
+<circle cx="820.0" cy="255.0" r="80.0" fill="#ffffff" stroke="#202b3b" stroke-width="1.7"/>
+<text x="820.0" y="250.5" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="700" fill="#202b3b" text-anchor="middle">1.0</text>
+<text x="820.0" y="269.5" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="400" fill="#202b3b" text-anchor="middle">Authenticate user</text>
+<rect x="1340" y="200" width="360" height="110" rx="0" fill="#ffffff" stroke="none" stroke-width="1.7"/>
+<path d="M 1340 200 L 1700 200" fill="none" stroke="#526274" stroke-width="1.3"/>
+<path d="M 1340 310 L 1700 310" fill="none" stroke="#526274" stroke-width="1.3"/>
+<text x="1520.0" y="225" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="700" fill="#202b3b" text-anchor="middle">D1 - Accounts and sessions</text>
+<text x="1520.0" y="248" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="400" fill="#202b3b" text-anchor="middle">MySQL: users, roles, sessions</text>
+<text x="1520.0" y="269" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="400" fill="#202b3b" text-anchor="middle">and authentication throttles</text>
+<rect x="70" y="530" width="280" height="110" rx="0" fill="#ffffff" stroke="#202b3b" stroke-width="1.7"/>
+<text x="210.0" y="558" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="700" fill="#202b3b" text-anchor="middle">E1 (repeat)</text>
+<text x="210.0" y="597" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="400" fill="#202b3b" text-anchor="middle">Researcher / analyst</text>
+<circle cx="820.0" cy="585.0" r="80.0" fill="#ffffff" stroke="#202b3b" stroke-width="1.7"/>
+<text x="820.0" y="571.0" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="700" fill="#202b3b" text-anchor="middle">2.0</text>
+<text x="820.0" y="590.0" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="400" fill="#202b3b" text-anchor="middle">Handle research</text>
+<text x="820.0" y="609.0" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="400" fill="#202b3b" text-anchor="middle">requests</text>
+<rect x="1340" y="530" width="360" height="110" rx="0" fill="#ffffff" stroke="none" stroke-width="1.7"/>
+<path d="M 1340 530 L 1700 530" fill="none" stroke="#526274" stroke-width="1.3"/>
+<path d="M 1340 640 L 1700 640" fill="none" stroke="#526274" stroke-width="1.3"/>
+<text x="1520.0" y="555" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="700" fill="#202b3b" text-anchor="middle">D2 - Private saved research</text>
+<text x="1520.0" y="578" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="400" fill="#202b3b" text-anchor="middle">MySQL: cases, runs, results,</text>
+<text x="1520.0" y="599" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="400" fill="#202b3b" text-anchor="middle">evaluations, improvements</text>
+<rect x="70" y="950" width="280" height="130" rx="0" fill="#ffffff" stroke="#202b3b" stroke-width="1.7"/>
+<text x="210.0" y="978" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="700" fill="#202b3b" text-anchor="middle">E3</text>
+<text x="210.0" y="1017" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="400" fill="#202b3b" text-anchor="middle">Gemini AI service</text>
+<circle cx="820.0" cy="1015.0" r="85.0" fill="#ffffff" stroke="#202b3b" stroke-width="1.7"/>
+<text x="820.0" y="991.5" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="700" fill="#202b3b" text-anchor="middle">3.0</text>
+<text x="820.0" y="1010.5" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="400" fill="#202b3b" text-anchor="middle">Analyze and</text>
+<text x="820.0" y="1029.5" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="400" fill="#202b3b" text-anchor="middle">explore</text>
+<text x="820.0" y="1048.5" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="400" fill="#202b3b" text-anchor="middle">patent information</text>
+<rect x="1190" y="810" width="440" height="90" rx="0" fill="#ffffff" stroke="none" stroke-width="1.7"/>
+<path d="M 1190 810 L 1630 810" fill="none" stroke="#526274" stroke-width="1.3"/>
+<path d="M 1190 900 L 1630 900" fill="none" stroke="#526274" stroke-width="1.3"/>
+<text x="1410.0" y="835" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="700" fill="#202b3b" text-anchor="middle">D3 - Public patent catalog</text>
+<text x="1410.0" y="858" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="400" fill="#202b3b" text-anchor="middle">MySQL: normalized patent facts</text>
+<rect x="1190" y="970" width="440" height="90" rx="0" fill="#ffffff" stroke="none" stroke-width="1.7"/>
+<path d="M 1190 970 L 1630 970" fill="none" stroke="#526274" stroke-width="1.3"/>
+<path d="M 1190 1060 L 1630 1060" fill="none" stroke="#526274" stroke-width="1.3"/>
+<text x="1410.0" y="995" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="700" fill="#202b3b" text-anchor="middle">D4 - Semantic index</text>
+<text x="1410.0" y="1018" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="400" fill="#202b3b" text-anchor="middle">FAISS vectors and ID mapping</text>
+<rect x="1190" y="1130" width="440" height="90" rx="0" fill="#ffffff" stroke="none" stroke-width="1.7"/>
+<path d="M 1190 1130 L 1630 1130" fill="none" stroke="#526274" stroke-width="1.3"/>
+<path d="M 1190 1220 L 1630 1220" fill="none" stroke="#526274" stroke-width="1.3"/>
+<text x="1410.0" y="1155" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="700" fill="#202b3b" text-anchor="middle">D5 - Patent knowledge graph</text>
+<text x="1410.0" y="1178" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="400" fill="#202b3b" text-anchor="middle">Neo4j: family, CPC, citation links</text>
+<rect x="1190" y="1290" width="440" height="90" rx="0" fill="#ffffff" stroke="none" stroke-width="1.7"/>
+<path d="M 1190 1290 L 1630 1290" fill="none" stroke="#526274" stroke-width="1.3"/>
+<path d="M 1190 1380 L 1630 1380" fill="none" stroke="#526274" stroke-width="1.3"/>
+<text x="1410.0" y="1315" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="700" fill="#202b3b" text-anchor="middle">D6 - Public embedding cache</text>
+<text x="1410.0" y="1338" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="400" fill="#202b3b" text-anchor="middle">Memory LRU + local SQLite</text>
+<rect x="70" y="1670" width="280" height="130" rx="0" fill="#ffffff" stroke="#202b3b" stroke-width="1.7"/>
+<text x="210.0" y="1698" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="700" fill="#202b3b" text-anchor="middle">E2</text>
+<text x="210.0" y="1737" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="400" fill="#202b3b" text-anchor="middle">Data maintainer</text>
+<circle cx="820.0" cy="1735.0" r="85.0" fill="#ffffff" stroke="#202b3b" stroke-width="1.7"/>
+<text x="820.0" y="1702.0" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="700" fill="#202b3b" text-anchor="middle">4.0</text>
+<text x="820.0" y="1721.0" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="400" fill="#202b3b" text-anchor="middle">Prepare patent</text>
+<text x="820.0" y="1740.0" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="400" fill="#202b3b" text-anchor="middle">corpus</text>
+<text x="820.0" y="1759.0" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="400" fill="#202b3b" text-anchor="middle">and derived</text>
+<text x="820.0" y="1778.0" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="400" fill="#202b3b" text-anchor="middle">artifacts</text>
+<rect x="1340" y="1540" width="360" height="100" rx="0" fill="#ffffff" stroke="none" stroke-width="1.7"/>
+<path d="M 1340 1540 L 1700 1540" fill="none" stroke="#526274" stroke-width="1.3"/>
+<path d="M 1340 1640 L 1700 1640" fill="none" stroke="#526274" stroke-width="1.3"/>
+<text x="1520.0" y="1565" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="700" fill="#202b3b" text-anchor="middle">D3 - Public patent catalog (repeat)</text>
+<text x="1520.0" y="1588" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="400" fill="#202b3b" text-anchor="middle">MySQL: canonical publications</text>
+<rect x="1340" y="1710" width="360" height="100" rx="0" fill="#ffffff" stroke="none" stroke-width="1.7"/>
+<path d="M 1340 1710 L 1700 1710" fill="none" stroke="#526274" stroke-width="1.3"/>
+<path d="M 1340 1810 L 1700 1810" fill="none" stroke="#526274" stroke-width="1.3"/>
+<text x="1520.0" y="1735" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="700" fill="#202b3b" text-anchor="middle">D4 - Semantic index (repeat)</text>
+<text x="1520.0" y="1758" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="400" fill="#202b3b" text-anchor="middle">FAISS vectors and ID mapping</text>
+<rect x="1340" y="1880" width="360" height="100" rx="0" fill="#ffffff" stroke="none" stroke-width="1.7"/>
+<path d="M 1340 1880 L 1700 1880" fill="none" stroke="#526274" stroke-width="1.3"/>
+<path d="M 1340 1980 L 1700 1980" fill="none" stroke="#526274" stroke-width="1.3"/>
+<text x="1520.0" y="1905" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="700" fill="#202b3b" text-anchor="middle">D5 - Patent knowledge graph (repeat)</text>
+<text x="1520.0" y="1928" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="400" fill="#202b3b" text-anchor="middle">Neo4j projection</text>
+<text x="505" y="220" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#596777" text-anchor="middle">Credentials / session proof</text>
+<text x="505" y="303" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#596777" text-anchor="middle">Cookie, CSRF token, auth status</text>
+<text x="1160" y="220" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#596777" text-anchor="middle">Account / session records</text>
+<text x="1160" y="303" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#596777" text-anchor="middle">Password hashes, sessions, throttles</text>
+<text x="955" y="420" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#596777" text-anchor="middle">Authenticated principal</text>
+<text x="505" y="530" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#596777" text-anchor="middle">Idea, settings, case / run IDs,</text>
+<text x="505" y="549" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#596777" text-anchor="middle">graph / report requests</text>
+<text x="505" y="642" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#596777" text-anchor="middle">Results, saving status, history,</text>
+<text x="505" y="661" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#596777" text-anchor="middle">graph slices and report rows</text>
+<text x="1160" y="548" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#596777" text-anchor="middle">Owner-filtered case / run snapshots</text>
+<text x="1160" y="638" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#596777" text-anchor="middle">Case changes and analysis payloads</text>
+<text x="590" y="788" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#596777" text-anchor="middle">Authorized idea, settings</text>
+<text x="590" y="807" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#596777" text-anchor="middle">and owned snapshots</text>
+<text x="1120" y="788" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#596777" text-anchor="middle">Ranked hits, assessments, guidance,</text>
+<text x="1120" y="807" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#596777" text-anchor="middle">public views and timings</text>
+<text x="505" y="975" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#596777" text-anchor="middle">NLP / scoring / explanation prompts</text>
+<text x="505" y="1066" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#596777" text-anchor="middle">Structured AI responses</text>
+<text x="1028" y="910" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#596777" text-anchor="middle">Catalog facts</text>
+<text x="1085" y="1000" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#596777" text-anchor="middle">Nearest vectors / IDs</text>
+<text x="1115" y="1158" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#596777" text-anchor="middle">Graph relationships</text>
+<text x="1120" y="1302" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#596777" text-anchor="middle">Cached vectors</text>
+<text x="1095" y="1400" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#596777" text-anchor="middle">New public vectors</text>
+<text x="505" y="1690" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#596777" text-anchor="middle">Patent export files and settings</text>
+<text x="505" y="1790" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#596777" text-anchor="middle">Import / build status and counts</text>
+<text x="1230" y="1562" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#596777" text-anchor="middle">Normalized records</text>
+<text x="1230" y="1630" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#596777" text-anchor="middle">Canonical corpus</text>
+<text x="1160" y="1793" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#596777" text-anchor="middle">FAISS vectors + ID mapping</text>
+<text x="1120" y="1910" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#596777" text-anchor="middle">Graph projection</text>
+<rect x="70" y="1210" width="860" height="126" rx="0" fill="#f4f6f9" stroke="#d4dbe4" stroke-width="1.7"/>
+<text x="87" y="1238" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#596777" text-anchor="start">Process 3.0 groups retrieval, evaluation, improvements and public graph/report reads.</text>
+<text x="87" y="1262" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#596777" text-anchor="start">Evaluation and improvement are separate requests, not mandatory pipeline steps.</text>
+<text x="87" y="1286" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#596777" text-anchor="start">Process 2.0 persists their output and restores existing runs without recomputing.</text>
+<text x="87" y="1310" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#596777" text-anchor="start">Session and case ownership are checked on every protected request.</text>
+<path d="M 60 2013 L 1740 2013" fill="none" stroke="#526274" stroke-width="1.3"/>
+<text x="60" y="2036" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="400" fill="#596777" text-anchor="start">Yourdon-DeMarco: circle = process | rectangle = external entity | parallel lines = data store | arrow = data flow</text>
+<text x="60" y="2060" font-family="Arial, Helvetica, sans-serif" font-size="12.5" font-weight="400" fill="#596777" text-anchor="start">Arrows name the data being transferred. Repeated IDs refer to the same entity/store. Line jumps are unconnected crossings.</text>
+<text x="1680" y="2060" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="400" fill="#596777" text-anchor="middle">2 / 3</text>
+</svg>

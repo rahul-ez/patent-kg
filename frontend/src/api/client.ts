@@ -1,5 +1,6 @@
 import axios, { type InternalAxiosRequestConfig } from 'axios'
 import { csrfToken, expireSession, sessionEpoch } from '../auth/session'
+import { apiErrorMessage } from './error-message'
 
 type SessionConfig = InternalAxiosRequestConfig & { sessionEpoch?: number }
 export class ApiError extends Error {
@@ -28,8 +29,7 @@ client.interceptors.response.use(
     if (err.config && (err.config as SessionConfig).sessionEpoch !== sessionEpoch()) return Promise.reject(new ApiError('This request belongs to a previous sign-in.'))
     const status = err.response?.status
     if (status === 401 && !['/auth/login', '/auth/signup'].includes(err.config?.url)) expireSession()
-    const msg = err.response?.data?.detail ?? err.message ?? 'Unknown error'
-    const description = Array.isArray(msg) ? msg.map(item => `${item.loc?.slice(-1)[0] ?? 'Input'}: ${item.msg}`).join(' · ') : String(msg)
+    const description = apiErrorMessage(err.response?.data?.detail, status, err.message ?? 'Unknown error')
     return Promise.reject(new ApiError(description, status))
   }
 )

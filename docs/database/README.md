@@ -12,9 +12,60 @@ attributes and relationships remain readable:
 - [Sheet 2 — user and analysis data (SVG)](er-diagram-chen-analysis-data.svg)
 
 Both use rectangles for entities, diamonds for relationships, ovals for
-attributes, and underlined key attributes. The earlier
-[relational implementation map](er-model.svg) and its editable
-[Mermaid source](er-model.mmd) remain available for the full physical-table view.
+attributes, and underlined key attributes.
+
+### Chen ER to relational model
+
+The relational mapping covers all 23 implemented MySQL tables, 101 columns,
+and 23 foreign keys. It shows primary/composite keys, foreign keys, unique
+constraints, nullable fields, and the junction tables that replace many-to-many
+Chen relationships. The original Chen sheets are preserved.
+
+**Horizontal schema format:** each table appears once as a single attribute
+row, with an uppercase relation name, underlined primary-key attributes,
+and numbered FK-to-PK arrows routed in outer lanes. Line jumps distinguish
+crossings from connections. This follows the supplied reference format.
+
+- [Download the one-page horizontal schema PDF (A0 portrait)](../../output/pdf/patent-relational-schema-horizontal.pdf)
+- [High-resolution PNG](relational-schema-horizontal.png) / [editable SVG](relational-schema-horizontal.svg)
+
+**Detailed table format:** includes SQL types, nullable fields, and unique-key
+annotations across two sheets.
+
+- [Download the two-sheet PDF (A2 landscape)](../../output/pdf/patent-relational-model.pdf)
+- Sheet 1, patent data: [PNG](relational-model-1.png) / [editable SVG](relational-model-patent-data.svg)
+- Sheet 2, analysis and access data: [PNG](relational-model-2.png) / [editable SVG](relational-model-analysis-data.svg)
+- [Combined SVG overview](er-model.svg) / [editable Mermaid source](er-model.mmd)
+
+Sheet 1 maps patents, domain memberships, people, CPC codes, literature
+references, families, and citation snapshots. `patents.domain_id` is the
+optional preferred domain; `patent_domains` preserves all memberships. Each
+many-to-many relationship becomes a junction with a composite primary key.
+
+Sheet 2 maps accounts, role memberships, case ownership, runs, retrieved
+patents, evaluation metrics, and recommendations. It also includes the current
+authentication tables. `run_patent_results` carries the attributes of the Chen
+RETRIEVES RESULT relationship, including rank, source, and scores. A run can
+have zero or one evaluation (`evaluation_metrics.run_id` is unique), and
+`analysis_runs.query_id` is not unique. The repeated PATENTS reference denotes
+the same table shown on Sheet 1. `auth_rate_limits` is intentionally independent
+and has no foreign key.
+
+The diagrams are generated from `database/sql/01_schema.sql` and `05_auth.sql`.
+To regenerate, use a Python environment with the documentation-only `reportlab`
+package and run from the repository root:
+
+```powershell
+python backend/scripts/documentation/generate_horizontal_schema.py
+pdftoppm -singlefile -scale-to 6000 -png output/pdf/patent-relational-schema-horizontal.pdf docs/database/relational-schema-horizontal
+
+python backend/scripts/documentation/generate_relational_model.py
+pdftoppm -scale-to 2400 -png output/pdf/patent-relational-model.pdf docs/database/relational-model
+```
+
+Generation validates table/FK coverage and rejects connector paths through
+table interiors; the horizontal poster also checks table-name clearance. PDFs contain vector graphics and
+searchable text; PNG exports are convenient for reports and slides.
 
 ## Setup and demo
 

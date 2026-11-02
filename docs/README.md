@@ -7,12 +7,14 @@ compete with the primary guide.
 | Area | Document | Purpose |
 |---|---|---|
 | Architecture | [architecture.md](architecture.md) | Current implementation map, dependencies, cleanup status, and follow-up work. |
+| Data flow | [diagrams/data-flow.md](diagrams/data-flow.md) | Downloadable context, application, and detailed analysis DFDs. |
 | Accounts | [authentication.md](authentication.md) | Sign-in, secure sessions, per-user ownership, migration, and legacy-case assignment. |
 | Performance | [performance.md](performance.md) | Shared patent embeddings, cache boundaries/invalidation, timings, and repeatable benchmarks. |
 | Guides | [evaluation.md](guides/evaluation.md) | Evaluation-engine API and scoring details. |
 | Guides | [legacy-streamlit.md](guides/legacy-streamlit.md) | Optional legacy Streamlit demo only. |
 | Reference | [knowledge-graph.md](reference/knowledge-graph.md) | Neo4j model, build process, and graph operations. |
 | Reference | [gnn.md](reference/gnn.md) | GraphSAGE and ranking notes. |
+| Reference | [project-technical-manual.md](project-technical-manual.md) | Database design background and technical design questions. |
 | Planning | [planning/](planning/) | Database integration plan and prior redesign specifications. |
 | Database | [database/](database/) | MySQL schema, 3NF proof, relational algebra, security, and operational instructions. |
 | Internal | [internal/](internal/) | Development context and checklist. |

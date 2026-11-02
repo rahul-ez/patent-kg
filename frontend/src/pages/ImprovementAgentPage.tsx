@@ -1,5 +1,6 @@
 import PageHeading from '../components/PageHeading'
 import EmptyAnalysis from '../components/EmptyAnalysis'
+import RecommendationMarkdown from '../components/RecommendationMarkdown'
 import { useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
 import { usePipelineStore } from '../store/usePipelineStore'
@@ -182,15 +183,9 @@ export default function ImprovementAgentPage() {
               <h2 className="section-header" style={{ marginBottom: 16 }}>
                 Research recommendations
               </h2>
-              <p style={{
-                fontFamily: 'var(--font-body)',
-                fontSize: '15px',
-                lineHeight: 1.65,
-                color: 'var(--text-primary)',
-                margin: 0,
-              }}>
+              <RecommendationMarkdown>
                 {recommendations || 'No recommendations generated.'}
-              </p>
+              </RecommendationMarkdown>
             </motion.div>
           )}
 
@@ -268,9 +263,9 @@ export default function ImprovementAgentPage() {
               <h2 className="section-header" style={{ marginBottom: 14 }}>
                 Research recommendations
               </h2>
-              <p style={{ color: 'var(--text-secondary)', fontSize: '14px', lineHeight: 1.65, margin: 0 }}>
+              <RecommendationMarkdown>
                 {recommendations}
-              </p>
+              </RecommendationMarkdown>
             </motion.div>
           )}
 

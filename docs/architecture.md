@@ -479,3 +479,35 @@ artifacts. Restart workers after corpus/index/model updates. Existing auth and
 owner-filtered saving remain authoritative; private analysis results are not
 shared through this cache. Graph pooling/lookup caching, user-scoped result
 caching, and background jobs are future phases described in the performance guide.
+
+## Recommendation formatting
+
+`frontend/src/components/RecommendationMarkdown.ts` renders recommendation
+strings with `react-markdown` and `remark-gfm`. Both recommendation locations in
+`ImprovementAgentPage.tsx` use it. Scoped styles in `index.css` provide readable
+paragraph spacing, heading hierarchy, numbered/bulleted lists, quotes, code and
+scrollable tables. Generated content stays below the page/section heading
+levels; raw HTML and remote images are disabled and default link sanitization
+is retained.
+
+Gemini output and the local fallback already contain Markdown. Stored JSON and
+the generation prompt remain unchanged, so previously saved recommendations
+render correctly when reopened. `frontend/tests/recommendation-markdown.test.mjs`
+checks semantic formatting, plain text, tables/links, heading levels and unsafe
+content. The isolated UI fixture supplies rich Markdown and cases with/without
+overlapping patents for both page branches; it uses only synthetic account/data.
+
+## Local application startup
+
+`start.ps1` starts missing backend/frontend processes in the background, reuses
+already-running services, waits for model/API startup, and checks the Vite API
+proxy before reporting readiness. The backend uses a single Uvicorn process
+without Python auto-reload; manual development commands remain in the README.
+MySQL and the configured Neo4j instance must already be running. Logs under
+`output/logs/`, local scratch files under `tmp/`, environments, credentials and
+datasets stay out of Git. Final diagram exports under `output/pdf/` are tracked.
+
+The browser keeps same-origin `/api` requests. Vite proxies them to
+`127.0.0.1:8000`; no LAN address is required when switching Wi-Fi. The shared
+API error formatter explains a gateway 502 while retaining server-provided
+validation/authentication details.

@@ -1,10 +1,10 @@
 # Graph-Enhanced Patent Intelligence Platform
-## Complete Project Technical Manual & DBMS Laboratory Alignment Report
+## Project Technical Manual
 
-**Course Code**: CD252IA  
-**Course Title**: Database Management Systems (Theory and Lab)  
-**Academic Level**: Semester V (Common to CS & IS, AI, CD)  
-**Evaluation Target**: Lab Mini-Project Report, End-Semester Practical Examination (SEE), and Viva Voce  
+This technical reference covers the platform's database design and analysis
+components. For current setup instructions and verified implementation details,
+use [the README](../README.md), [architecture](architecture.md),
+[authentication](authentication.md), and [performance](performance.md).
 
 ---
 
@@ -20,7 +20,7 @@
    - 3.6. [Multi-Dimensional Patentability Evaluation Engine](#36-multi-dimensional-patentability-evaluation-engine)
    - 3.7. [Deterministic Improvement Agent](#37-deterministic-improvement-agent)
    - 3.8. [Frontend User Interface & Visualizations](#38-frontend-user-interface--visualizations)
-4. [DBMS Laboratory Component (Part – A) Alignment Matrix](#4-dbms-laboratory-component-part--a-alignment-matrix)
+4. [Database Design and Implementation](#4-database-design-and-implementation)
 5. [Conceptual Data Modeling (ER/EER Design)](#5-conceptual-data-modeling-ereer-design)
 6. [Relational Model, Normalization & 3NF Proof](#6-relational-model-normalization--3nf-proof)
 7. [Three-Schema Database Architecture](#7-three-schema-database-architecture)
@@ -30,7 +30,7 @@
 11. [Transaction Processing, ACID & Concurrency Control](#11-transaction-processing-acid--concurrency-control)
 12. [Recent Trends (AI/ML/NLP) & Societal Concerns (Section 3 Indian Patent Act)](#12-recent-trends-aimlnlp--societal-concerns-section-3-indian-patent-act)
 13. [Deployment, Execution Runbook & Verification](#13-deployment-execution-runbook--verification)
-14. [Examiner Viva Voce Q&A Cheat Sheet](#14-examiner-viva-voce-qa-cheat-sheet)
+14. [Technical Design Questions](#14-technical-design-questions)
 
 ---
 
@@ -199,11 +199,11 @@ Built with React 18, Vite, TypeScript, Tailwind CSS, React Flow, and Zustand:
 
 ---
 
-## 4. DBMS Laboratory Component (Part – A) Alignment Matrix
+## 4. Database Design and Implementation
 
-The table below maps the Semester V DBMS Laboratory guidelines directly to our repository:
+The table below connects database engineering responsibilities to the repository:
 
-| Laboratory Component Task | Implementation in Platform | Codebase Reference |
+| Engineering Responsibility | Implementation in Platform | Codebase Reference |
 |---|---|---|
 | **Domain Knowledge & Data Requirements** | Complete patent analytics domain model covering patents, assignees, inventors, CPC codes, families, citations, cases, runs, and metric audits. | • [`docs/database/README.md`](./database/README.md)<br>• [`docs/reference/knowledge-graph.md`](./reference/knowledge-graph.md) |
 | **Integrated Database Solution (SQL + NoSQL)** | **Multi-Model Polyglot Architecture**:<br>• **SQL**: MySQL 8.4 (3NF source of truth).<br>• **NoSQL**: Neo4j 5.x (Graph traversal) & FAISS (Vector store). | • [`docker-compose.yml`](../docker-compose.yml)<br>• [`backend/scripts/database/sync_mysql_to_neo4j.py`](../backend/scripts/database/sync_mysql_to_neo4j.py) |
@@ -342,7 +342,7 @@ $$\pi_{\text{patent\_id, title, publication\_year}} \left( \sigma_{\text{DOMAINS
 Calculate the total number of patents owned by each corporate assignee:
 $$\gamma_{\text{assignee\_id, name}; \text{COUNT}(\text{patent\_id}) \to \text{total\_patents}} (\text{ASSIGNEES} \bowtie \text{PATENT\_ASSIGNEES})$$
 
-### 3. Relational Division ($\div$) — Core Syllabus Requirement
+### 3. Relational Division ($\div$)
 Find assignees that hold patents across **all** designated CPC sections (e.g., sections $\{'G', 'H', 'Y'\}$):
 $$\text{AssigneeSections}(\text{assignee\_id}, \text{section}) \div \text{TargetSections}(\text{section})$$
 Implemented in SQL query $Q_5$ using `GROUP BY` and `HAVING COUNT(DISTINCT ...)`:
@@ -378,7 +378,7 @@ The complete SQL scripts live in [`database/sql/`](../database/sql/):
 - `vw_patent_retrieval_catalogue`: Denormalizes patents with concatenated assignees and CPC tags for rapid display.
 
 ### 9.3. Complex SQL Query Portfolio ([`04_query_portfolio.sql`](../database/sql/04_query_portfolio.sql))
-Contains 8 advanced queries covering all syllabus requirements:
+Contains 8 advanced queries covering the database operations below:
 1. **$Q_1$ (Inner Joins)**: Full patent attribution joining patents, domains, assignees, and inventors.
 2. **$Q_2$ (Outer Joins)**: Left outer join identifying unassigned or unclassified patents.
 3. **$Q_3$ (Aggregation & HAVING)**: Assignees with high average citations filtered via `HAVING COUNT(*) >= 5`.
@@ -491,7 +491,7 @@ npm run dev
 
 ---
 
-## 14. Examiner Viva Voce Q&A Cheat Sheet
+## 14. Technical Design Questions
 
 **Q1: Why is this considered an "Integrated Database Solution"?**  
 > *Answer*: "The platform combines a relational database (MySQL 8.4 in 3NF) with a NoSQL graph database (Neo4j) and a vector index (FAISS). MySQL acts as the ACID source of truth for cases and audits, Neo4j handles 2.67M recursive citation edges with index-free adjacency, and FAISS handles dense vector similarity."

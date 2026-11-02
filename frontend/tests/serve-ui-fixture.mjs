@@ -24,7 +24,7 @@ const pipeline = (request = {}) => ({
   query_id: 'ui-verification-0001', query_text: request.idea ?? idea,
   nlp_result: { clean_text: request.idea ?? idea, keywords: ['EEG', 'adaptive threshold', 'wearable sensor', 'caregiver alert'], entities: [{ text: 'EEG', label: 'TECHNOLOGY' }, { text: 'wearable sensor', label: 'DEVICE' }], source: 'UI fixture' },
   model: 'UI verification fixture', top_k: request.top_k ?? 10, results: hits,
-  gnn_status: 'success', kg_status: 'success', case_id: request.case_id ?? 'fixture-case', run_id: 'fixture-run', persistence_status: 'persisted', indexed_count: 58428, canonical_count: 39102,
+  gnn_status: 'success', kg_status: 'success', case_id: request.case_id ?? 'fixture-case', run_id: 'fixture-run', persistence_status: 'persisted', indexed_count: 36353, canonical_count: 58428,
 })
 const dimension = (score, interpretation) => ({ score, interpretation })
 const breakdown = Object.fromEntries(['combination_difficulty', 'motivation_to_combine', 'cross_domain_novelty', 'reconstruction', 'citation_isolation', 'long_felt_need', 'teaching_away', 'unexpected_effect', 'landscape'].map((name, index) => [name, { ...dimension(.55 + index * .025, 'Synthetic factor explanation for layout verification.'), weight: .1, type: index > 5 ? 'bonus' : 'base' }]))
@@ -43,10 +43,42 @@ const evaluation = {
 const improvement = {
   persistence_status: 'persisted', diagnosis: ['Adaptive calibration is the main differentiating mechanism.'], weaknesses: ['Specify how calibration responds to motion artefacts.', 'Provide a measurable latency and battery-life target.'],
   strategies: [{ strategy: 'Define the calibration mechanism', impact: 'high', reason: 'Separate the adaptive process from generic monitoring.' }, { strategy: 'Add a low-power operating mode', impact: 'medium', reason: 'Make the implementation constraints concrete.' }],
-  alternative_directions: ['Motion-aware calibration using a secondary inertial sensor.', 'Event-triggered communication that reduces wireless power consumption.'], recommendations: 'Synthetic UI fixture: refine the mechanism and compare each change with relevant publications.',
+  alternative_directions: ['Motion-aware calibration using a secondary inertial sensor.', 'Event-triggered communication that reduces wireless power consumption.'], recommendations: `### Diagnosis summary
+
+This is **synthetic UI verification data**, not a live assessment. The calibration mechanism is the main differentiating feature in the test set.
+
+### Detected weaknesses
+
+1. **Calibration detail**: specify how the sensor responds to motion artefacts.
+2. **Operating constraints**: describe the latency and battery-life targets.
+
+### Technical changes
+
+#### 1. Define the calibration mechanism
+
+- **Rationale**: distinguish the adaptive process from generic monitoring.
+- **Actionable change**: measure signal drift and document the response.
+  - Compare a fixed threshold with an adaptive threshold.
+  - Record the calibration interval.
+
+#### 2. Add a low-power operating mode
+
+Use an *event-triggered* communication mode and document its power budget.
+
+### Comparison checklist
+
+| Change | Evidence to collect |
+| --- | --- |
+| Adaptive calibration | Response time and signal drift |
+| Low-power mode | Battery life and communication events |
+
+> Compare each proposed change with the retrieved evidence.
+
+Keep the parameter \`calibration_interval\` explicit in the description.`,
   overlapping_patents: hits.slice(0, 2).map(hit => ({ patent_id: hit.patent_id, title: hit.title, similarity: hit.semantic_score })),
 }
 const cases = [{ case_id: 'fixture-case', title: 'UI verification · adaptive EEG wearable', idea_text: idea, status: 'active', created_at: now, updated_at: now, runs: [{ run_id: 'fixture-run', query_id: 'ui-verification-0001', gnn_mode: 'novelty', top_k: 10, run_status: 'complete', started_at: now, completed_at: now }] }]
+cases.push({ ...cases[0], case_id: 'fixture-no-overlap', title: 'UI verification · recommendations without overlaps', runs: [{ ...cases[0].runs[0], run_id: 'fixture-no-overlap-run' }] })
 const graph = {
   nodes: [
     { id: 'UI-FIXTURE-1', type: 'default', position: { x: 240, y: 130 }, data: { label: 'Adaptive monitoring', title: titles[0], nodeType: 'patent' } },
@@ -74,6 +106,8 @@ const server = createServer(async (request, response) => {
       for await (const chunk of request) raw += chunk
       const body = raw ? JSON.parse(raw) : {}
       requests.push({ method: request.method, path: url.pathname, body })
+      // Pre-authenticated synthetic identity on this isolated fixture origin only.
+      if (url.pathname === '/api/auth/me') return send(response, { user: { user_id: 'fixture-only', email: 'fixture@example.com', display_name: 'UI verification' }, csrf_token: 'fixture-csrf', expires_at: new Date(Date.now() + 3600_000).toISOString() })
       if (url.pathname === '/api/pipeline/run') {
         await new Promise(resolveDelay => setTimeout(resolveDelay, 800))
         if (body.idea?.includes('UI failure test')) return send(response, { detail: 'Synthetic verification failure. No live service was called.' }, 503)
@@ -92,7 +126,12 @@ const server = createServer(async (request, response) => {
         cases.push(draft)
         return send(response, draft, 201)
       }
-      if (/^\/api\/cases\/[^/]+\/runs\/[^/]+$/.test(url.pathname)) return send(response, { case_id: 'fixture-case', run_id: 'fixture-run', case_title: cases[0].title, idea_text: savedPipeline.query_text, top_k: savedPipeline.top_k, gnn_mode: 'novelty', started_at: now, pipeline_result: savedPipeline, evaluation_result: evaluation, improvement_result: improvement })
+      if (/^\/api\/cases\/[^/]+\/runs\/[^/]+$/.test(url.pathname)) {
+        const [, , , caseId, , runId] = url.pathname.split('/')
+        const selected = cases.find(item => item.case_id === caseId)
+        if (!selected) return send(response, { detail: 'Fixture case not found.' }, 404)
+        return send(response, { case_id: caseId, run_id: runId, case_title: selected.title, idea_text: savedPipeline.query_text, top_k: savedPipeline.top_k, gnn_mode: 'novelty', started_at: now, pipeline_result: { ...savedPipeline, case_id: caseId, run_id: runId }, evaluation_result: evaluation, improvement_result: { ...improvement, overlapping_patents: caseId === 'fixture-no-overlap' ? [] : improvement.overlapping_patents } })
+      }
       if (request.method === 'DELETE' && /^\/api\/cases\/[^/]+$/.test(url.pathname)) {
         const index = cases.findIndex(item => item.case_id === url.pathname.split('/').at(-1))
         if (index >= 0) cases.splice(index, 1)

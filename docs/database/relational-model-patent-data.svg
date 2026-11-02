@@ -1,0 +1,313 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="1273" viewBox="0 0 1800 1273" role="img"><title>Relational model, sheet 1</title>
+<rect x="0" y="0" width="1800" height="1273" fill="#ffffff" stroke="none" stroke-width="1.4"/>
+<polyline points="410,272.0 385,272.0 385,250.0 360,250.0" fill="none" stroke="#526277" stroke-width="1.8" stroke-linejoin="round"/>
+<polygon points="360,250.0 369.0,253.8 369.0,246.2" fill="#526277"/>
+<polyline points="410,532.0 385,532.0 385,510.0 360,510.0" fill="none" stroke="#526277" stroke-width="1.8" stroke-linejoin="round"/>
+<polygon points="360,510.0 369.0,513.8 369.0,506.2" fill="#526277"/>
+<polyline points="410,792.0 385,792.0 385,770.0 360,770.0" fill="none" stroke="#526277" stroke-width="1.8" stroke-linejoin="round"/>
+<polygon points="360,770.0 369.0,773.8 369.0,766.2" fill="#526277"/>
+<polyline points="1390,272.0 1415,272.0 1415,250.0 1440,250.0" fill="none" stroke="#526277" stroke-width="1.8" stroke-linejoin="round"/>
+<polygon points="1440,250.0 1431.0,246.2 1431.0,253.8" fill="#526277"/>
+<polyline points="1390,532.0 1415,532.0 1415,510.0 1440,510.0" fill="none" stroke="#526277" stroke-width="1.8" stroke-linejoin="round"/>
+<polygon points="1440,510.0 1431.0,506.2 1431.0,513.8" fill="#526277"/>
+<polyline points="710,250.0 725,250.0" fill="none" stroke="#3064a8" stroke-width="1.8" stroke-linejoin="round"/>
+<circle cx="725" cy="250.0" r="3" fill="#3064a8"/>
+<polyline points="710,510.0 725,510.0" fill="none" stroke="#3064a8" stroke-width="1.8" stroke-linejoin="round"/>
+<circle cx="725" cy="510.0" r="3" fill="#3064a8"/>
+<polyline points="710,770.0 725,770.0" fill="none" stroke="#3064a8" stroke-width="1.8" stroke-linejoin="round"/>
+<circle cx="725" cy="770.0" r="3" fill="#3064a8"/>
+<polyline points="1090,250.0 1065,250.0" fill="none" stroke="#3064a8" stroke-width="1.8" stroke-linejoin="round"/>
+<circle cx="1065" cy="250.0" r="3" fill="#3064a8"/>
+<polyline points="1090,510.0 1065,510.0" fill="none" stroke="#3064a8" stroke-width="1.8" stroke-linejoin="round"/>
+<circle cx="1065" cy="510.0" r="3" fill="#3064a8"/>
+<polyline points="1440,832.0 1065,832.0" fill="none" stroke="#3064a8" stroke-width="1.8" stroke-linejoin="round"/>
+<circle cx="1065" cy="832.0" r="3" fill="#3064a8"/>
+<polyline points="1090,1065.0 1065,1065.0" fill="none" stroke="#3064a8" stroke-width="1.8" stroke-linejoin="round"/>
+<circle cx="1065" cy="1065.0" r="3" fill="#3064a8"/>
+<polyline points="1090,1087.0 1065,1087.0" fill="none" stroke="#3064a8" stroke-width="1.8" stroke-linejoin="round"/>
+<circle cx="1065" cy="1087.0" r="3" fill="#3064a8"/>
+<polyline points="725,250 725,770" fill="none" stroke="#3064a8" stroke-width="1.8" stroke-linejoin="round"/>
+<polyline points="725,410.0 740,410.0" fill="none" stroke="#3064a8" stroke-width="1.8" stroke-linejoin="round"/>
+<polygon points="740,410.0 731.0,406.2 731.0,413.8" fill="#3064a8"/>
+<polyline points="1065,250 1065,1087.0" fill="none" stroke="#3064a8" stroke-width="1.8" stroke-linejoin="round"/>
+<polyline points="1065,410.0 1040,410.0" fill="none" stroke="#3064a8" stroke-width="1.8" stroke-linejoin="round"/>
+<polygon points="1040,410.0 1049.0,413.8 1049.0,406.2" fill="#3064a8"/>
+<polyline points="740,630.0 735,630.0 735,900 25,900 25,250.0 60,250.0" fill="none" stroke="#3064a8" stroke-width="1.8" stroke-linejoin="round"/>
+<polygon points="60,250.0 51.0,246.2 51.0,253.8" fill="#3064a8"/>
+<polyline points="60,1206 1740,1206" fill="none" stroke="#d7dfe9" stroke-width="1" stroke-linejoin="round"/>
+<text x="60" y="64" font-family="Arial, Helvetica, sans-serif" font-size="31" fill="#17243b" font-weight="700" text-anchor="start">Patent Intelligence Platform | Relational model</text>
+<text x="60" y="100" font-family="Arial, Helvetica, sans-serif" font-size="19" fill="#3064a8" font-weight="700" text-anchor="start">Sheet 1 of 2 - Patent catalog and knowledge relationships</text>
+<text x="60" y="127" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#526277" font-weight="400" text-anchor="start">Mapping from Chen sheet 1 | Full table attributes, primary/foreign keys, and junction tables</text>
+<rect x="740" y="340" width="300" height="387" fill="#ffffff" stroke="#3064a8" stroke-width="1.4"/>
+<rect x="740" y="340" width="300" height="36" fill="#3064a8" stroke="none" stroke-width="1.4"/>
+<text x="752" y="364" font-family="Arial, Helvetica, sans-serif" font-size="17" fill="#ffffff" font-weight="700" text-anchor="start">patents</text>
+<rect x="741" y="376" width="298" height="23" fill="#edf1f6" stroke="none" stroke-width="1.4"/>
+<text x="752" y="392" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#526277" font-weight="700" text-anchor="start">KEY</text>
+<text x="810" y="392" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#526277" font-weight="700" text-anchor="start">ATTRIBUTE</text>
+<text x="1028" y="392" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#526277" font-weight="700" text-anchor="end">SQL TYPE</text>
+<rect x="741" y="399" width="298" height="22" fill="#f1f6fc" stroke="none" stroke-width="1.4"/>
+<text x="752" y="414" font-family="Arial, Helvetica, sans-serif" font-size="9.3" fill="#3064a8" font-weight="700" text-anchor="start">PK</text>
+<text x="810" y="414" font-family="Arial, Helvetica, sans-serif" font-size="12.2" fill="#17243b" font-weight="700" text-anchor="start" text-decoration="underline">patent_id</text>
+<text x="1028" y="414" font-family="Arial, Helvetica, sans-serif" font-size="10.1" fill="#526277" font-weight="400" text-anchor="end">VARCHAR(80)</text>
+<text x="752" y="436" font-family="Arial, Helvetica, sans-serif" font-size="9.3" fill="#3064a8" font-weight="700" text-anchor="start"></text>
+<text x="810" y="436" font-family="Arial, Helvetica, sans-serif" font-size="12.2" fill="#17243b" font-weight="400" text-anchor="start">title</text>
+<text x="1028" y="436" font-family="Arial, Helvetica, sans-serif" font-size="10.1" fill="#526277" font-weight="400" text-anchor="end">TEXT</text>
+<rect x="741" y="443" width="298" height="22" fill="#f8fafc" stroke="none" stroke-width="1.4"/>
+<text x="752" y="458" font-family="Arial, Helvetica, sans-serif" font-size="9.3" fill="#3064a8" font-weight="700" text-anchor="start"></text>
+<text x="810" y="458" font-family="Arial, Helvetica, sans-serif" font-size="12.2" fill="#17243b" font-weight="400" text-anchor="start">abstract</text>
+<text x="1028" y="458" font-family="Arial, Helvetica, sans-serif" font-size="10.1" fill="#526277" font-weight="400" text-anchor="end">TEXT</text>
+<text x="752" y="480" font-family="Arial, Helvetica, sans-serif" font-size="9.3" fill="#3064a8" font-weight="700" text-anchor="start"></text>
+<text x="810" y="480" font-family="Arial, Helvetica, sans-serif" font-size="12.2" fill="#17243b" font-weight="400" text-anchor="start">publication_year ?</text>
+<text x="1028" y="480" font-family="Arial, Helvetica, sans-serif" font-size="10.1" fill="#526277" font-weight="400" text-anchor="end">SMALLINT</text>
+<rect x="741" y="487" width="298" height="22" fill="#f8fafc" stroke="none" stroke-width="1.4"/>
+<text x="752" y="502" font-family="Arial, Helvetica, sans-serif" font-size="9.3" fill="#3064a8" font-weight="700" text-anchor="start"></text>
+<text x="810" y="502" font-family="Arial, Helvetica, sans-serif" font-size="12.2" fill="#17243b" font-weight="400" text-anchor="start">legal_status ?</text>
+<text x="1028" y="502" font-family="Arial, Helvetica, sans-serif" font-size="10.1" fill="#526277" font-weight="400" text-anchor="end">VARCHAR(50)</text>
+<text x="752" y="524" font-family="Arial, Helvetica, sans-serif" font-size="9.3" fill="#3064a8" font-weight="700" text-anchor="start"></text>
+<text x="810" y="524" font-family="Arial, Helvetica, sans-serif" font-size="12.2" fill="#17243b" font-weight="400" text-anchor="start">jurisdiction ?</text>
+<text x="1028" y="524" font-family="Arial, Helvetica, sans-serif" font-size="10.1" fill="#526277" font-weight="400" text-anchor="end">VARCHAR(10)</text>
+<rect x="741" y="531" width="298" height="22" fill="#f8fafc" stroke="none" stroke-width="1.4"/>
+<text x="752" y="546" font-family="Arial, Helvetica, sans-serif" font-size="9.3" fill="#3064a8" font-weight="700" text-anchor="start"></text>
+<text x="810" y="546" font-family="Arial, Helvetica, sans-serif" font-size="12.2" fill="#17243b" font-weight="400" text-anchor="start">cites_patent_count ?</text>
+<text x="1028" y="546" font-family="Arial, Helvetica, sans-serif" font-size="10.1" fill="#526277" font-weight="400" text-anchor="end">INT</text>
+<text x="752" y="568" font-family="Arial, Helvetica, sans-serif" font-size="9.3" fill="#3064a8" font-weight="700" text-anchor="start"></text>
+<text x="810" y="568" font-family="Arial, Helvetica, sans-serif" font-size="12.2" fill="#17243b" font-weight="400" text-anchor="start">family_size ?</text>
+<text x="1028" y="568" font-family="Arial, Helvetica, sans-serif" font-size="10.1" fill="#526277" font-weight="400" text-anchor="end">INT</text>
+<rect x="741" y="575" width="298" height="22" fill="#f8fafc" stroke="none" stroke-width="1.4"/>
+<text x="752" y="590" font-family="Arial, Helvetica, sans-serif" font-size="9.3" fill="#3064a8" font-weight="700" text-anchor="start"></text>
+<text x="810" y="590" font-family="Arial, Helvetica, sans-serif" font-size="12.2" fill="#17243b" font-weight="400" text-anchor="start">cited_by_patent_count</text>
+<text x="1028" y="590" font-family="Arial, Helvetica, sans-serif" font-size="10.1" fill="#526277" font-weight="400" text-anchor="end">INT</text>
+<text x="752" y="612" font-family="Arial, Helvetica, sans-serif" font-size="9.3" fill="#3064a8" font-weight="700" text-anchor="start"></text>
+<text x="810" y="612" font-family="Arial, Helvetica, sans-serif" font-size="12.2" fill="#17243b" font-weight="400" text-anchor="start">url ?</text>
+<text x="1028" y="612" font-family="Arial, Helvetica, sans-serif" font-size="10.1" fill="#526277" font-weight="400" text-anchor="end">VARCHAR(2048)</text>
+<rect x="741" y="619" width="298" height="22" fill="#f8fafc" stroke="none" stroke-width="1.4"/>
+<text x="752" y="634" font-family="Arial, Helvetica, sans-serif" font-size="9.3" fill="#3064a8" font-weight="700" text-anchor="start">FK</text>
+<text x="810" y="634" font-family="Arial, Helvetica, sans-serif" font-size="12.2" fill="#17243b" font-weight="400" text-anchor="start">domain_id ?</text>
+<text x="1028" y="634" font-family="Arial, Helvetica, sans-serif" font-size="10.1" fill="#526277" font-weight="400" text-anchor="end">INT</text>
+<text x="752" y="656" font-family="Arial, Helvetica, sans-serif" font-size="9.3" fill="#3064a8" font-weight="700" text-anchor="start"></text>
+<text x="810" y="656" font-family="Arial, Helvetica, sans-serif" font-size="12.2" fill="#17243b" font-weight="400" text-anchor="start">created_at</text>
+<text x="1028" y="656" font-family="Arial, Helvetica, sans-serif" font-size="10.1" fill="#526277" font-weight="400" text-anchor="end">TIMESTAMP</text>
+<rect x="741" y="663" width="298" height="22" fill="#f8fafc" stroke="none" stroke-width="1.4"/>
+<text x="752" y="678" font-family="Arial, Helvetica, sans-serif" font-size="9.3" fill="#3064a8" font-weight="700" text-anchor="start"></text>
+<text x="810" y="678" font-family="Arial, Helvetica, sans-serif" font-size="12.2" fill="#17243b" font-weight="400" text-anchor="start">updated_at</text>
+<text x="1028" y="678" font-family="Arial, Helvetica, sans-serif" font-size="10.1" fill="#526277" font-weight="400" text-anchor="end">TIMESTAMP</text>
+<text x="752" y="701" font-family="Arial, Helvetica, sans-serif" font-size="10.5" fill="#526277" font-weight="400" text-anchor="start">Year: 1800-2200 when known.</text>
+<text x="752" y="715" font-family="Arial, Helvetica, sans-serif" font-size="10.5" fill="#526277" font-weight="400" text-anchor="start">Current incoming citation count is nonnegative.</text>
+<rect x="60" y="180" width="300" height="111" fill="#ffffff" stroke="#3064a8" stroke-width="1.4"/>
+<rect x="60" y="180" width="300" height="36" fill="#3064a8" stroke="none" stroke-width="1.4"/>
+<text x="72" y="204" font-family="Arial, Helvetica, sans-serif" font-size="17" fill="#ffffff" font-weight="700" text-anchor="start">domains</text>
+<rect x="61" y="216" width="298" height="23" fill="#edf1f6" stroke="none" stroke-width="1.4"/>
+<text x="72" y="232" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#526277" font-weight="700" text-anchor="start">KEY</text>
+<text x="130" y="232" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#526277" font-weight="700" text-anchor="start">ATTRIBUTE</text>
+<text x="348" y="232" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#526277" font-weight="700" text-anchor="end">SQL TYPE</text>
+<rect x="61" y="239" width="298" height="22" fill="#f1f6fc" stroke="none" stroke-width="1.4"/>
+<text x="72" y="254" font-family="Arial, Helvetica, sans-serif" font-size="9.3" fill="#3064a8" font-weight="700" text-anchor="start">PK</text>
+<text x="130" y="254" font-family="Arial, Helvetica, sans-serif" font-size="12.2" fill="#17243b" font-weight="700" text-anchor="start" text-decoration="underline">domain_id</text>
+<text x="348" y="254" font-family="Arial, Helvetica, sans-serif" font-size="10.1" fill="#526277" font-weight="400" text-anchor="end">INT</text>
+<text x="72" y="276" font-family="Arial, Helvetica, sans-serif" font-size="9.3" fill="#3064a8" font-weight="700" text-anchor="start">UQ</text>
+<text x="130" y="276" font-family="Arial, Helvetica, sans-serif" font-size="12.2" fill="#17243b" font-weight="400" text-anchor="start">name</text>
+<text x="348" y="276" font-family="Arial, Helvetica, sans-serif" font-size="10.1" fill="#526277" font-weight="400" text-anchor="end">VARCHAR(100)</text>
+<rect x="410" y="180" width="300" height="131" fill="#ffffff" stroke="#9a651f" stroke-width="1.4"/>
+<rect x="410" y="180" width="300" height="36" fill="#9a651f" stroke="none" stroke-width="1.4"/>
+<text x="422" y="204" font-family="Arial, Helvetica, sans-serif" font-size="17" fill="#ffffff" font-weight="700" text-anchor="start">patent_domains</text>
+<rect x="411" y="216" width="298" height="23" fill="#edf1f6" stroke="none" stroke-width="1.4"/>
+<text x="422" y="232" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#526277" font-weight="700" text-anchor="start">KEY</text>
+<text x="480" y="232" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#526277" font-weight="700" text-anchor="start">ATTRIBUTE</text>
+<text x="698" y="232" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#526277" font-weight="700" text-anchor="end">SQL TYPE</text>
+<rect x="411" y="239" width="298" height="22" fill="#fff8eb" stroke="none" stroke-width="1.4"/>
+<text x="422" y="254" font-family="Arial, Helvetica, sans-serif" font-size="9.3" fill="#9a651f" font-weight="700" text-anchor="start">PK/FK</text>
+<text x="480" y="254" font-family="Arial, Helvetica, sans-serif" font-size="12.2" fill="#17243b" font-weight="700" text-anchor="start" text-decoration="underline">patent_id</text>
+<text x="698" y="254" font-family="Arial, Helvetica, sans-serif" font-size="10.1" fill="#526277" font-weight="400" text-anchor="end">VARCHAR(80)</text>
+<rect x="411" y="261" width="298" height="22" fill="#fff8eb" stroke="none" stroke-width="1.4"/>
+<text x="422" y="276" font-family="Arial, Helvetica, sans-serif" font-size="9.3" fill="#9a651f" font-weight="700" text-anchor="start">PK/FK</text>
+<text x="480" y="276" font-family="Arial, Helvetica, sans-serif" font-size="12.2" fill="#17243b" font-weight="700" text-anchor="start" text-decoration="underline">domain_id</text>
+<text x="698" y="276" font-family="Arial, Helvetica, sans-serif" font-size="10.1" fill="#526277" font-weight="400" text-anchor="end">INT</text>
+<text x="422" y="299" font-family="Arial, Helvetica, sans-serif" font-size="10.5" fill="#526277" font-weight="400" text-anchor="start">All domain memberships (M:N).</text>
+<rect x="60" y="440" width="300" height="111" fill="#ffffff" stroke="#3064a8" stroke-width="1.4"/>
+<rect x="60" y="440" width="300" height="36" fill="#3064a8" stroke="none" stroke-width="1.4"/>
+<text x="72" y="464" font-family="Arial, Helvetica, sans-serif" font-size="17" fill="#ffffff" font-weight="700" text-anchor="start">assignees</text>
+<rect x="61" y="476" width="298" height="23" fill="#edf1f6" stroke="none" stroke-width="1.4"/>
+<text x="72" y="492" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#526277" font-weight="700" text-anchor="start">KEY</text>
+<text x="130" y="492" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#526277" font-weight="700" text-anchor="start">ATTRIBUTE</text>
+<text x="348" y="492" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#526277" font-weight="700" text-anchor="end">SQL TYPE</text>
+<rect x="61" y="499" width="298" height="22" fill="#f1f6fc" stroke="none" stroke-width="1.4"/>
+<text x="72" y="514" font-family="Arial, Helvetica, sans-serif" font-size="9.3" fill="#3064a8" font-weight="700" text-anchor="start">PK</text>
+<text x="130" y="514" font-family="Arial, Helvetica, sans-serif" font-size="12.2" fill="#17243b" font-weight="700" text-anchor="start" text-decoration="underline">assignee_id</text>
+<text x="348" y="514" font-family="Arial, Helvetica, sans-serif" font-size="10.1" fill="#526277" font-weight="400" text-anchor="end">INT</text>
+<text x="72" y="536" font-family="Arial, Helvetica, sans-serif" font-size="9.3" fill="#3064a8" font-weight="700" text-anchor="start">UQ</text>
+<text x="130" y="536" font-family="Arial, Helvetica, sans-serif" font-size="12.2" fill="#17243b" font-weight="400" text-anchor="start">name</text>
+<text x="348" y="536" font-family="Arial, Helvetica, sans-serif" font-size="10.1" fill="#526277" font-weight="400" text-anchor="end">VARCHAR(500)</text>
+<rect x="410" y="440" width="300" height="131" fill="#ffffff" stroke="#9a651f" stroke-width="1.4"/>
+<rect x="410" y="440" width="300" height="36" fill="#9a651f" stroke="none" stroke-width="1.4"/>
+<text x="422" y="464" font-family="Arial, Helvetica, sans-serif" font-size="17" fill="#ffffff" font-weight="700" text-anchor="start">patent_assignees</text>
+<rect x="411" y="476" width="298" height="23" fill="#edf1f6" stroke="none" stroke-width="1.4"/>
+<text x="422" y="492" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#526277" font-weight="700" text-anchor="start">KEY</text>
+<text x="480" y="492" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#526277" font-weight="700" text-anchor="start">ATTRIBUTE</text>
+<text x="698" y="492" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#526277" font-weight="700" text-anchor="end">SQL TYPE</text>
+<rect x="411" y="499" width="298" height="22" fill="#fff8eb" stroke="none" stroke-width="1.4"/>
+<text x="422" y="514" font-family="Arial, Helvetica, sans-serif" font-size="9.3" fill="#9a651f" font-weight="700" text-anchor="start">PK/FK</text>
+<text x="480" y="514" font-family="Arial, Helvetica, sans-serif" font-size="12.2" fill="#17243b" font-weight="700" text-anchor="start" text-decoration="underline">patent_id</text>
+<text x="698" y="514" font-family="Arial, Helvetica, sans-serif" font-size="10.1" fill="#526277" font-weight="400" text-anchor="end">VARCHAR(80)</text>
+<rect x="411" y="521" width="298" height="22" fill="#fff8eb" stroke="none" stroke-width="1.4"/>
+<text x="422" y="536" font-family="Arial, Helvetica, sans-serif" font-size="9.3" fill="#9a651f" font-weight="700" text-anchor="start">PK/FK</text>
+<text x="480" y="536" font-family="Arial, Helvetica, sans-serif" font-size="12.2" fill="#17243b" font-weight="700" text-anchor="start" text-decoration="underline">assignee_id</text>
+<text x="698" y="536" font-family="Arial, Helvetica, sans-serif" font-size="10.1" fill="#526277" font-weight="400" text-anchor="end">INT</text>
+<text x="422" y="559" font-family="Arial, Helvetica, sans-serif" font-size="10.5" fill="#526277" font-weight="400" text-anchor="start">ASSIGNED TO (M:N).</text>
+<rect x="60" y="700" width="300" height="111" fill="#ffffff" stroke="#3064a8" stroke-width="1.4"/>
+<rect x="60" y="700" width="300" height="36" fill="#3064a8" stroke="none" stroke-width="1.4"/>
+<text x="72" y="724" font-family="Arial, Helvetica, sans-serif" font-size="17" fill="#ffffff" font-weight="700" text-anchor="start">inventors</text>
+<rect x="61" y="736" width="298" height="23" fill="#edf1f6" stroke="none" stroke-width="1.4"/>
+<text x="72" y="752" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#526277" font-weight="700" text-anchor="start">KEY</text>
+<text x="130" y="752" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#526277" font-weight="700" text-anchor="start">ATTRIBUTE</text>
+<text x="348" y="752" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#526277" font-weight="700" text-anchor="end">SQL TYPE</text>
+<rect x="61" y="759" width="298" height="22" fill="#f1f6fc" stroke="none" stroke-width="1.4"/>
+<text x="72" y="774" font-family="Arial, Helvetica, sans-serif" font-size="9.3" fill="#3064a8" font-weight="700" text-anchor="start">PK</text>
+<text x="130" y="774" font-family="Arial, Helvetica, sans-serif" font-size="12.2" fill="#17243b" font-weight="700" text-anchor="start" text-decoration="underline">inventor_id</text>
+<text x="348" y="774" font-family="Arial, Helvetica, sans-serif" font-size="10.1" fill="#526277" font-weight="400" text-anchor="end">INT</text>
+<text x="72" y="796" font-family="Arial, Helvetica, sans-serif" font-size="9.3" fill="#3064a8" font-weight="700" text-anchor="start">UQ</text>
+<text x="130" y="796" font-family="Arial, Helvetica, sans-serif" font-size="12.2" fill="#17243b" font-weight="400" text-anchor="start">name</text>
+<text x="348" y="796" font-family="Arial, Helvetica, sans-serif" font-size="10.1" fill="#526277" font-weight="400" text-anchor="end">VARCHAR(500)</text>
+<rect x="410" y="700" width="300" height="131" fill="#ffffff" stroke="#9a651f" stroke-width="1.4"/>
+<rect x="410" y="700" width="300" height="36" fill="#9a651f" stroke="none" stroke-width="1.4"/>
+<text x="422" y="724" font-family="Arial, Helvetica, sans-serif" font-size="17" fill="#ffffff" font-weight="700" text-anchor="start">patent_inventors</text>
+<rect x="411" y="736" width="298" height="23" fill="#edf1f6" stroke="none" stroke-width="1.4"/>
+<text x="422" y="752" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#526277" font-weight="700" text-anchor="start">KEY</text>
+<text x="480" y="752" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#526277" font-weight="700" text-anchor="start">ATTRIBUTE</text>
+<text x="698" y="752" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#526277" font-weight="700" text-anchor="end">SQL TYPE</text>
+<rect x="411" y="759" width="298" height="22" fill="#fff8eb" stroke="none" stroke-width="1.4"/>
+<text x="422" y="774" font-family="Arial, Helvetica, sans-serif" font-size="9.3" fill="#9a651f" font-weight="700" text-anchor="start">PK/FK</text>
+<text x="480" y="774" font-family="Arial, Helvetica, sans-serif" font-size="12.2" fill="#17243b" font-weight="700" text-anchor="start" text-decoration="underline">patent_id</text>
+<text x="698" y="774" font-family="Arial, Helvetica, sans-serif" font-size="10.1" fill="#526277" font-weight="400" text-anchor="end">VARCHAR(80)</text>
+<rect x="411" y="781" width="298" height="22" fill="#fff8eb" stroke="none" stroke-width="1.4"/>
+<text x="422" y="796" font-family="Arial, Helvetica, sans-serif" font-size="9.3" fill="#9a651f" font-weight="700" text-anchor="start">PK/FK</text>
+<text x="480" y="796" font-family="Arial, Helvetica, sans-serif" font-size="12.2" fill="#17243b" font-weight="700" text-anchor="start" text-decoration="underline">inventor_id</text>
+<text x="698" y="796" font-family="Arial, Helvetica, sans-serif" font-size="10.1" fill="#526277" font-weight="400" text-anchor="end">INT</text>
+<text x="422" y="819" font-family="Arial, Helvetica, sans-serif" font-size="10.5" fill="#526277" font-weight="400" text-anchor="start">INVENTS (M:N).</text>
+<rect x="1090" y="180" width="300" height="131" fill="#ffffff" stroke="#9a651f" stroke-width="1.4"/>
+<rect x="1090" y="180" width="300" height="36" fill="#9a651f" stroke="none" stroke-width="1.4"/>
+<text x="1102" y="204" font-family="Arial, Helvetica, sans-serif" font-size="17" fill="#ffffff" font-weight="700" text-anchor="start">patent_cpc_codes</text>
+<rect x="1091" y="216" width="298" height="23" fill="#edf1f6" stroke="none" stroke-width="1.4"/>
+<text x="1102" y="232" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#526277" font-weight="700" text-anchor="start">KEY</text>
+<text x="1160" y="232" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#526277" font-weight="700" text-anchor="start">ATTRIBUTE</text>
+<text x="1378" y="232" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#526277" font-weight="700" text-anchor="end">SQL TYPE</text>
+<rect x="1091" y="239" width="298" height="22" fill="#fff8eb" stroke="none" stroke-width="1.4"/>
+<text x="1102" y="254" font-family="Arial, Helvetica, sans-serif" font-size="9.3" fill="#9a651f" font-weight="700" text-anchor="start">PK/FK</text>
+<text x="1160" y="254" font-family="Arial, Helvetica, sans-serif" font-size="12.2" fill="#17243b" font-weight="700" text-anchor="start" text-decoration="underline">patent_id</text>
+<text x="1378" y="254" font-family="Arial, Helvetica, sans-serif" font-size="10.1" fill="#526277" font-weight="400" text-anchor="end">VARCHAR(80)</text>
+<rect x="1091" y="261" width="298" height="22" fill="#fff8eb" stroke="none" stroke-width="1.4"/>
+<text x="1102" y="276" font-family="Arial, Helvetica, sans-serif" font-size="9.3" fill="#9a651f" font-weight="700" text-anchor="start">PK/FK</text>
+<text x="1160" y="276" font-family="Arial, Helvetica, sans-serif" font-size="12.2" fill="#17243b" font-weight="700" text-anchor="start" text-decoration="underline">cpc_code</text>
+<text x="1378" y="276" font-family="Arial, Helvetica, sans-serif" font-size="10.1" fill="#526277" font-weight="400" text-anchor="end">VARCHAR(32)</text>
+<text x="1102" y="299" font-family="Arial, Helvetica, sans-serif" font-size="10.5" fill="#526277" font-weight="400" text-anchor="start">CLASSIFIED AS (M:N).</text>
+<rect x="1440" y="180" width="300" height="133" fill="#ffffff" stroke="#3064a8" stroke-width="1.4"/>
+<rect x="1440" y="180" width="300" height="36" fill="#3064a8" stroke="none" stroke-width="1.4"/>
+<text x="1452" y="204" font-family="Arial, Helvetica, sans-serif" font-size="17" fill="#ffffff" font-weight="700" text-anchor="start">cpc_codes</text>
+<rect x="1441" y="216" width="298" height="23" fill="#edf1f6" stroke="none" stroke-width="1.4"/>
+<text x="1452" y="232" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#526277" font-weight="700" text-anchor="start">KEY</text>
+<text x="1510" y="232" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#526277" font-weight="700" text-anchor="start">ATTRIBUTE</text>
+<text x="1728" y="232" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#526277" font-weight="700" text-anchor="end">SQL TYPE</text>
+<rect x="1441" y="239" width="298" height="22" fill="#f1f6fc" stroke="none" stroke-width="1.4"/>
+<text x="1452" y="254" font-family="Arial, Helvetica, sans-serif" font-size="9.3" fill="#3064a8" font-weight="700" text-anchor="start">PK</text>
+<text x="1510" y="254" font-family="Arial, Helvetica, sans-serif" font-size="12.2" fill="#17243b" font-weight="700" text-anchor="start" text-decoration="underline">cpc_code</text>
+<text x="1728" y="254" font-family="Arial, Helvetica, sans-serif" font-size="10.1" fill="#526277" font-weight="400" text-anchor="end">VARCHAR(32)</text>
+<text x="1452" y="276" font-family="Arial, Helvetica, sans-serif" font-size="9.3" fill="#3064a8" font-weight="700" text-anchor="start"></text>
+<text x="1510" y="276" font-family="Arial, Helvetica, sans-serif" font-size="12.2" fill="#17243b" font-weight="400" text-anchor="start">section</text>
+<text x="1728" y="276" font-family="Arial, Helvetica, sans-serif" font-size="10.1" fill="#526277" font-weight="400" text-anchor="end">CHAR(1)</text>
+<rect x="1441" y="283" width="298" height="22" fill="#f8fafc" stroke="none" stroke-width="1.4"/>
+<text x="1452" y="298" font-family="Arial, Helvetica, sans-serif" font-size="9.3" fill="#3064a8" font-weight="700" text-anchor="start"></text>
+<text x="1510" y="298" font-family="Arial, Helvetica, sans-serif" font-size="12.2" fill="#17243b" font-weight="400" text-anchor="start">description ?</text>
+<text x="1728" y="298" font-family="Arial, Helvetica, sans-serif" font-size="10.1" fill="#526277" font-weight="400" text-anchor="end">TEXT</text>
+<rect x="1090" y="440" width="300" height="131" fill="#ffffff" stroke="#9a651f" stroke-width="1.4"/>
+<rect x="1090" y="440" width="300" height="36" fill="#9a651f" stroke="none" stroke-width="1.4"/>
+<text x="1102" y="464" font-family="Arial, Helvetica, sans-serif" font-size="17" fill="#ffffff" font-weight="700" text-anchor="start">patent_npl_references</text>
+<rect x="1091" y="476" width="298" height="23" fill="#edf1f6" stroke="none" stroke-width="1.4"/>
+<text x="1102" y="492" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#526277" font-weight="700" text-anchor="start">KEY</text>
+<text x="1160" y="492" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#526277" font-weight="700" text-anchor="start">ATTRIBUTE</text>
+<text x="1378" y="492" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#526277" font-weight="700" text-anchor="end">SQL TYPE</text>
+<rect x="1091" y="499" width="298" height="22" fill="#fff8eb" stroke="none" stroke-width="1.4"/>
+<text x="1102" y="514" font-family="Arial, Helvetica, sans-serif" font-size="9.3" fill="#9a651f" font-weight="700" text-anchor="start">PK/FK</text>
+<text x="1160" y="514" font-family="Arial, Helvetica, sans-serif" font-size="12.2" fill="#17243b" font-weight="700" text-anchor="start" text-decoration="underline">patent_id</text>
+<text x="1378" y="514" font-family="Arial, Helvetica, sans-serif" font-size="10.1" fill="#526277" font-weight="400" text-anchor="end">VARCHAR(80)</text>
+<rect x="1091" y="521" width="298" height="22" fill="#fff8eb" stroke="none" stroke-width="1.4"/>
+<text x="1102" y="536" font-family="Arial, Helvetica, sans-serif" font-size="9.3" fill="#9a651f" font-weight="700" text-anchor="start">PK/FK</text>
+<text x="1160" y="536" font-family="Arial, Helvetica, sans-serif" font-size="12.2" fill="#17243b" font-weight="700" text-anchor="start" text-decoration="underline">npl_id</text>
+<text x="1378" y="536" font-family="Arial, Helvetica, sans-serif" font-size="10.1" fill="#526277" font-weight="400" text-anchor="end">BIGINT</text>
+<text x="1102" y="559" font-family="Arial, Helvetica, sans-serif" font-size="10.5" fill="#526277" font-weight="400" text-anchor="start">CITES (M:N).</text>
+<rect x="1440" y="440" width="300" height="133" fill="#ffffff" stroke="#3064a8" stroke-width="1.4"/>
+<rect x="1440" y="440" width="300" height="36" fill="#3064a8" stroke="none" stroke-width="1.4"/>
+<text x="1452" y="464" font-family="Arial, Helvetica, sans-serif" font-size="17" fill="#ffffff" font-weight="700" text-anchor="start">npl_references</text>
+<rect x="1441" y="476" width="298" height="23" fill="#edf1f6" stroke="none" stroke-width="1.4"/>
+<text x="1452" y="492" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#526277" font-weight="700" text-anchor="start">KEY</text>
+<text x="1510" y="492" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#526277" font-weight="700" text-anchor="start">ATTRIBUTE</text>
+<text x="1728" y="492" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#526277" font-weight="700" text-anchor="end">SQL TYPE</text>
+<rect x="1441" y="499" width="298" height="22" fill="#f1f6fc" stroke="none" stroke-width="1.4"/>
+<text x="1452" y="514" font-family="Arial, Helvetica, sans-serif" font-size="9.3" fill="#3064a8" font-weight="700" text-anchor="start">PK</text>
+<text x="1510" y="514" font-family="Arial, Helvetica, sans-serif" font-size="12.2" fill="#17243b" font-weight="700" text-anchor="start" text-decoration="underline">npl_id</text>
+<text x="1728" y="514" font-family="Arial, Helvetica, sans-serif" font-size="10.1" fill="#526277" font-weight="400" text-anchor="end">BIGINT</text>
+<text x="1452" y="536" font-family="Arial, Helvetica, sans-serif" font-size="9.3" fill="#3064a8" font-weight="700" text-anchor="start"></text>
+<text x="1510" y="536" font-family="Arial, Helvetica, sans-serif" font-size="12.2" fill="#17243b" font-weight="400" text-anchor="start">citation</text>
+<text x="1728" y="536" font-family="Arial, Helvetica, sans-serif" font-size="10.1" fill="#526277" font-weight="400" text-anchor="end">TEXT</text>
+<rect x="1441" y="543" width="298" height="22" fill="#f8fafc" stroke="none" stroke-width="1.4"/>
+<text x="1452" y="558" font-family="Arial, Helvetica, sans-serif" font-size="9.3" fill="#3064a8" font-weight="700" text-anchor="start">UQ</text>
+<text x="1510" y="558" font-family="Arial, Helvetica, sans-serif" font-size="12.2" fill="#17243b" font-weight="400" text-anchor="start">normalized_key</text>
+<text x="1728" y="558" font-family="Arial, Helvetica, sans-serif" font-size="10.1" fill="#526277" font-weight="400" text-anchor="end">CHAR(64)</text>
+<rect x="1440" y="740" width="300" height="211" fill="#ffffff" stroke="#3064a8" stroke-width="1.4"/>
+<rect x="1440" y="740" width="300" height="36" fill="#3064a8" stroke="none" stroke-width="1.4"/>
+<text x="1452" y="764" font-family="Arial, Helvetica, sans-serif" font-size="17" fill="#ffffff" font-weight="700" text-anchor="start">citation_snapshots</text>
+<rect x="1441" y="776" width="298" height="23" fill="#edf1f6" stroke="none" stroke-width="1.4"/>
+<text x="1452" y="792" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#526277" font-weight="700" text-anchor="start">KEY</text>
+<text x="1510" y="792" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#526277" font-weight="700" text-anchor="start">ATTRIBUTE</text>
+<text x="1728" y="792" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#526277" font-weight="700" text-anchor="end">SQL TYPE</text>
+<rect x="1441" y="799" width="298" height="22" fill="#f1f6fc" stroke="none" stroke-width="1.4"/>
+<text x="1452" y="814" font-family="Arial, Helvetica, sans-serif" font-size="9.3" fill="#3064a8" font-weight="700" text-anchor="start">PK</text>
+<text x="1510" y="814" font-family="Arial, Helvetica, sans-serif" font-size="12.2" fill="#17243b" font-weight="700" text-anchor="start" text-decoration="underline">snapshot_id</text>
+<text x="1728" y="814" font-family="Arial, Helvetica, sans-serif" font-size="10.1" fill="#526277" font-weight="400" text-anchor="end">BIGINT</text>
+<text x="1452" y="836" font-family="Arial, Helvetica, sans-serif" font-size="9.3" fill="#3064a8" font-weight="700" text-anchor="start">FK</text>
+<text x="1510" y="836" font-family="Arial, Helvetica, sans-serif" font-size="12.2" fill="#17243b" font-weight="400" text-anchor="start">patent_id</text>
+<text x="1728" y="836" font-family="Arial, Helvetica, sans-serif" font-size="10.1" fill="#526277" font-weight="400" text-anchor="end">VARCHAR(80)</text>
+<rect x="1441" y="843" width="298" height="22" fill="#f8fafc" stroke="none" stroke-width="1.4"/>
+<text x="1452" y="858" font-family="Arial, Helvetica, sans-serif" font-size="9.3" fill="#3064a8" font-weight="700" text-anchor="start"></text>
+<text x="1510" y="858" font-family="Arial, Helvetica, sans-serif" font-size="12.2" fill="#17243b" font-weight="400" text-anchor="start">cited_by_count</text>
+<text x="1728" y="858" font-family="Arial, Helvetica, sans-serif" font-size="10.1" fill="#526277" font-weight="400" text-anchor="end">INT</text>
+<text x="1452" y="880" font-family="Arial, Helvetica, sans-serif" font-size="9.3" fill="#3064a8" font-weight="700" text-anchor="start"></text>
+<text x="1510" y="880" font-family="Arial, Helvetica, sans-serif" font-size="12.2" fill="#17243b" font-weight="400" text-anchor="start">observed_on</text>
+<text x="1728" y="880" font-family="Arial, Helvetica, sans-serif" font-size="10.1" fill="#526277" font-weight="400" text-anchor="end">DATETIME</text>
+<rect x="1441" y="887" width="298" height="22" fill="#f8fafc" stroke="none" stroke-width="1.4"/>
+<text x="1452" y="902" font-family="Arial, Helvetica, sans-serif" font-size="9.3" fill="#3064a8" font-weight="700" text-anchor="start"></text>
+<text x="1510" y="902" font-family="Arial, Helvetica, sans-serif" font-size="12.2" fill="#17243b" font-weight="400" text-anchor="start">created_at</text>
+<text x="1728" y="902" font-family="Arial, Helvetica, sans-serif" font-size="10.1" fill="#526277" font-weight="400" text-anchor="end">TIMESTAMP</text>
+<text x="1452" y="925" font-family="Arial, Helvetica, sans-serif" font-size="10.5" fill="#526277" font-weight="400" text-anchor="start">UQ (patent_id, observed_on)</text>
+<text x="1452" y="939" font-family="Arial, Helvetica, sans-serif" font-size="10.5" fill="#526277" font-weight="400" text-anchor="start">HAS: one patent, zero or more snapshots.</text>
+<rect x="1090" y="995" width="300" height="167" fill="#ffffff" stroke="#9a651f" stroke-width="1.4"/>
+<rect x="1090" y="995" width="300" height="36" fill="#9a651f" stroke="none" stroke-width="1.4"/>
+<text x="1102" y="1019" font-family="Arial, Helvetica, sans-serif" font-size="17" fill="#ffffff" font-weight="700" text-anchor="start">patent_families</text>
+<rect x="1091" y="1031" width="298" height="23" fill="#edf1f6" stroke="none" stroke-width="1.4"/>
+<text x="1102" y="1047" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#526277" font-weight="700" text-anchor="start">KEY</text>
+<text x="1160" y="1047" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#526277" font-weight="700" text-anchor="start">ATTRIBUTE</text>
+<text x="1378" y="1047" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#526277" font-weight="700" text-anchor="end">SQL TYPE</text>
+<rect x="1091" y="1054" width="298" height="22" fill="#fff8eb" stroke="none" stroke-width="1.4"/>
+<text x="1102" y="1069" font-family="Arial, Helvetica, sans-serif" font-size="9.3" fill="#9a651f" font-weight="700" text-anchor="start">PK/FK</text>
+<text x="1160" y="1069" font-family="Arial, Helvetica, sans-serif" font-size="12.2" fill="#17243b" font-weight="700" text-anchor="start" text-decoration="underline">patent_id</text>
+<text x="1378" y="1069" font-family="Arial, Helvetica, sans-serif" font-size="10.1" fill="#526277" font-weight="400" text-anchor="end">VARCHAR(80)</text>
+<rect x="1091" y="1076" width="298" height="22" fill="#fff8eb" stroke="none" stroke-width="1.4"/>
+<text x="1102" y="1091" font-family="Arial, Helvetica, sans-serif" font-size="9.3" fill="#9a651f" font-weight="700" text-anchor="start">PK/FK</text>
+<text x="1160" y="1091" font-family="Arial, Helvetica, sans-serif" font-size="12.2" fill="#17243b" font-weight="700" text-anchor="start" text-decoration="underline">related_patent_id</text>
+<text x="1378" y="1091" font-family="Arial, Helvetica, sans-serif" font-size="10.1" fill="#526277" font-weight="400" text-anchor="end">VARCHAR(80)</text>
+<rect x="1091" y="1098" width="298" height="22" fill="#fff8eb" stroke="none" stroke-width="1.4"/>
+<text x="1102" y="1113" font-family="Arial, Helvetica, sans-serif" font-size="9.3" fill="#9a651f" font-weight="700" text-anchor="start">PK</text>
+<text x="1160" y="1113" font-family="Arial, Helvetica, sans-serif" font-size="12.2" fill="#17243b" font-weight="700" text-anchor="start" text-decoration="underline">relation_type</text>
+<text x="1378" y="1113" font-family="Arial, Helvetica, sans-serif" font-size="10.1" fill="#526277" font-weight="400" text-anchor="end">VARCHAR(32)</text>
+<text x="1102" y="1136" font-family="Arial, Helvetica, sans-serif" font-size="10.5" fill="#526277" font-weight="400" text-anchor="start">RELATED TO: both FK fields reference patents.</text>
+<text x="1102" y="1150" font-family="Arial, Helvetica, sans-serif" font-size="10.5" fill="#526277" font-weight="400" text-anchor="start">A publication cannot be related to itself.</text>
+<text x="90" y="885" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#3064a8" font-weight="400" text-anchor="start">Optional preferred display domain (separate from all-domain memberships)</text>
+<rect x="60" y="965" width="960" height="190" fill="#f4f7fa" stroke="#dce3ec" stroke-width="1.4"/>
+<text x="80" y="996" font-family="Arial, Helvetica, sans-serif" font-size="17" fill="#17243b" font-weight="700" text-anchor="start">Chen relationships become relational keys</text>
+<text x="80" y="1023" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#526277" font-weight="400" text-anchor="start">ASSIGNED TO, INVENTS, CLASSIFIED AS and CITES become separate junction tables.</text>
+<text x="80" y="1043" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#526277" font-weight="400" text-anchor="start">patent_domains retains every domain membership; patents.domain_id selects a preferred domain.</text>
+<text x="80" y="1063" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#526277" font-weight="400" text-anchor="start">The family relation has a three-part PK: patent_id, related_patent_id and relation_type.</text>
+<text x="80" y="1083" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#526277" font-weight="400" text-anchor="start">Citation snapshots keep observation history; patent publication IDs remain separate records.</text>
+<text x="60" y="1230" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#17243b" font-weight="700" text-anchor="start">PK = primary key (underlined)   FK = foreign key   UQ = unique constraint   ? = NULL permitted</text>
+<text x="60" y="1252" font-family="Arial, Helvetica, sans-serif" font-size="11.5" fill="#526277" font-weight="400" text-anchor="start">All PK-marked fields in a table form ONE key. Arrows point from FK fields to referenced PKs; joined branches share that PK target.</text>
+<text x="1740" y="1230" font-family="Arial, Helvetica, sans-serif" font-size="11.5" fill="#526277" font-weight="400" text-anchor="end">Source: 01_schema.sql + 05_auth.sql</text>
+<text x="1740" y="1252" font-family="Arial, Helvetica, sans-serif" font-size="11.5" fill="#526277" font-weight="400" text-anchor="end">Defaults and secondary indexes omitted. [ref] repeats an existing table.</text>
+</svg>

@@ -74,6 +74,24 @@ During the final backend cleanup pass, the following integration refactors were 
 
 ## Getting Started & Running the App
 
+After completing the dependency and database setup below, Windows users can
+start the backend and frontend together from the repository root:
+
+```powershell
+.\start.ps1
+```
+
+The launcher reuses running services, starts missing services in the background,
+waits for API/model startup, and checks the frontend API proxy before reporting
+`Ready: http://localhost:5173`. Logs are saved under `output/logs/` (ignored by
+Git). MySQL and the configured Neo4j instance must already be running. Run the
+launcher again after restarting the computer or if a server has stopped.
+The backend started by this launcher does not auto-reload Python changes;
+the separate-terminal commands below remain available for development.
+If PowerShell blocks the script under its execution policy, run
+`powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\start.ps1` instead;
+this applies only to that launcher process.
+
 ### Prerequisites
 
 1. **Neo4j Graph Database**: Ensure your Neo4j DBMS is running locally (Bolt port `7687`).
@@ -125,6 +143,25 @@ During the final backend cleanup pass, the following integration refactors were 
    npm run dev
    ```
    The Vite app starts on [http://localhost:5173/](http://localhost:5173/) by default (or the next available port) and proxies `/api` requests automatically to port 8000.
+
+### If signing in returns 502
+
+First run `.\start.ps1` from the repository root to restore any stopped service
+and verify the proxy. A 502 usually means the frontend cannot reach the API;
+changing Wi-Fi does not change the loopback address `127.0.0.1`.
+
+For manual startup instead, start the API with the project environment explicitly:
+
+```powershell
+cd backend
+..\venv\Scripts\python.exe run_api.py
+```
+
+Keep this terminal open. Wait for `Application startup complete` while the API
+loads its models, then check [API health](http://127.0.0.1:8000/api/health).
+It should return `"status":"ok"`. Leave the frontend's `npm run dev` terminal
+open too, then reload the sign-in page. The development proxy targets
+`127.0.0.1:8000`, matching the backend's bind address.
 
 For an existing populated database, apply the additive update described in
 [database setup](docs/database/README.md#updating-an-already-populated-database)

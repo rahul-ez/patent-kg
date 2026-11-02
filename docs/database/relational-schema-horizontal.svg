@@ -1,0 +1,329 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2600" height="4000" viewBox="0 0 2600 4000" role="img">
+<title>Patent Intelligence Platform - Horizontal Relational Schema</title>
+<desc>All 23 relations appear once as horizontal attribute rows. Underlines indicate primary keys; numbered arrows connect foreign-key columns to actual referenced primary-key columns.</desc>
+<rect x="0" y="0" width="2600" height="4000" fill="#ffffff" stroke="none" stroke-width="0.9"/>
+<text x="1300.0" y="64" font-family="Arial, Helvetica, sans-serif" font-size="31" font-weight="700" fill="#171717" text-anchor="middle">PATENT INTELLIGENCE PLATFORM RELATIONAL SCHEMA</text>
+<text x="1300.0" y="103" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#171717" text-anchor="middle">Each table appears once. Underlined attributes form the primary key. Arrows point from FK columns to their referenced PK columns.</text>
+<text x="1300.0" y="133" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#171717" text-anchor="middle">Matching small numbers identify the two ends of each continuous arrow. Small jumps indicate crossings, not connections.</text>
+<path d="M 1777.09375 404 L 1777.09375 386 L 118.2 386 C 118.2 381.2 111.8 381.2 111.8 386 L 85 386 L 85 312 L 510.0 312 L 510.0 286" stroke="#80618b" stroke-width="1.25" fill="none"/>
+<polygon points="510.0,286 506.5,293 513.5,293" fill="#80618b"/>
+<path d="M 535.0 558 L 535.0 546 L 298.2 546 C 298.2 541.2 291.8 541.2 291.8 546 L 283.2 546 C 283.2 541.2 276.8 541.2 276.8 546 L 268.2 546 C 268.2 541.2 261.8 541.2 261.8 546 L 253.2 546 C 253.2 541.2 246.8 541.2 246.8 546 L 223.2 546 C 223.2 541.2 216.8 541.2 216.8 546 L 193.2 546 C 193.2 541.2 186.8 541.2 186.8 546 L 163.2 546 C 163.2 541.2 156.8 541.2 156.8 546 L 133.2 546 C 133.2 541.2 126.8 541.2 126.8 546 L 100 546 L 100 466 L 111.8 466 C 111.8 461.2 118.2 461.2 118.2 466 L 482.0 466 L 482.0 440" stroke="#426985" stroke-width="1.25" fill="none"/>
+<polygon points="482.0,440 478.5,447 485.5,447" fill="#426985"/>
+<path d="M 660.0 558 L 660.0 540 L 298.2 540 C 298.2 535.2 291.8 535.2 291.8 540 L 283.2 540 C 283.2 535.2 276.8 535.2 276.8 540 L 268.2 540 C 268.2 535.2 261.8 535.2 261.8 540 L 253.2 540 C 253.2 535.2 246.8 535.2 246.8 540 L 223.2 540 C 223.2 535.2 216.8 535.2 216.8 540 L 193.2 540 C 193.2 535.2 186.8 535.2 186.8 540 L 163.2 540 C 163.2 535.2 156.8 535.2 156.8 540 L 133.2 540 C 133.2 535.2 126.8 535.2 126.8 540 L 115 540 L 115 317 L 560.0 317 L 560.0 286" stroke="#80618b" stroke-width="1.25" fill="none"/>
+<polygon points="560.0,286 556.5,293 563.5,293" fill="#80618b"/>
+<path d="M 535.0 1328 L 535.0 1316 L 298.2 1316 C 298.2 1311.2 291.8 1311.2 291.8 1316 L 283.2 1316 C 283.2 1311.2 276.8 1311.2 276.8 1316 L 268.2 1316 C 268.2 1311.2 261.8 1311.2 261.8 1316 L 253.2 1316 C 253.2 1311.2 246.8 1311.2 246.8 1316 L 238.2 1316 C 238.2 1311.2 231.8 1311.2 231.8 1316 L 223.2 1316 C 223.2 1311.2 216.8 1311.2 216.8 1316 L 208.2 1316 C 208.2 1311.2 201.8 1311.2 201.8 1316 L 193.2 1316 C 193.2 1311.2 186.8 1311.2 186.8 1316 L 178.2 1316 C 178.2 1311.2 171.8 1311.2 171.8 1316 L 163.2 1316 C 163.2 1311.2 156.8 1311.2 156.8 1316 L 130 1316 L 130 471 L 504.0 471 L 504.0 440" stroke="#426985" stroke-width="1.25" fill="none"/>
+<polygon points="504.0,440 500.5,447 507.5,447" fill="#426985"/>
+<path d="M 664.07568359375 1328 L 664.07568359375 1310 L 298.2 1310 C 298.2 1305.2 291.8 1305.2 291.8 1310 L 283.2 1310 C 283.2 1305.2 276.8 1305.2 276.8 1310 L 268.2 1310 C 268.2 1305.2 261.8 1305.2 261.8 1310 L 253.2 1310 C 253.2 1305.2 246.8 1305.2 246.8 1310 L 238.2 1310 C 238.2 1305.2 231.8 1305.2 231.8 1310 L 223.2 1310 C 223.2 1305.2 216.8 1305.2 216.8 1310 L 208.2 1310 C 208.2 1305.2 201.8 1305.2 201.8 1310 L 193.2 1310 C 193.2 1305.2 186.8 1305.2 186.8 1310 L 178.2 1310 C 178.2 1305.2 171.8 1305.2 171.8 1310 L 163.2 1310 C 163.2 1305.2 156.8 1305.2 156.8 1310 L 145 1310 L 145 774 L 156.8 774 C 156.8 769.2 163.2 769.2 163.2 774 L 186.8 774 C 186.8 769.2 193.2 769.2 193.2 774 L 216.8 774 C 216.8 769.2 223.2 769.2 223.2 774 L 246.8 774 C 246.8 769.2 253.2 769.2 253.2 774 L 261.8 774 C 261.8 769.2 268.2 769.2 268.2 774 L 276.8 774 C 276.8 769.2 283.2 769.2 283.2 774 L 291.8 774 C 291.8 769.2 298.2 769.2 298.2 774 L 535.0 774 L 535.0 748" stroke="#80618b" stroke-width="1.25" fill="none"/>
+<polygon points="535.0,748 531.5,755 538.5,755" fill="#80618b"/>
+<path d="M 535.0 1482 L 535.0 1470 L 298.2 1470 C 298.2 1465.2 291.8 1465.2 291.8 1470 L 283.2 1470 C 283.2 1465.2 276.8 1465.2 276.8 1470 L 268.2 1470 C 268.2 1465.2 261.8 1465.2 261.8 1470 L 253.2 1470 C 253.2 1465.2 246.8 1465.2 246.8 1470 L 238.2 1470 C 238.2 1465.2 231.8 1465.2 231.8 1470 L 223.2 1470 C 223.2 1465.2 216.8 1465.2 216.8 1470 L 208.2 1470 C 208.2 1465.2 201.8 1465.2 201.8 1470 L 193.2 1470 C 193.2 1465.2 186.8 1465.2 186.8 1470 L 160 1470 L 160 476 L 526.0 476 L 526.0 440" stroke="#426985" stroke-width="1.25" fill="none"/>
+<polygon points="526.0,440 522.5,447 529.5,447" fill="#426985"/>
+<path d="M 661.7275390625 1482 L 661.7275390625 1464 L 298.2 1464 C 298.2 1459.2 291.8 1459.2 291.8 1464 L 283.2 1464 C 283.2 1459.2 276.8 1459.2 276.8 1464 L 268.2 1464 C 268.2 1459.2 261.8 1459.2 261.8 1464 L 253.2 1464 C 253.2 1459.2 246.8 1459.2 246.8 1464 L 238.2 1464 C 238.2 1459.2 231.8 1459.2 231.8 1464 L 223.2 1464 C 223.2 1459.2 216.8 1459.2 216.8 1464 L 208.2 1464 C 208.2 1459.2 201.8 1459.2 201.8 1464 L 193.2 1464 C 193.2 1459.2 186.8 1459.2 186.8 1464 L 175 1464 L 175 928 L 186.8 928 C 186.8 923.2 193.2 923.2 193.2 928 L 216.8 928 C 216.8 923.2 223.2 923.2 223.2 928 L 246.8 928 C 246.8 923.2 253.2 923.2 253.2 928 L 261.8 928 C 261.8 923.2 268.2 923.2 268.2 928 L 276.8 928 C 276.8 923.2 283.2 923.2 283.2 928 L 291.8 928 C 291.8 923.2 298.2 923.2 298.2 928 L 535.0 928 L 535.0 902" stroke="#80618b" stroke-width="1.25" fill="none"/>
+<polygon points="535.0,902 531.5,909 538.5,909" fill="#80618b"/>
+<path d="M 535.0 1636 L 535.0 1624 L 298.2 1624 C 298.2 1619.2 291.8 1619.2 291.8 1624 L 283.2 1624 C 283.2 1619.2 276.8 1619.2 276.8 1624 L 268.2 1624 C 268.2 1619.2 261.8 1619.2 261.8 1624 L 253.2 1624 C 253.2 1619.2 246.8 1619.2 246.8 1624 L 238.2 1624 C 238.2 1619.2 231.8 1619.2 231.8 1624 L 223.2 1624 C 223.2 1619.2 216.8 1619.2 216.8 1624 L 190 1624 L 190 481 L 548.0 481 L 548.0 440" stroke="#426985" stroke-width="1.25" fill="none"/>
+<polygon points="548.0,440 544.5,447 551.5,447" fill="#426985"/>
+<path d="M 660.0 1636 L 660.0 1618 L 298.2 1618 C 298.2 1613.2 291.8 1613.2 291.8 1618 L 283.2 1618 C 283.2 1613.2 276.8 1613.2 276.8 1618 L 268.2 1618 C 268.2 1613.2 261.8 1613.2 261.8 1618 L 253.2 1618 C 253.2 1613.2 246.8 1613.2 246.8 1618 L 238.2 1618 C 238.2 1613.2 231.8 1613.2 231.8 1618 L 223.2 1618 C 223.2 1613.2 216.8 1613.2 216.8 1618 L 205 1618 L 205 1082 L 216.8 1082 C 216.8 1077.2 223.2 1077.2 223.2 1082 L 246.8 1082 C 246.8 1077.2 253.2 1077.2 253.2 1082 L 261.8 1082 C 261.8 1077.2 268.2 1077.2 268.2 1082 L 276.8 1082 C 276.8 1077.2 283.2 1077.2 283.2 1082 L 291.8 1082 C 291.8 1077.2 298.2 1077.2 298.2 1082 L 535.0 1082 L 535.0 1056" stroke="#80618b" stroke-width="1.25" fill="none"/>
+<polygon points="535.0,1056 531.5,1063 538.5,1063" fill="#80618b"/>
+<path d="M 535.0 1790 L 535.0 1778 L 298.2 1778 C 298.2 1773.2 291.8 1773.2 291.8 1778 L 283.2 1778 C 283.2 1773.2 276.8 1773.2 276.8 1778 L 268.2 1778 C 268.2 1773.2 261.8 1773.2 261.8 1778 L 253.2 1778 C 253.2 1773.2 246.8 1773.2 246.8 1778 L 220 1778 L 220 486 L 570.0 486 L 570.0 440" stroke="#426985" stroke-width="1.25" fill="none"/>
+<polygon points="570.0,440 566.5,447 573.5,447" fill="#426985"/>
+<path d="M 660.0 1790 L 660.0 1772 L 298.2 1772 C 298.2 1767.2 291.8 1767.2 291.8 1772 L 283.2 1772 C 283.2 1767.2 276.8 1767.2 276.8 1772 L 268.2 1772 C 268.2 1767.2 261.8 1767.2 261.8 1772 L 253.2 1772 C 253.2 1767.2 246.8 1767.2 246.8 1772 L 235 1772 L 235 1236 L 246.8 1236 C 246.8 1231.2 253.2 1231.2 253.2 1236 L 261.8 1236 C 261.8 1231.2 268.2 1231.2 268.2 1236 L 276.8 1236 C 276.8 1231.2 283.2 1231.2 283.2 1236 L 291.8 1236 C 291.8 1231.2 298.2 1231.2 298.2 1236 L 535.0 1236 L 535.0 1210" stroke="#80618b" stroke-width="1.25" fill="none"/>
+<polygon points="535.0,1210 531.5,1217 538.5,1217" fill="#80618b"/>
+<path d="M 535.0 1944 L 535.0 1932 L 298.2 1932 C 298.2 1927.2 291.8 1927.2 291.8 1932 L 283.2 1932 C 283.2 1927.2 276.8 1927.2 276.8 1932 L 250 1932 L 250 491 L 592.0 491 L 592.0 440" stroke="#426985" stroke-width="1.25" fill="none"/>
+<polygon points="592.0,440 588.5,447 595.5,447" fill="#426985"/>
+<path d="M 681.9619140625 1944 L 681.9619140625 1926 L 298.2 1926 C 298.2 1921.2 291.8 1921.2 291.8 1926 L 283.2 1926 C 283.2 1921.2 276.8 1921.2 276.8 1926 L 265 1926 L 265 496 L 614.0 496 L 614.0 440" stroke="#426985" stroke-width="1.25" fill="none"/>
+<polygon points="614.0,440 610.5,447 617.5,447" fill="#426985"/>
+<path d="M 660.0 2098 L 660.0 2080 L 298.2 2080 C 298.2 2075.2 291.8 2075.2 291.8 2080 L 280 2080 L 280 501 L 636.0 501 L 636.0 440" stroke="#426985" stroke-width="1.25" fill="none"/>
+<polygon points="636.0,440 632.5,447 639.5,447" fill="#426985"/>
+<path d="M 535.0 2560 L 535.0 2542 L 2240 2542 L 2240 2314 L 575.7 2314 C 575.7 2309.2 569.3 2309.2 569.3 2314 L 538.2 2314 C 538.2 2309.2 531.8 2309.2 531.8 2314 L 497.5 2314 L 497.5 2288" stroke="#3c7965" stroke-width="1.25" fill="none"/>
+<polygon points="497.5,2288 494.0,2295 501.0,2295" fill="#3c7965"/>
+<path d="M 660.0 2560 L 660.0 2548 L 2263 2548 L 2263 2468 L 2243.2 2468 C 2243.2 2463.2 2236.8 2463.2 2236.8 2468 L 535.0 2468 L 535.0 2442" stroke="#3c7965" stroke-width="1.25" fill="none"/>
+<polygon points="535.0,2442 531.5,2449 538.5,2449" fill="#3c7965"/>
+<path d="M 669.9169921875 2714 L 669.9169921875 2696 L 2286 2696 L 2286 2319 L 2243.2 2319 C 2243.2 2314.2 2236.8 2314.2 2236.8 2319 L 575.7 2319 C 575.7 2314.2 569.3 2314.2 569.3 2319 L 535.0 2319 L 535.0 2288" stroke="#3c7965" stroke-width="1.25" fill="none"/>
+<polygon points="535.0,2288 531.5,2295 538.5,2295" fill="#3c7965"/>
+<path d="M 660.0 2868 L 660.0 2850 L 2309 2850 L 2309 2776 L 535.0 2776 L 535.0 2750" stroke="#9a7943" stroke-width="1.25" fill="none"/>
+<polygon points="535.0,2750 531.5,2757 538.5,2757" fill="#9a7943"/>
+<path d="M 535.0 3022 L 535.0 3004 L 2332 3004 L 2332 2930 L 575.7 2930 C 575.7 2925.2 569.3 2925.2 569.3 2930 L 538.2 2930 C 538.2 2925.2 531.8 2925.2 531.8 2930 L 497.5 2930 L 497.5 2904" stroke="#9a7943" stroke-width="1.25" fill="none"/>
+<polygon points="497.5,2904 494.0,2911 501.0,2911" fill="#9a7943"/>
+<path d="M 660.0 3022 L 660.0 3004 L 295 3004 L 295 506 L 658.0 506 L 658.0 440" stroke="#426985" stroke-width="1.25" fill="none"/>
+<polygon points="658.0,440 654.5,447 661.5,447" fill="#426985"/>
+<path d="M 660.0 3176 L 660.0 3158 L 2355 3158 L 2355 2935 L 2335.2 2935 C 2335.2 2930.2 2328.8 2930.2 2328.8 2935 L 575.7 2935 C 575.7 2930.2 569.3 2930.2 569.3 2935 L 535.0 2935 L 535.0 2904" stroke="#9a7943" stroke-width="1.25" fill="none"/>
+<polygon points="535.0,2904 531.5,2911 538.5,2911" fill="#9a7943"/>
+<path d="M 671.02734375 3330 L 671.02734375 3312 L 2378 3312 L 2378 2940 L 2358.2 2940 C 2358.2 2935.2 2351.8 2935.2 2351.8 2940 L 2335.2 2940 C 2335.2 2935.2 2328.8 2935.2 2328.8 2940 L 572.5 2940 L 572.5 2904" stroke="#9a7943" stroke-width="1.25" fill="none"/>
+<polygon points="572.5,2904 569.0,2911 576.0,2911" fill="#9a7943"/>
+<path d="M 660.0 3484 L 660.0 3466 L 2401 3466 L 2401 2324 L 2289.2 2324 C 2289.2 2319.2 2282.8 2319.2 2282.8 2324 L 2243.2 2324 C 2243.2 2319.2 2236.8 2319.2 2236.8 2324 L 572.5 2324 L 572.5 2288" stroke="#3c7965" stroke-width="1.25" fill="none"/>
+<polygon points="572.5,2288 569.0,2295 576.0,2295" fill="#3c7965"/>
+<text x="460" y="220" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="700" fill="#171717" text-anchor="start">DOMAINS</text>
+<rect x="460" y="250" width="150" height="36" fill="#fafafa" stroke="#70757d" stroke-width="0.9"/>
+<text x="535.0" y="273" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#171717" text-anchor="middle" text-decoration="underline">domain_id</text>
+<rect x="610" y="250" width="100" height="36" fill="#fafafa" stroke="#70757d" stroke-width="0.9"/>
+<text x="660.0" y="273" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#171717" text-anchor="middle">name</text>
+<text x="460" y="374" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="700" fill="#171717" text-anchor="start">PATENTS</text>
+<rect x="460" y="404" width="220" height="36" fill="#fafafa" stroke="#70757d" stroke-width="0.9"/>
+<text x="570.0" y="427" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#171717" text-anchor="middle" text-decoration="underline">patent_id</text>
+<rect x="680" y="404" width="100" height="36" fill="#fafafa" stroke="#70757d" stroke-width="0.9"/>
+<text x="730.0" y="427" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#171717" text-anchor="middle">title</text>
+<rect x="780" y="404" width="100" height="36" fill="#fafafa" stroke="#70757d" stroke-width="0.9"/>
+<text x="830.0" y="427" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#171717" text-anchor="middle">abstract</text>
+<rect x="880" y="404" width="129.9580078125" height="36" fill="#fafafa" stroke="#70757d" stroke-width="0.9"/>
+<text x="944.97900390625" y="427" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#171717" text-anchor="middle">publication_year</text>
+<rect x="1009.9580078125" y="404" width="102.716796875" height="36" fill="#fafafa" stroke="#70757d" stroke-width="0.9"/>
+<text x="1061.31640625" y="427" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#171717" text-anchor="middle">legal_status</text>
+<rect x="1112.6748046875" y="404" width="100" height="36" fill="#fafafa" stroke="#70757d" stroke-width="0.9"/>
+<text x="1162.6748046875" y="427" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#171717" text-anchor="middle">jurisdiction</text>
+<rect x="1212.6748046875" y="404" width="145.5302734375" height="36" fill="#fafafa" stroke="#70757d" stroke-width="0.9"/>
+<text x="1285.43994140625" y="427" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#171717" text-anchor="middle">cites_patent_count</text>
+<rect x="1358.205078125" y="404" width="100" height="36" fill="#fafafa" stroke="#70757d" stroke-width="0.9"/>
+<text x="1408.205078125" y="427" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#171717" text-anchor="middle">family_size</text>
+<rect x="1458.205078125" y="404" width="168.888671875" height="36" fill="#fafafa" stroke="#70757d" stroke-width="0.9"/>
+<text x="1542.6494140625" y="427" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#171717" text-anchor="middle">cited_by_patent_count</text>
+<rect x="1627.09375" y="404" width="100" height="36" fill="#fafafa" stroke="#70757d" stroke-width="0.9"/>
+<text x="1677.09375" y="427" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#171717" text-anchor="middle">url</text>
+<rect x="1727.09375" y="404" width="100" height="36" fill="#fafafa" stroke="#70757d" stroke-width="0.9"/>
+<text x="1777.09375" y="427" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#171717" text-anchor="middle">domain_id</text>
+<rect x="1827.09375" y="404" width="100" height="36" fill="#fafafa" stroke="#70757d" stroke-width="0.9"/>
+<text x="1877.09375" y="427" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#171717" text-anchor="middle">created_at</text>
+<rect x="1927.09375" y="404" width="100" height="36" fill="#fafafa" stroke="#70757d" stroke-width="0.9"/>
+<text x="1977.09375" y="427" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#171717" text-anchor="middle">updated_at</text>
+<text x="460" y="528" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="700" fill="#171717" text-anchor="start">PATENT_DOMAINS</text>
+<rect x="460" y="558" width="150" height="36" fill="#fafafa" stroke="#70757d" stroke-width="0.9"/>
+<text x="535.0" y="581" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#171717" text-anchor="middle" text-decoration="underline">patent_id</text>
+<rect x="610" y="558" width="100" height="36" fill="#fafafa" stroke="#70757d" stroke-width="0.9"/>
+<text x="660.0" y="581" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#171717" text-anchor="middle" text-decoration="underline">domain_id</text>
+<text x="460" y="682" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="700" fill="#171717" text-anchor="start">ASSIGNEES</text>
+<rect x="460" y="712" width="150" height="36" fill="#fafafa" stroke="#70757d" stroke-width="0.9"/>
+<text x="535.0" y="735" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#171717" text-anchor="middle" text-decoration="underline">assignee_id</text>
+<rect x="610" y="712" width="100" height="36" fill="#fafafa" stroke="#70757d" stroke-width="0.9"/>
+<text x="660.0" y="735" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#171717" text-anchor="middle">name</text>
+<text x="460" y="836" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="700" fill="#171717" text-anchor="start">INVENTORS</text>
+<rect x="460" y="866" width="150" height="36" fill="#fafafa" stroke="#70757d" stroke-width="0.9"/>
+<text x="535.0" y="889" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#171717" text-anchor="middle" text-decoration="underline">inventor_id</text>
+<rect x="610" y="866" width="100" height="36" fill="#fafafa" stroke="#70757d" stroke-width="0.9"/>
+<text x="660.0" y="889" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#171717" text-anchor="middle">name</text>
+<text x="460" y="990" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="700" fill="#171717" text-anchor="start">CPC_CODES</text>
+<rect x="460" y="1020" width="150" height="36" fill="#fafafa" stroke="#70757d" stroke-width="0.9"/>
+<text x="535.0" y="1043" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#171717" text-anchor="middle" text-decoration="underline">cpc_code</text>
+<rect x="610" y="1020" width="100" height="36" fill="#fafafa" stroke="#70757d" stroke-width="0.9"/>
+<text x="660.0" y="1043" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#171717" text-anchor="middle">section</text>
+<rect x="710" y="1020" width="100" height="36" fill="#fafafa" stroke="#70757d" stroke-width="0.9"/>
+<text x="760.0" y="1043" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#171717" text-anchor="middle">description</text>
+<text x="460" y="1144" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="700" fill="#171717" text-anchor="start">NPL_REFERENCES</text>
+<rect x="460" y="1174" width="150" height="36" fill="#fafafa" stroke="#70757d" stroke-width="0.9"/>
+<text x="535.0" y="1197" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#171717" text-anchor="middle" text-decoration="underline">npl_id</text>
+<rect x="610" y="1174" width="100" height="36" fill="#fafafa" stroke="#70757d" stroke-width="0.9"/>
+<text x="660.0" y="1197" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#171717" text-anchor="middle">citation</text>
+<rect x="710" y="1174" width="126.0478515625" height="36" fill="#fafafa" stroke="#70757d" stroke-width="0.9"/>
+<text x="773.02392578125" y="1197" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#171717" text-anchor="middle">normalized_key</text>
+<text x="460" y="1298" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="700" fill="#171717" text-anchor="start">PATENT_ASSIGNEES</text>
+<rect x="460" y="1328" width="150" height="36" fill="#fafafa" stroke="#70757d" stroke-width="0.9"/>
+<text x="535.0" y="1351" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#171717" text-anchor="middle" text-decoration="underline">patent_id</text>
+<rect x="610" y="1328" width="108.1513671875" height="36" fill="#fafafa" stroke="#70757d" stroke-width="0.9"/>
+<text x="664.07568359375" y="1351" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#171717" text-anchor="middle" text-decoration="underline">assignee_id</text>
+<text x="460" y="1452" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="700" fill="#171717" text-anchor="start">PATENT_INVENTORS</text>
+<rect x="460" y="1482" width="150" height="36" fill="#fafafa" stroke="#70757d" stroke-width="0.9"/>
+<text x="535.0" y="1505" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#171717" text-anchor="middle" text-decoration="underline">patent_id</text>
+<rect x="610" y="1482" width="103.455078125" height="36" fill="#fafafa" stroke="#70757d" stroke-width="0.9"/>
+<text x="661.7275390625" y="1505" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#171717" text-anchor="middle" text-decoration="underline">inventor_id</text>
+<text x="460" y="1606" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="700" fill="#171717" text-anchor="start">PATENT_CPC_CODES</text>
+<rect x="460" y="1636" width="150" height="36" fill="#fafafa" stroke="#70757d" stroke-width="0.9"/>
+<text x="535.0" y="1659" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#171717" text-anchor="middle" text-decoration="underline">patent_id</text>
+<rect x="610" y="1636" width="100" height="36" fill="#fafafa" stroke="#70757d" stroke-width="0.9"/>
+<text x="660.0" y="1659" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#171717" text-anchor="middle" text-decoration="underline">cpc_code</text>
+<text x="460" y="1760" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="700" fill="#171717" text-anchor="start">PATENT_NPL_REFERENCES</text>
+<rect x="460" y="1790" width="150" height="36" fill="#fafafa" stroke="#70757d" stroke-width="0.9"/>
+<text x="535.0" y="1813" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#171717" text-anchor="middle" text-decoration="underline">patent_id</text>
+<rect x="610" y="1790" width="100" height="36" fill="#fafafa" stroke="#70757d" stroke-width="0.9"/>
+<text x="660.0" y="1813" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#171717" text-anchor="middle" text-decoration="underline">npl_id</text>
+<text x="460" y="1914" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="700" fill="#171717" text-anchor="start">PATENT_FAMILIES</text>
+<rect x="460" y="1944" width="150" height="36" fill="#fafafa" stroke="#70757d" stroke-width="0.9"/>
+<text x="535.0" y="1967" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#171717" text-anchor="middle" text-decoration="underline">patent_id</text>
+<rect x="610" y="1944" width="143.923828125" height="36" fill="#fafafa" stroke="#70757d" stroke-width="0.9"/>
+<text x="681.9619140625" y="1967" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#171717" text-anchor="middle" text-decoration="underline">related_patent_id</text>
+<rect x="753.923828125" y="1944" width="115.1376953125" height="36" fill="#fafafa" stroke="#70757d" stroke-width="0.9"/>
+<text x="811.49267578125" y="1967" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#171717" text-anchor="middle" text-decoration="underline">relation_type</text>
+<text x="460" y="2068" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="700" fill="#171717" text-anchor="start">CITATION_SNAPSHOTS</text>
+<rect x="460" y="2098" width="150" height="36" fill="#fafafa" stroke="#70757d" stroke-width="0.9"/>
+<text x="535.0" y="2121" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#171717" text-anchor="middle" text-decoration="underline">snapshot_id</text>
+<rect x="610" y="2098" width="100" height="36" fill="#fafafa" stroke="#70757d" stroke-width="0.9"/>
+<text x="660.0" y="2121" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#171717" text-anchor="middle">patent_id</text>
+<rect x="710" y="2098" width="122.1787109375" height="36" fill="#fafafa" stroke="#70757d" stroke-width="0.9"/>
+<text x="771.08935546875" y="2121" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#171717" text-anchor="middle">cited_by_count</text>
+<rect x="832.1787109375" y="2098" width="108.951171875" height="36" fill="#fafafa" stroke="#70757d" stroke-width="0.9"/>
+<text x="886.654296875" y="2121" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#171717" text-anchor="middle">observed_on</text>
+<rect x="941.1298828125" y="2098" width="100" height="36" fill="#fafafa" stroke="#70757d" stroke-width="0.9"/>
+<text x="991.1298828125" y="2121" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#171717" text-anchor="middle">created_at</text>
+<text x="460" y="2222" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="700" fill="#171717" text-anchor="start">APP_USERS</text>
+<rect x="460" y="2252" width="150" height="36" fill="#fafafa" stroke="#70757d" stroke-width="0.9"/>
+<text x="535.0" y="2275" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#171717" text-anchor="middle" text-decoration="underline">user_id</text>
+<rect x="610" y="2252" width="100" height="36" fill="#fafafa" stroke="#70757d" stroke-width="0.9"/>
+<text x="660.0" y="2275" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#171717" text-anchor="middle">email</text>
+<rect x="710" y="2252" width="114.3857421875" height="36" fill="#fafafa" stroke="#70757d" stroke-width="0.9"/>
+<text x="767.19287109375" y="2275" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#171717" text-anchor="middle">display_name</text>
+<rect x="824.3857421875" y="2252" width="126.0615234375" height="36" fill="#fafafa" stroke="#70757d" stroke-width="0.9"/>
+<text x="887.41650390625" y="2275" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#171717" text-anchor="middle">password_hash</text>
+<rect x="950.447265625" y="2252" width="100" height="36" fill="#fafafa" stroke="#70757d" stroke-width="0.9"/>
+<text x="1000.447265625" y="2275" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#171717" text-anchor="middle">is_active</text>
+<rect x="1050.447265625" y="2252" width="100" height="36" fill="#fafafa" stroke="#70757d" stroke-width="0.9"/>
+<text x="1100.447265625" y="2275" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#171717" text-anchor="middle">created_at</text>
+<rect x="1150.447265625" y="2252" width="100" height="36" fill="#fafafa" stroke="#70757d" stroke-width="0.9"/>
+<text x="1200.447265625" y="2275" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#171717" text-anchor="middle">updated_at</text>
+<text x="460" y="2376" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="700" fill="#171717" text-anchor="start">ROLES</text>
+<rect x="460" y="2406" width="150" height="36" fill="#fafafa" stroke="#70757d" stroke-width="0.9"/>
+<text x="535.0" y="2429" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#171717" text-anchor="middle" text-decoration="underline">role_id</text>
+<rect x="610" y="2406" width="100" height="36" fill="#fafafa" stroke="#70757d" stroke-width="0.9"/>
+<text x="660.0" y="2429" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#171717" text-anchor="middle">name</text>
+<text x="460" y="2530" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="700" fill="#171717" text-anchor="start">USER_ROLES</text>
+<rect x="460" y="2560" width="150" height="36" fill="#fafafa" stroke="#70757d" stroke-width="0.9"/>
+<text x="535.0" y="2583" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#171717" text-anchor="middle" text-decoration="underline">user_id</text>
+<rect x="610" y="2560" width="100" height="36" fill="#fafafa" stroke="#70757d" stroke-width="0.9"/>
+<text x="660.0" y="2583" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#171717" text-anchor="middle" text-decoration="underline">role_id</text>
+<text x="460" y="2684" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="700" fill="#171717" text-anchor="start">ANALYSIS_CASES</text>
+<rect x="460" y="2714" width="150" height="36" fill="#fafafa" stroke="#70757d" stroke-width="0.9"/>
+<text x="535.0" y="2737" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#171717" text-anchor="middle" text-decoration="underline">case_id</text>
+<rect x="610" y="2714" width="119.833984375" height="36" fill="#fafafa" stroke="#70757d" stroke-width="0.9"/>
+<text x="669.9169921875" y="2737" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#171717" text-anchor="middle">owner_user_id</text>
+<rect x="729.833984375" y="2714" width="100" height="36" fill="#fafafa" stroke="#70757d" stroke-width="0.9"/>
+<text x="779.833984375" y="2737" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#171717" text-anchor="middle">title</text>
+<rect x="829.833984375" y="2714" width="100" height="36" fill="#fafafa" stroke="#70757d" stroke-width="0.9"/>
+<text x="879.833984375" y="2737" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#171717" text-anchor="middle">idea_text</text>
+<rect x="929.833984375" y="2714" width="100" height="36" fill="#fafafa" stroke="#70757d" stroke-width="0.9"/>
+<text x="979.833984375" y="2737" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#171717" text-anchor="middle">status</text>
+<rect x="1029.833984375" y="2714" width="100" height="36" fill="#fafafa" stroke="#70757d" stroke-width="0.9"/>
+<text x="1079.833984375" y="2737" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#171717" text-anchor="middle">created_at</text>
+<rect x="1129.833984375" y="2714" width="100" height="36" fill="#fafafa" stroke="#70757d" stroke-width="0.9"/>
+<text x="1179.833984375" y="2737" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#171717" text-anchor="middle">updated_at</text>
+<text x="460" y="2838" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="700" fill="#171717" text-anchor="start">ANALYSIS_RUNS</text>
+<rect x="460" y="2868" width="150" height="36" fill="#fafafa" stroke="#70757d" stroke-width="0.9"/>
+<text x="535.0" y="2891" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#171717" text-anchor="middle" text-decoration="underline">run_id</text>
+<rect x="610" y="2868" width="100" height="36" fill="#fafafa" stroke="#70757d" stroke-width="0.9"/>
+<text x="660.0" y="2891" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#171717" text-anchor="middle">case_id</text>
+<rect x="710" y="2868" width="100" height="36" fill="#fafafa" stroke="#70757d" stroke-width="0.9"/>
+<text x="760.0" y="2891" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#171717" text-anchor="middle">query_id</text>
+<rect x="810" y="2868" width="100" height="36" fill="#fafafa" stroke="#70757d" stroke-width="0.9"/>
+<text x="860.0" y="2891" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#171717" text-anchor="middle">idea_text</text>
+<rect x="910" y="2868" width="100" height="36" fill="#fafafa" stroke="#70757d" stroke-width="0.9"/>
+<text x="960.0" y="2891" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#171717" text-anchor="middle">gnn_mode</text>
+<rect x="1010" y="2868" width="100" height="36" fill="#fafafa" stroke="#70757d" stroke-width="0.9"/>
+<text x="1060.0" y="2891" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#171717" text-anchor="middle">top_k</text>
+<rect x="1110" y="2868" width="100" height="36" fill="#fafafa" stroke="#70757d" stroke-width="0.9"/>
+<text x="1160.0" y="2891" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#171717" text-anchor="middle">run_status</text>
+<rect x="1210" y="2868" width="100" height="36" fill="#fafafa" stroke="#70757d" stroke-width="0.9"/>
+<text x="1260.0" y="2891" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#171717" text-anchor="middle">started_at</text>
+<rect x="1310" y="2868" width="112.0546875" height="36" fill="#fafafa" stroke="#70757d" stroke-width="0.9"/>
+<text x="1366.02734375" y="2891" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#171717" text-anchor="middle">completed_at</text>
+<rect x="1422.0546875" y="2868" width="133.0888671875" height="36" fill="#fafafa" stroke="#70757d" stroke-width="0.9"/>
+<text x="1488.59912109375" y="2891" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#171717" text-anchor="middle">pipeline_payload</text>
+<rect x="1555.1435546875" y="2868" width="165.744140625" height="36" fill="#fafafa" stroke="#70757d" stroke-width="0.9"/>
+<text x="1638.015625" y="2891" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#171717" text-anchor="middle">improvement_payload</text>
+<text x="460" y="2992" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="700" fill="#171717" text-anchor="start">RUN_PATENT_RESULTS</text>
+<rect x="460" y="3022" width="150" height="36" fill="#fafafa" stroke="#70757d" stroke-width="0.9"/>
+<text x="535.0" y="3045" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#171717" text-anchor="middle" text-decoration="underline">run_id</text>
+<rect x="610" y="3022" width="100" height="36" fill="#fafafa" stroke="#70757d" stroke-width="0.9"/>
+<text x="660.0" y="3045" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#171717" text-anchor="middle" text-decoration="underline">patent_id</text>
+<rect x="710" y="3022" width="111.275390625" height="36" fill="#fafafa" stroke="#70757d" stroke-width="0.9"/>
+<text x="765.6376953125" y="3045" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#171717" text-anchor="middle">rank_position</text>
+<rect x="821.275390625" y="3022" width="100" height="36" fill="#fafafa" stroke="#70757d" stroke-width="0.9"/>
+<text x="871.275390625" y="3045" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#171717" text-anchor="middle">source</text>
+<rect x="921.275390625" y="3022" width="126.0751953125" height="36" fill="#fafafa" stroke="#70757d" stroke-width="0.9"/>
+<text x="984.31298828125" y="3045" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#171717" text-anchor="middle">expansion_type</text>
+<rect x="1047.3505859375" y="3022" width="126.041015625" height="36" fill="#fafafa" stroke="#70757d" stroke-width="0.9"/>
+<text x="1110.37109375" y="3045" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#171717" text-anchor="middle">semantic_score</text>
+<rect x="1173.3916015625" y="3022" width="105.8271484375" height="36" fill="#fafafa" stroke="#70757d" stroke-width="0.9"/>
+<text x="1226.30517578125" y="3045" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#171717" text-anchor="middle">graph_score</text>
+<rect x="1279.21875" y="3022" width="130.7236328125" height="36" fill="#fafafa" stroke="#70757d" stroke-width="0.9"/>
+<text x="1344.58056640625" y="3045" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#171717" text-anchor="middle">combined_score</text>
+<rect x="1409.9423828125" y="3022" width="114.37890625" height="36" fill="#fafafa" stroke="#70757d" stroke-width="0.9"/>
+<text x="1467.1318359375" y="3045" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#171717" text-anchor="middle">novelty_score</text>
+<text x="460" y="3146" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="700" fill="#171717" text-anchor="start">EVALUATION_METRICS</text>
+<rect x="460" y="3176" width="150" height="36" fill="#fafafa" stroke="#70757d" stroke-width="0.9"/>
+<text x="535.0" y="3199" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#171717" text-anchor="middle" text-decoration="underline">metric_id</text>
+<rect x="610" y="3176" width="100" height="36" fill="#fafafa" stroke="#70757d" stroke-width="0.9"/>
+<text x="660.0" y="3199" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#171717" text-anchor="middle">run_id</text>
+<rect x="710" y="3176" width="144.7373046875" height="36" fill="#fafafa" stroke="#70757d" stroke-width="0.9"/>
+<text x="782.36865234375" y="3199" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#171717" text-anchor="middle">patentability_score</text>
+<rect x="854.7373046875" y="3176" width="100" height="36" fill="#fafafa" stroke="#70757d" stroke-width="0.9"/>
+<text x="904.7373046875" y="3199" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#171717" text-anchor="middle">risk</text>
+<rect x="954.7373046875" y="3176" width="100" height="36" fill="#fafafa" stroke="#70757d" stroke-width="0.9"/>
+<text x="1004.7373046875" y="3199" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#171717" text-anchor="middle">verdict</text>
+<rect x="1054.7373046875" y="3176" width="100" height="36" fill="#fafafa" stroke="#70757d" stroke-width="0.9"/>
+<text x="1104.7373046875" y="3199" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#171717" text-anchor="middle">payload</text>
+<rect x="1154.7373046875" y="3176" width="100" height="36" fill="#fafafa" stroke="#70757d" stroke-width="0.9"/>
+<text x="1204.7373046875" y="3199" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#171717" text-anchor="middle">created_at</text>
+<text x="460" y="3300" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="700" fill="#171717" text-anchor="start">IMPROVEMENT_RECOMMENDATIONS</text>
+<rect x="460" y="3330" width="161.02734375" height="36" fill="#fafafa" stroke="#70757d" stroke-width="0.9"/>
+<text x="540.513671875" y="3353" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#171717" text-anchor="middle" text-decoration="underline">recommendation_id</text>
+<rect x="621.02734375" y="3330" width="100" height="36" fill="#fafafa" stroke="#70757d" stroke-width="0.9"/>
+<text x="671.02734375" y="3353" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#171717" text-anchor="middle">run_id</text>
+<rect x="721.02734375" y="3330" width="100" height="36" fill="#fafafa" stroke="#70757d" stroke-width="0.9"/>
+<text x="771.02734375" y="3353" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#171717" text-anchor="middle">position</text>
+<rect x="821.02734375" y="3330" width="100" height="36" fill="#fafafa" stroke="#70757d" stroke-width="0.9"/>
+<text x="871.02734375" y="3353" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#171717" text-anchor="middle">category</text>
+<rect x="921.02734375" y="3330" width="132.275390625" height="36" fill="#fafafa" stroke="#70757d" stroke-width="0.9"/>
+<text x="987.1650390625" y="3353" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#171717" text-anchor="middle">recommendation</text>
+<rect x="1053.302734375" y="3330" width="100" height="36" fill="#fafafa" stroke="#70757d" stroke-width="0.9"/>
+<text x="1103.302734375" y="3353" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#171717" text-anchor="middle">rationale</text>
+<text x="460" y="3454" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="700" fill="#171717" text-anchor="start">AUTH_SESSIONS</text>
+<rect x="460" y="3484" width="150" height="36" fill="#fafafa" stroke="#70757d" stroke-width="0.9"/>
+<text x="535.0" y="3507" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#171717" text-anchor="middle" text-decoration="underline">token_hash</text>
+<rect x="610" y="3484" width="100" height="36" fill="#fafafa" stroke="#70757d" stroke-width="0.9"/>
+<text x="660.0" y="3507" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#171717" text-anchor="middle">user_id</text>
+<rect x="710" y="3484" width="100" height="36" fill="#fafafa" stroke="#70757d" stroke-width="0.9"/>
+<text x="760.0" y="3507" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#171717" text-anchor="middle">expires_at</text>
+<rect x="810" y="3484" width="100" height="36" fill="#fafafa" stroke="#70757d" stroke-width="0.9"/>
+<text x="860.0" y="3507" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#171717" text-anchor="middle">created_at</text>
+<text x="460" y="3608" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="700" fill="#171717" text-anchor="start">AUTH_RATE_LIMITS</text>
+<rect x="460" y="3638" width="150" height="36" fill="#fafafa" stroke="#70757d" stroke-width="0.9"/>
+<text x="535.0" y="3661" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#171717" text-anchor="middle" text-decoration="underline">bucket_key</text>
+<rect x="610" y="3638" width="100" height="36" fill="#fafafa" stroke="#70757d" stroke-width="0.9"/>
+<text x="660.0" y="3661" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#171717" text-anchor="middle">attempts</text>
+<rect x="710" y="3638" width="125.275390625" height="36" fill="#fafafa" stroke="#70757d" stroke-width="0.9"/>
+<text x="772.6376953125" y="3661" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#171717" text-anchor="middle">window_started</text>
+<text x="860.275390625" y="3661" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="400" fill="#60656d" text-anchor="start">Independent throttle counters; no foreign keys.</text>
+<text x="1782.09375" y="401" font-family="Arial, Helvetica, sans-serif" font-size="9" font-weight="400" fill="#80618b" text-anchor="start">1</text>
+<text x="515.0" y="301" font-family="Arial, Helvetica, sans-serif" font-size="9" font-weight="400" fill="#80618b" text-anchor="start">1</text>
+<text x="540.0" y="555" font-family="Arial, Helvetica, sans-serif" font-size="9" font-weight="400" fill="#426985" text-anchor="start">2</text>
+<text x="487.0" y="455" font-family="Arial, Helvetica, sans-serif" font-size="9" font-weight="400" fill="#426985" text-anchor="start">2</text>
+<text x="665.0" y="555" font-family="Arial, Helvetica, sans-serif" font-size="9" font-weight="400" fill="#80618b" text-anchor="start">3</text>
+<text x="565.0" y="301" font-family="Arial, Helvetica, sans-serif" font-size="9" font-weight="400" fill="#80618b" text-anchor="start">3</text>
+<text x="540.0" y="1325" font-family="Arial, Helvetica, sans-serif" font-size="9" font-weight="400" fill="#426985" text-anchor="start">4</text>
+<text x="509.0" y="455" font-family="Arial, Helvetica, sans-serif" font-size="9" font-weight="400" fill="#426985" text-anchor="start">4</text>
+<text x="669.07568359375" y="1325" font-family="Arial, Helvetica, sans-serif" font-size="9" font-weight="400" fill="#80618b" text-anchor="start">5</text>
+<text x="540.0" y="763" font-family="Arial, Helvetica, sans-serif" font-size="9" font-weight="400" fill="#80618b" text-anchor="start">5</text>
+<text x="540.0" y="1479" font-family="Arial, Helvetica, sans-serif" font-size="9" font-weight="400" fill="#426985" text-anchor="start">6</text>
+<text x="531.0" y="455" font-family="Arial, Helvetica, sans-serif" font-size="9" font-weight="400" fill="#426985" text-anchor="start">6</text>
+<text x="666.7275390625" y="1479" font-family="Arial, Helvetica, sans-serif" font-size="9" font-weight="400" fill="#80618b" text-anchor="start">7</text>
+<text x="540.0" y="917" font-family="Arial, Helvetica, sans-serif" font-size="9" font-weight="400" fill="#80618b" text-anchor="start">7</text>
+<text x="540.0" y="1633" font-family="Arial, Helvetica, sans-serif" font-size="9" font-weight="400" fill="#426985" text-anchor="start">8</text>
+<text x="553.0" y="455" font-family="Arial, Helvetica, sans-serif" font-size="9" font-weight="400" fill="#426985" text-anchor="start">8</text>
+<text x="665.0" y="1633" font-family="Arial, Helvetica, sans-serif" font-size="9" font-weight="400" fill="#80618b" text-anchor="start">9</text>
+<text x="540.0" y="1071" font-family="Arial, Helvetica, sans-serif" font-size="9" font-weight="400" fill="#80618b" text-anchor="start">9</text>
+<text x="540.0" y="1787" font-family="Arial, Helvetica, sans-serif" font-size="9" font-weight="400" fill="#426985" text-anchor="start">10</text>
+<text x="575.0" y="455" font-family="Arial, Helvetica, sans-serif" font-size="9" font-weight="400" fill="#426985" text-anchor="start">10</text>
+<text x="665.0" y="1787" font-family="Arial, Helvetica, sans-serif" font-size="9" font-weight="400" fill="#80618b" text-anchor="start">11</text>
+<text x="540.0" y="1225" font-family="Arial, Helvetica, sans-serif" font-size="9" font-weight="400" fill="#80618b" text-anchor="start">11</text>
+<text x="540.0" y="1941" font-family="Arial, Helvetica, sans-serif" font-size="9" font-weight="400" fill="#426985" text-anchor="start">12</text>
+<text x="597.0" y="455" font-family="Arial, Helvetica, sans-serif" font-size="9" font-weight="400" fill="#426985" text-anchor="start">12</text>
+<text x="686.9619140625" y="1941" font-family="Arial, Helvetica, sans-serif" font-size="9" font-weight="400" fill="#426985" text-anchor="start">13</text>
+<text x="619.0" y="455" font-family="Arial, Helvetica, sans-serif" font-size="9" font-weight="400" fill="#426985" text-anchor="start">13</text>
+<text x="665.0" y="2095" font-family="Arial, Helvetica, sans-serif" font-size="9" font-weight="400" fill="#426985" text-anchor="start">14</text>
+<text x="641.0" y="455" font-family="Arial, Helvetica, sans-serif" font-size="9" font-weight="400" fill="#426985" text-anchor="start">14</text>
+<text x="540.0" y="2557" font-family="Arial, Helvetica, sans-serif" font-size="9" font-weight="400" fill="#3c7965" text-anchor="start">15</text>
+<text x="502.5" y="2303" font-family="Arial, Helvetica, sans-serif" font-size="9" font-weight="400" fill="#3c7965" text-anchor="start">15</text>
+<text x="665.0" y="2557" font-family="Arial, Helvetica, sans-serif" font-size="9" font-weight="400" fill="#3c7965" text-anchor="start">16</text>
+<text x="540.0" y="2457" font-family="Arial, Helvetica, sans-serif" font-size="9" font-weight="400" fill="#3c7965" text-anchor="start">16</text>
+<text x="674.9169921875" y="2711" font-family="Arial, Helvetica, sans-serif" font-size="9" font-weight="400" fill="#3c7965" text-anchor="start">17</text>
+<text x="540.0" y="2303" font-family="Arial, Helvetica, sans-serif" font-size="9" font-weight="400" fill="#3c7965" text-anchor="start">17</text>
+<text x="665.0" y="2865" font-family="Arial, Helvetica, sans-serif" font-size="9" font-weight="400" fill="#9a7943" text-anchor="start">18</text>
+<text x="540.0" y="2765" font-family="Arial, Helvetica, sans-serif" font-size="9" font-weight="400" fill="#9a7943" text-anchor="start">18</text>
+<text x="540.0" y="3019" font-family="Arial, Helvetica, sans-serif" font-size="9" font-weight="400" fill="#9a7943" text-anchor="start">19</text>
+<text x="502.5" y="2919" font-family="Arial, Helvetica, sans-serif" font-size="9" font-weight="400" fill="#9a7943" text-anchor="start">19</text>
+<text x="665.0" y="3019" font-family="Arial, Helvetica, sans-serif" font-size="9" font-weight="400" fill="#426985" text-anchor="start">20</text>
+<text x="663.0" y="455" font-family="Arial, Helvetica, sans-serif" font-size="9" font-weight="400" fill="#426985" text-anchor="start">20</text>
+<text x="665.0" y="3173" font-family="Arial, Helvetica, sans-serif" font-size="9" font-weight="400" fill="#9a7943" text-anchor="start">21</text>
+<text x="540.0" y="2919" font-family="Arial, Helvetica, sans-serif" font-size="9" font-weight="400" fill="#9a7943" text-anchor="start">21</text>
+<text x="676.02734375" y="3327" font-family="Arial, Helvetica, sans-serif" font-size="9" font-weight="400" fill="#9a7943" text-anchor="start">22</text>
+<text x="577.5" y="2919" font-family="Arial, Helvetica, sans-serif" font-size="9" font-weight="400" fill="#9a7943" text-anchor="start">22</text>
+<text x="665.0" y="3481" font-family="Arial, Helvetica, sans-serif" font-size="9" font-weight="400" fill="#3c7965" text-anchor="start">23</text>
+<text x="577.5" y="2303" font-family="Arial, Helvetica, sans-serif" font-size="9" font-weight="400" fill="#3c7965" text-anchor="start">23</text>
+<text x="1300.0" y="3830" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#171717" text-anchor="middle">Blue: patent references  |  Purple: catalog references  |  Green: account/role references  |  Ochre: analysis references</text>
+<text x="1300.0" y="3865" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#171717" text-anchor="middle">23 tables, 101 attributes, 23 foreign keys. Every arrow is continuous between actual columns; number tags are not attributes.</text>
+<text x="1300.0" y="3900" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="400" fill="#171717" text-anchor="middle">All underlined attributes in a relation together form its primary key. Source: database/sql/01_schema.sql and 05_auth.sql.</text>
+</svg>

@@ -1,0 +1,197 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="2450" viewBox="0 0 1800 2450" role="img">
+<title>Level 2 - Decomposition of process 3.0</title>
+<rect x="0" y="0" width="1800" height="2450" rx="0" fill="#ffffff" stroke="none" stroke-width="1.7"/>
+<text x="60" y="62" font-family="Arial, Helvetica, sans-serif" font-size="30" font-weight="700" fill="#202b3b" text-anchor="start">PATENT INTELLIGENCE PLATFORM</text>
+<text x="60" y="105" font-family="Arial, Helvetica, sans-serif" font-size="23" font-weight="700" fill="#202b3b" text-anchor="start">Level 2 - Decomposition of process 3.0</text>
+<text x="60" y="136" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="400" fill="#596777" text-anchor="start">Request-driven data transformations: retrieval, graph ranking, optional assessment/guidance, and read-only public exploration.</text>
+<path d="M 151.68239133672154 1730.0 L 30 1730 L 30 230 L 715.1471862576143 230.0" fill="none" stroke="#526274" stroke-width="1.9"/>
+<polygon points="715.1471862576143,230.0 705.1471862576143,226.0 705.1471862576143,234.0" fill="#526274"/>
+<path d="M 881.2403840463596 210.0 L 1330 210.0" fill="none" stroke="#526274" stroke-width="1.9"/>
+<polygon points="1330,210.0 1320.0,206.0 1320.0,214.0" fill="#526274"/>
+<path d="M 1330 265.0 L 879.5298686029344 265.0" fill="none" stroke="#526274" stroke-width="1.9"/>
+<polygon points="879.5298686029344,265.0 889.5298686029344,269.0 889.5298686029344,261.0" fill="#526274"/>
+<path d="M 800.0 320.0 L 800.0 500.0" fill="none" stroke="#526274" stroke-width="1.9"/>
+<polygon points="800.0,500.0 804.0,490.0 796.0,490.0" fill="#526274"/>
+<path d="M 420 575.0 L 715.5902849193293 575.0" fill="none" stroke="#526274" stroke-width="1.9"/>
+<polygon points="715.5902849193293,575.0 705.5902849193293,571.0 705.5902849193293,579.0" fill="#526274"/>
+<path d="M 1330 575.0 L 884.4097150806707 575.0" fill="none" stroke="#526274" stroke-width="1.9"/>
+<polygon points="884.4097150806707,575.0 894.4097150806707,579.0 894.4097150806707,571.0" fill="#526274"/>
+<path d="M 800.0 670.0 L 800.0 850.0" fill="none" stroke="#526274" stroke-width="1.9"/>
+<polygon points="800.0,850.0 804.0,840.0 796.0,840.0" fill="#526274"/>
+<path d="M 1330 930.0 L 893.8083151964686 930.0" fill="none" stroke="#526274" stroke-width="1.9"/>
+<polygon points="893.8083151964686,930.0 903.8083151964686,934.0 903.8083151964686,926.0" fill="#526274"/>
+<path d="M 420 920.0 L 708.3484861008832 920.0" fill="none" stroke="#526274" stroke-width="1.9"/>
+<polygon points="708.3484861008832,920.0 698.3484861008832,916.0 698.3484861008832,924.0" fill="#526274"/>
+<path d="M 709.8612181134002 975.0 L 420 975.0" fill="none" stroke="#526274" stroke-width="1.9"/>
+<polygon points="420,975.0 430.0,979.0 430.0,971.0" fill="#526274"/>
+<path d="M 722.5403330758517 1000.0 L 465 1000 L 465 1740 L 331.6515138991168 1740.0" fill="none" stroke="#526274" stroke-width="1.9"/>
+<polygon points="331.6515138991168,1740.0 341.6515138991168,1744.0 341.6515138991168,1736.0" fill="#526274"/>
+<path d="M 800.0 1040.0 L 800.0 1210.0" fill="none" stroke="#526274" stroke-width="1.9"/>
+<polygon points="800.0,1210.0 804.0,1200.0 796.0,1200.0" fill="#526274"/>
+<path d="M 323.66600265340753 1720.0 L 440 1720 L 440 1300 L 461.8 1300 C 461.8 1295.2 468.2 1295.2 468.2 1300 L 710.0 1300.0" fill="none" stroke="#526274" stroke-width="1.9"/>
+<polygon points="710.0,1300.0 700.0,1296.0 700.0,1304.0" fill="#526274"/>
+<path d="M 420 1270.0 L 461.8 1270.0 C 461.8 1265.2 468.2 1265.2 468.2 1270.0 L 715.1471862576143 1270.0" fill="none" stroke="#526274" stroke-width="1.9"/>
+<polygon points="715.1471862576143,1270.0 705.1471862576143,1266.0 705.1471862576143,1274.0" fill="#526274"/>
+<path d="M 1330 1260.0 L 880.6225774829854 1260.0" fill="none" stroke="#526274" stroke-width="1.9"/>
+<polygon points="880.6225774829854,1260.0 890.6225774829854,1264.0 890.6225774829854,1256.0" fill="#526274"/>
+<path d="M 884.8528137423857 1270.0 L 1100 1270 L 1100 1450 L 1330 1450.0" fill="none" stroke="#526274" stroke-width="1.9"/>
+<polygon points="1330,1450.0 1320.0,1446.0 1320.0,1454.0" fill="#526274"/>
+<path d="M 1330 1500.0 L 1050 1500 L 1050 1330 L 884.8528137423857 1330.0" fill="none" stroke="#526274" stroke-width="1.9"/>
+<polygon points="884.8528137423857,1330.0 894.8528137423857,1334.0 894.8528137423857,1326.0" fill="#526274"/>
+<path d="M 715.1471862576143 1330.0 L 500 1330 L 500 1780 L 333.8083151964686 1780.0" fill="none" stroke="#526274" stroke-width="1.9"/>
+<polygon points="333.8083151964686,1780.0 343.8083151964686,1784.0 343.8083151964686,1776.0" fill="#526274"/>
+<path d="M 800.0 1390.0 L 800.0 1670.0" fill="none" stroke="#526274" stroke-width="1.9"/>
+<polygon points="800.0,1670.0 804.0,1660.0 796.0,1660.0" fill="#526274"/>
+<path d="M 334.86832980505136 1760.0 L 496.8 1760.0 C 496.8 1755.2 503.2 1755.2 503.2 1760.0 L 705.1316701949486 1760.0" fill="none" stroke="#526274" stroke-width="1.9"/>
+<polygon points="705.1316701949486,1760.0 695.1316701949486,1756.0 695.1316701949486,1764.0" fill="#526274"/>
+<path d="M 888.3176086632784 1730.0 L 1330 1730.0" fill="none" stroke="#526274" stroke-width="1.9"/>
+<polygon points="1330,1730.0 1320.0,1726.0 1320.0,1734.0" fill="#526274"/>
+<path d="M 1330 1795.0 L 890.1387818865998 1795.0" fill="none" stroke="#526274" stroke-width="1.9"/>
+<polygon points="890.1387818865998,1795.0 900.1387818865998,1799.0 900.1387818865998,1791.0" fill="#526274"/>
+<path d="M 711.6823913367216 1800.0 L 328.31760866327846 1800.0" fill="none" stroke="#526274" stroke-width="1.9"/>
+<polygon points="328.31760866327846,1800.0 338.31760866327846,1804.0 338.31760866327846,1796.0" fill="#526274"/>
+<path d="M 240.0 1860.0 L 240.0 2135 L 715.0 2135.0" fill="none" stroke="#526274" stroke-width="1.9"/>
+<polygon points="715.0,2135.0 705.0,2131.0 705.0,2139.0" fill="#526274"/>
+<path d="M 727.8889744907202 2180.0 L 187.22222222222223 2180 L 187.22222222222223 1843.9905448318943" fill="none" stroke="#526274" stroke-width="1.9"/>
+<polygon points="187.22222222222223,1843.9905448318943 183.22222222222223,1853.9905448318943 191.22222222222223,1853.9905448318943" fill="#526274"/>
+<path d="M 1330 2050.0 L 1120 2050 L 1120 2100 L 877.4596669241483 2100.0" fill="none" stroke="#526274" stroke-width="1.9"/>
+<polygon points="877.4596669241483,2100.0 887.4596669241483,2104.0 887.4596669241483,2096.0" fill="#526274"/>
+<path d="M 1330 2230.0 L 1090 2230 L 1090 2160 L 881.2403840463596 2160.0" fill="none" stroke="#526274" stroke-width="1.9"/>
+<polygon points="881.2403840463596,2160.0 891.2403840463596,2164.0 891.2403840463596,2156.0" fill="#526274"/>
+<circle cx="240.0" cy="1765.0" r="95.0" fill="#ffffff" stroke="#202b3b" stroke-width="1.7"/>
+<text x="240.0" y="1722.5" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="700" fill="#202b3b" text-anchor="middle">2.0 (outside this</text>
+<text x="240.0" y="1741.5" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="700" fill="#202b3b" text-anchor="middle">scope)</text>
+<text x="240.0" y="1760.5" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="400" fill="#202b3b" text-anchor="middle">Handle research</text>
+<text x="240.0" y="1779.5" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="400" fill="#202b3b" text-anchor="middle">requests</text>
+<text x="240.0" y="1798.5" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="400" fill="#202b3b" text-anchor="middle">Validated /</text>
+<text x="240.0" y="1817.5" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="400" fill="#202b3b" text-anchor="middle">owner-scoped input</text>
+<circle cx="800.0" cy="235.0" r="85.0" fill="#ffffff" stroke="#202b3b" stroke-width="1.7"/>
+<text x="800.0" y="211.5" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="700" fill="#202b3b" text-anchor="middle">3.1</text>
+<text x="800.0" y="230.5" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="400" fill="#202b3b" text-anchor="middle">Preprocess idea</text>
+<text x="800.0" y="249.5" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="400" fill="#202b3b" text-anchor="middle">Gemini / spaCy</text>
+<text x="800.0" y="268.5" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="400" fill="#202b3b" text-anchor="middle">fallback</text>
+<rect x="1330" y="170" width="360" height="130" rx="0" fill="#ffffff" stroke="#202b3b" stroke-width="1.7"/>
+<text x="1510.0" y="198" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="700" fill="#202b3b" text-anchor="middle">E3</text>
+<text x="1510.0" y="237" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="400" fill="#202b3b" text-anchor="middle">Gemini AI service</text>
+<circle cx="800.0" cy="585.0" r="85.0" fill="#ffffff" stroke="#202b3b" stroke-width="1.7"/>
+<text x="800.0" y="552.0" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="700" fill="#202b3b" text-anchor="middle">3.2</text>
+<text x="800.0" y="571.0" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="400" fill="#202b3b" text-anchor="middle">Encode query and</text>
+<text x="800.0" y="590.0" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="400" fill="#202b3b" text-anchor="middle">retrieve</text>
+<text x="800.0" y="609.0" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="400" fill="#202b3b" text-anchor="middle">PatentSBERTa +</text>
+<text x="800.0" y="628.0" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="400" fill="#202b3b" text-anchor="middle">FAISS</text>
+<rect x="60" y="520" width="360" height="110" rx="0" fill="#ffffff" stroke="none" stroke-width="1.7"/>
+<path d="M 60 520 L 420 520" fill="none" stroke="#526274" stroke-width="1.3"/>
+<path d="M 60 630 L 420 630" fill="none" stroke="#526274" stroke-width="1.3"/>
+<text x="240.0" y="545" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="700" fill="#202b3b" text-anchor="middle">D3 - Public patent catalog</text>
+<text x="240.0" y="568" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="400" fill="#202b3b" text-anchor="middle">Canonical metadata lookup</text>
+<rect x="1330" y="520" width="360" height="110" rx="0" fill="#ffffff" stroke="none" stroke-width="1.7"/>
+<path d="M 1330 520 L 1690 520" fill="none" stroke="#526274" stroke-width="1.3"/>
+<path d="M 1330 630 L 1690 630" fill="none" stroke="#526274" stroke-width="1.3"/>
+<text x="1510.0" y="545" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="700" fill="#202b3b" text-anchor="middle">D4 - Semantic index</text>
+<text x="1510.0" y="568" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="400" fill="#202b3b" text-anchor="middle">FAISS + ID mapping</text>
+<circle cx="800.0" cy="945.0" r="95.0" fill="#ffffff" stroke="#202b3b" stroke-width="1.7"/>
+<text x="800.0" y="893.0" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="700" fill="#202b3b" text-anchor="middle">3.3</text>
+<text x="800.0" y="912.0" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="400" fill="#202b3b" text-anchor="middle">Expand and rerank</text>
+<text x="800.0" y="931.0" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="400" fill="#202b3b" text-anchor="middle">patents</text>
+<text x="800.0" y="950.0" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="400" fill="#202b3b" text-anchor="middle">Neo4j + live</text>
+<text x="800.0" y="969.0" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="400" fill="#202b3b" text-anchor="middle">GraphSAGE</text>
+<text x="800.0" y="988.0" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="400" fill="#202b3b" text-anchor="middle">Group identical</text>
+<text x="800.0" y="1007.0" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="400" fill="#202b3b" text-anchor="middle">result text</text>
+<rect x="60" y="875" width="360" height="110" rx="0" fill="#ffffff" stroke="none" stroke-width="1.7"/>
+<path d="M 60 875 L 420 875" fill="none" stroke="#526274" stroke-width="1.3"/>
+<path d="M 60 985 L 420 985" fill="none" stroke="#526274" stroke-width="1.3"/>
+<text x="240.0" y="900" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="700" fill="#202b3b" text-anchor="middle">D6 - Public embedding cache</text>
+<text x="240.0" y="923" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="400" fill="#202b3b" text-anchor="middle">Memory LRU + SQLite</text>
+<rect x="1330" y="875" width="360" height="110" rx="0" fill="#ffffff" stroke="none" stroke-width="1.7"/>
+<path d="M 1330 875 L 1690 875" fill="none" stroke="#526274" stroke-width="1.3"/>
+<path d="M 1330 985 L 1690 985" fill="none" stroke="#526274" stroke-width="1.3"/>
+<text x="1510.0" y="900" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="700" fill="#202b3b" text-anchor="middle">D5 - Patent knowledge graph</text>
+<text x="1510.0" y="923" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="400" fill="#202b3b" text-anchor="middle">Family / CPC / citation links</text>
+<circle cx="800.0" cy="1300.0" r="90.0" fill="#ffffff" stroke="#202b3b" stroke-width="1.7"/>
+<text x="800.0" y="1267.0" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="700" fill="#202b3b" text-anchor="middle">3.4</text>
+<text x="800.0" y="1286.0" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="400" fill="#202b3b" text-anchor="middle">Evaluate</text>
+<text x="800.0" y="1305.0" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="400" fill="#202b3b" text-anchor="middle">patentability</text>
+<text x="800.0" y="1324.0" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="400" fill="#202b3b" text-anchor="middle">Concept search +</text>
+<text x="800.0" y="1343.0" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="400" fill="#202b3b" text-anchor="middle">scoring</text>
+<rect x="60" y="1220" width="360" height="100" rx="0" fill="#ffffff" stroke="none" stroke-width="1.7"/>
+<path d="M 60 1220 L 420 1220" fill="none" stroke="#526274" stroke-width="1.3"/>
+<path d="M 60 1320 L 420 1320" fill="none" stroke="#526274" stroke-width="1.3"/>
+<text x="240.0" y="1245" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="700" fill="#202b3b" text-anchor="middle">D4 - Semantic index (repeat)</text>
+<text x="240.0" y="1268" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="400" fill="#202b3b" text-anchor="middle">Per-concept search</text>
+<rect x="1330" y="1220" width="360" height="100" rx="0" fill="#ffffff" stroke="none" stroke-width="1.7"/>
+<path d="M 1330 1220 L 1690 1220" fill="none" stroke="#526274" stroke-width="1.3"/>
+<path d="M 1330 1320 L 1690 1320" fill="none" stroke="#526274" stroke-width="1.3"/>
+<text x="1510.0" y="1245" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="700" fill="#202b3b" text-anchor="middle">D5 - Patent graph (repeat)</text>
+<text x="1510.0" y="1268" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="400" fill="#202b3b" text-anchor="middle">Concept CPC / graph signals</text>
+<rect x="1330" y="1430" width="360" height="110" rx="0" fill="#ffffff" stroke="#202b3b" stroke-width="1.7"/>
+<text x="1510.0" y="1458" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="700" fill="#202b3b" text-anchor="middle">E3 (repeat)</text>
+<text x="1510.0" y="1497" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="400" fill="#202b3b" text-anchor="middle">Gemini AI service</text>
+<circle cx="800.0" cy="1765.0" r="95.0" fill="#ffffff" stroke="#202b3b" stroke-width="1.7"/>
+<text x="800.0" y="1732.0" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="700" fill="#202b3b" text-anchor="middle">3.5</text>
+<text x="800.0" y="1751.0" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="400" fill="#202b3b" text-anchor="middle">Generate</text>
+<text x="800.0" y="1770.0" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="400" fill="#202b3b" text-anchor="middle">improvements</text>
+<text x="800.0" y="1789.0" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="400" fill="#202b3b" text-anchor="middle">Diagnosis,</text>
+<text x="800.0" y="1808.0" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="400" fill="#202b3b" text-anchor="middle">strategies, guidance</text>
+<rect x="1330" y="1690" width="360" height="150" rx="0" fill="#ffffff" stroke="#202b3b" stroke-width="1.7"/>
+<text x="1510.0" y="1718" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="700" fill="#202b3b" text-anchor="middle">E3 (repeat)</text>
+<text x="1510.0" y="1757" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="400" fill="#202b3b" text-anchor="middle">Gemini AI service</text>
+<circle cx="800.0" cy="2135.0" r="85.0" fill="#ffffff" stroke="#202b3b" stroke-width="1.7"/>
+<text x="800.0" y="2102.0" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="700" fill="#202b3b" text-anchor="middle">3.6</text>
+<text x="800.0" y="2121.0" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="400" fill="#202b3b" text-anchor="middle">Read public graph</text>
+<text x="800.0" y="2140.0" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="400" fill="#202b3b" text-anchor="middle">/ reports</text>
+<text x="800.0" y="2159.0" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="400" fill="#202b3b" text-anchor="middle">Graph slices and</text>
+<text x="800.0" y="2178.0" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="400" fill="#202b3b" text-anchor="middle">SQL summaries</text>
+<rect x="1330" y="2000" width="360" height="100" rx="0" fill="#ffffff" stroke="none" stroke-width="1.7"/>
+<path d="M 1330 2000 L 1690 2000" fill="none" stroke="#526274" stroke-width="1.3"/>
+<path d="M 1330 2100 L 1690 2100" fill="none" stroke="#526274" stroke-width="1.3"/>
+<text x="1510.0" y="2025" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="700" fill="#202b3b" text-anchor="middle">D3 - Public catalog (repeat)</text>
+<text x="1510.0" y="2048" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="400" fill="#202b3b" text-anchor="middle">Patent report views</text>
+<rect x="1330" y="2180" width="360" height="100" rx="0" fill="#ffffff" stroke="none" stroke-width="1.7"/>
+<path d="M 1330 2180 L 1690 2180" fill="none" stroke="#526274" stroke-width="1.3"/>
+<path d="M 1330 2280 L 1690 2280" fill="none" stroke="#526274" stroke-width="1.3"/>
+<text x="1510.0" y="2205" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="700" fill="#202b3b" text-anchor="middle">D5 - Patent graph (repeat)</text>
+<text x="1510.0" y="2228" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="400" fill="#202b3b" text-anchor="middle">Read-only graph slices</text>
+<text x="330" y="210" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#596777" text-anchor="middle">Authorized idea + settings</text>
+<text x="1155" y="190" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#596777" text-anchor="middle">Idea-processing prompt</text>
+<text x="1155" y="286" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#596777" text-anchor="middle">Structured NLP output</text>
+<text x="1030" y="405" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#596777" text-anchor="middle">Original idea, cleaned query,</text>
+<text x="1030" y="424" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#596777" text-anchor="middle">keywords and settings</text>
+<text x="520" y="555" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#596777" text-anchor="middle">Patent metadata</text>
+<text x="1155" y="555" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#596777" text-anchor="middle">Nearest vectors / patent IDs</text>
+<text x="1030" y="780" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#596777" text-anchor="middle">Query vector, seed hits</text>
+<text x="1030" y="799" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#596777" text-anchor="middle">and canonical metadata</text>
+<text x="1155" y="900" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#596777" text-anchor="middle">Family / CPC neighbours</text>
+<text x="1155" y="919" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#596777" text-anchor="middle">and subgraph edges</text>
+<text x="520" y="900" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#596777" text-anchor="middle">Cached vectors</text>
+<text x="520" y="955" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#596777" text-anchor="middle">New public vectors</text>
+<text x="540" y="1045" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#596777" text-anchor="middle">Ranked patent results</text>
+<text x="1020" y="1135" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#596777" text-anchor="middle">Idea + ranked hits</text>
+<text x="1020" y="1154" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#596777" text-anchor="middle">(evaluation input)</text>
+<text x="540" y="1288" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#596777" text-anchor="middle">Saved idea + hits</text>
+<text x="535" y="1250" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#596777" text-anchor="middle">Per-concept matches</text>
+<text x="1155" y="1240" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#596777" text-anchor="middle">Concept CPC / graph evidence</text>
+<text x="1200" y="1410" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#596777" text-anchor="middle">Concept / scoring prompts</text>
+<text x="1150" y="1565" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#596777" text-anchor="middle">AI concept / scoring responses</text>
+<text x="620" y="1390" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#596777" text-anchor="middle">Scores, risk and verdict</text>
+<text x="835" y="1565" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#596777" text-anchor="start">Idea, ranked hits</text>
+<text x="835" y="1584" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#596777" text-anchor="start">and assessment</text>
+<text x="558" y="1715" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#596777" text-anchor="middle">Owned idea, hits</text>
+<text x="558" y="1734" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#596777" text-anchor="middle">and assessment</text>
+<text x="1155" y="1710" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#596777" text-anchor="middle">Diagnosis / strategy prompt</text>
+<text x="1155" y="1820" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#596777" text-anchor="middle">Generated explanation</text>
+<text x="520" y="1830" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#596777" text-anchor="middle">Improvement guidance</text>
+<text x="410" y="2115" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#596777" text-anchor="middle">Public graph / report parameters</text>
+<text x="410" y="2205" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#596777" text-anchor="middle">Graph / report rows</text>
+<text x="1160" y="2032" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#596777" text-anchor="middle">Public patent summaries</text>
+<text x="1160" y="2255" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#596777" text-anchor="middle">Graph slice records</text>
+<rect x="60" y="320" width="480" height="150" rx="0" fill="#f4f6f9" stroke="#d4dbe4" stroke-width="1.7"/>
+<text x="77" y="348" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#596777" text-anchor="start">This sheet expands 3.0, not process 2.0.</text>
+<text x="77" y="372" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#596777" text-anchor="start">Process 2.0 receives and saves each response.</text>
+<text x="77" y="396" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#596777" text-anchor="start">Evaluations and improvements are on demand.</text>
+<text x="77" y="420" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#596777" text-anchor="start">Saved inputs can bypass retrieval stages.</text>
+<text x="77" y="444" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="#596777" text-anchor="start">Private query vectors are never cached in D6.</text>
+<path d="M 60 2363 L 1740 2363" fill="none" stroke="#526274" stroke-width="1.3"/>
+<text x="60" y="2386" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="400" fill="#596777" text-anchor="start">Yourdon-DeMarco: circle = process | rectangle = external entity | parallel lines = data store | arrow = data flow</text>
+<text x="60" y="2410" font-family="Arial, Helvetica, sans-serif" font-size="12.5" font-weight="400" fill="#596777" text-anchor="start">Arrows name the data being transferred. Repeated IDs refer to the same entity/store. Line jumps are unconnected crossings.</text>
+<text x="1680" y="2410" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="400" fill="#596777" text-anchor="middle">3 / 3</text>
+</svg>
